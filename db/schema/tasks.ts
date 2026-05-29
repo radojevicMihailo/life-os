@@ -70,6 +70,7 @@ export const priority = pgTable("priority", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull().unique(),
   color: text("color"),
+  rank: integer("rank").notNull().default(1000),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
 });
 
