@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { project } from "@/db/schema/tasks";
@@ -10,6 +9,7 @@ import {
   type CreateProjectInput,
   type UpdateProjectInput,
 } from "@/lib/validation/projects";
+import { revalidateTaskRoutes } from "./_revalidate";
 
 type ActionResult<T = void> =
   | { ok: true; data: T }
@@ -17,13 +17,6 @@ type ActionResult<T = void> =
 
 function fail(error: string): ActionResult<never> {
   return { ok: false, error };
-}
-
-function revalidateAll(id?: string) {
-  revalidatePath("/");
-  revalidatePath("/tasks");
-  revalidatePath("/projects");
-  if (id) revalidatePath(`/projects/${id}`);
 }
 
 export async function createProject(
@@ -42,7 +35,7 @@ export async function createProject(
     })
     .returning({ id: project.id });
 
-  revalidateAll();
+  revalidateTaskRoutes();
   return { ok: true, data: { id: row.id } };
 }
 
@@ -63,12 +56,12 @@ export async function updateProject(input: UpdateProjectInput): Promise<ActionRe
     })
     .where(eq(project.id, id));
 
-  revalidateAll(id);
+  revalidateTaskRoutes({ projectId: id });
   return { ok: true, data: undefined };
 }
 
 export async function deleteProject(id: string): Promise<ActionResult> {
   await db.delete(project).where(eq(project.id, id));
-  revalidateAll(id);
+  revalidateTaskRoutes({ projectId: id });
   return { ok: true, data: undefined };
 }
