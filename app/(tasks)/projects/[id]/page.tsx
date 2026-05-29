@@ -30,7 +30,7 @@ export default async function ProjectDetailPage({
     db
       .select({ id: priority.id, name: priority.name })
       .from(priority)
-      .orderBy(asc(priority.name)),
+      .orderBy(asc(priority.rank)),
     db
       .select({
         total: sql<number>`COUNT(*)`,
