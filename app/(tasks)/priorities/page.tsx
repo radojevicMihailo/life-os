@@ -12,10 +12,11 @@ export default async function PrioritiesPage() {
       id: priority.id,
       name: priority.name,
       color: priority.color,
+      rank: priority.rank,
       taskCount: sql<number>`(SELECT COUNT(*) FROM ${task} WHERE ${task.priorityId} = ${priority.id})`,
     })
     .from(priority)
-    .orderBy(asc(priority.name));
+    .orderBy(asc(priority.rank), asc(priority.name));
 
   return (
     <div className="space-y-6">
@@ -36,6 +37,7 @@ export default async function PrioritiesPage() {
               id={p.id}
               name={p.name}
               color={p.color}
+              rank={p.rank}
               taskCount={Number(p.taskCount)}
             />
           ))}

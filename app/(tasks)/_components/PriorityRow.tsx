@@ -14,16 +14,19 @@ export function PriorityRow({
   id,
   name,
   color,
+  rank,
   taskCount,
 }: {
   id: string;
   name: string;
   color: string | null;
+  rank: number;
   taskCount: number;
 }) {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(name);
   const [editColor, setEditColor] = useState<string | null>(color);
+  const [editRank, setEditRank] = useState<string>(String(rank));
   const [pending, startTransition] = useTransition();
 
   function remove() {
@@ -37,8 +40,14 @@ export function PriorityRow({
   function save() {
     const trimmed = editName.trim();
     if (!trimmed) return;
+    const rankNum = Number(editRank);
     startTransition(async () => {
-      const r = await updatePriority({ id, name: trimmed, color: editColor });
+      const r = await updatePriority({
+        id,
+        name: trimmed,
+        color: editColor,
+        rank: Number.isFinite(rankNum) ? rankNum : undefined,
+      });
       if (!r.ok) toast.error(r.error);
       setEditing(false);
     });
@@ -47,12 +56,20 @@ export function PriorityRow({
   if (editing) {
     return (
       <div className="space-y-2 rounded-md border bg-card px-3 py-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Input
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
             className="h-8 max-w-xs"
             autoFocus
+          />
+          <Input
+            type="number"
+            min={0}
+            value={editRank}
+            onChange={(e) => setEditRank(e.target.value)}
+            className="h-8 w-24"
+            aria-label="Rank"
           />
           <Button size="icon" variant="ghost" onClick={save} disabled={pending}>
             <Check className="h-4 w-4" />
@@ -63,6 +80,7 @@ export function PriorityRow({
             onClick={() => {
               setEditName(name);
               setEditColor(color);
+              setEditRank(String(rank));
               setEditing(false);
             }}
           >
@@ -83,6 +101,7 @@ export function PriorityRow({
         >
           {name}
         </Badge>
+        <span className="text-xs text-muted-foreground">rank {rank}</span>
       </Link>
       <div className="flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
         <Button size="icon" variant="ghost" onClick={() => setEditing(true)}>
