@@ -2,21 +2,38 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Trash2, Pencil, Check, X } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Trash2, Pencil, Check, X, Repeat, Calendar, PlayCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Repeat } from "lucide-react";
-import type { Task } from "@/db/schema/tasks";
-import { toggleTask, deleteTask, updateTask } from "../_actions/tasks";
-import { formatDueDate, priorityColor, priorityLabel } from "@/lib/format";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { Task, TaskStatus } from "@/db/schema/tasks";
+import { taskStatusLabel } from "@/db/schema/tasks";
+import { deleteTask, updateTask, setTaskStatus } from "../_actions/tasks";
+import { formatTaskDate, formatDateRange } from "@/lib/format";
 import { isBefore, startOfDay } from "date-fns";
 
 export type TaskWithMeta = Task & {
   projectName?: string | null;
-  tags?: { id: string; name: string; color: string | null }[];
+  priorityName?: string | null;
+  priorityColor?: string | null;
+  contexts?: { id: string; name: string; color: string | null }[];
+};
+
+const statusOrder: TaskStatus[] = ["backlog", "in_progress", "waiting_for", "done", "canceled"];
+
+const statusBadgeStyle: Record<TaskStatus, string> = {
+  backlog: "bg-slate-100 text-slate-700 border-slate-300",
+  in_progress: "bg-blue-100 text-blue-700 border-blue-300",
+  waiting_for: "bg-amber-100 text-amber-800 border-amber-300",
+  canceled: "bg-zinc-100 text-zinc-500 border-zinc-300 line-through",
+  done: "bg-green-100 text-green-700 border-green-300",
 };
 
 export function TaskRow({ task }: { task: TaskWithMeta }) {
@@ -24,13 +41,23 @@ export function TaskRow({ task }: { task: TaskWithMeta }) {
   const [title, setTitle] = useState(task.title);
   const [pending, startTransition] = useTransition();
 
-  const completed = task.completedAt != null;
+  const completed = task.status === "done";
   const due = task.dueAt ? (task.dueAt instanceof Date ? task.dueAt : new Date(task.dueAt)) : null;
+  const action = task.actionAt
+    ? task.actionAt instanceof Date
+      ? task.actionAt
+      : new Date(task.actionAt)
+    : null;
+  const actionEnd = task.actionEndAt
+    ? task.actionEndAt instanceof Date
+      ? task.actionEndAt
+      : new Date(task.actionEndAt)
+    : null;
   const overdue = due ? isBefore(due, startOfDay(new Date())) && !completed : false;
 
-  function toggle() {
+  function changeStatus(s: TaskStatus) {
     startTransition(async () => {
-      const r = await toggleTask(task.id);
+      const r = await setTaskStatus(task.id, s);
       if (!r.ok) toast.error(r.error);
     });
   }
@@ -60,20 +87,20 @@ export function TaskRow({ task }: { task: TaskWithMeta }) {
   }
 
   return (
-    <div className="group flex items-center gap-3 rounded-md border bg-card px-3 py-2">
-      <Checkbox
-        checked={completed}
-        onCheckedChange={toggle}
-        disabled={pending}
-        aria-label="Toggle complete"
-      />
-      {task.priority > 0 && (
-        <span
-          aria-label={`Priority ${priorityLabel[task.priority]}`}
-          title={`Priority: ${priorityLabel[task.priority]}`}
-          className="inline-block h-2 w-2 shrink-0 rounded-full"
-          style={{ backgroundColor: priorityColor[task.priority] }}
-        />
+    <div className="group flex flex-wrap items-center gap-3 rounded-md border bg-card px-3 py-2">
+      {task.priorityName && (
+        <Badge
+          variant="outline"
+          className="text-xs"
+          style={
+            task.priorityColor
+              ? { backgroundColor: task.priorityColor, color: "white", borderColor: task.priorityColor }
+              : undefined
+          }
+          title={`Priority: ${task.priorityName}`}
+        >
+          {task.priorityName}
+        </Badge>
       )}
       {editing ? (
         <Input
@@ -87,39 +114,67 @@ export function TaskRow({ task }: { task: TaskWithMeta }) {
             }
           }}
           autoFocus
-          className="h-8"
+          className="h-8 flex-1"
         />
       ) : (
         <Link
           href={`/tasks/${task.id}`}
-          className={`flex-1 text-sm hover:underline ${
-            completed ? "text-muted-foreground line-through" : ""
+          className={`flex-1 min-w-0 text-sm hover:underline ${
+            completed || task.status === "canceled" ? "text-muted-foreground line-through" : ""
           }`}
         >
           {task.title}
         </Link>
       )}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className={`rounded border px-2 py-0.5 text-xs ${statusBadgeStyle[task.status]}`}
+            disabled={pending}
+          >
+            {taskStatusLabel[task.status]}
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {statusOrder.map((s) => (
+            <DropdownMenuItem key={s} onSelect={() => changeStatus(s)}>
+              {taskStatusLabel[s]}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {action && (
+        <Badge variant="outline" className="gap-1 text-xs" title="Action date">
+          <PlayCircle className="h-3 w-3" />
+          {formatDateRange(action, actionEnd)}
+        </Badge>
+      )}
       {due && (
         <Badge
           variant="outline"
-          className={`text-xs ${overdue ? "border-red-500 text-red-600" : ""}`}
+          className={`gap-1 text-xs ${overdue ? "border-red-500 text-red-600" : ""}`}
+          title="Due date"
         >
-          {formatDueDate(due)}
+          <Calendar className="h-3 w-3" />
+          {formatTaskDate(due)}
         </Badge>
       )}
       {task.recurrence && (
         <Repeat className="h-3.5 w-3.5 text-muted-foreground" aria-label="Recurring" />
       )}
-      {task.tags && task.tags.length > 0 && (
+      {task.contexts && task.contexts.length > 0 && (
         <div className="flex items-center gap-1">
-          {task.tags.map((t) => (
+          {task.contexts.map((c) => (
             <Badge
-              key={t.id}
+              key={c.id}
               variant="outline"
               className="text-xs"
-              style={t.color ? { backgroundColor: t.color, color: "white", borderColor: t.color } : undefined}
+              style={
+                c.color ? { backgroundColor: c.color, color: "white", borderColor: c.color } : undefined
+              }
             >
-              {t.name}
+              {c.name}
             </Badge>
           ))}
         </div>

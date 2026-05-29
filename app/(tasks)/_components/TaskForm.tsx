@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,23 +24,23 @@ import {
 } from "@/components/ui/select";
 import { createTask } from "../_actions/tasks";
 import { RecurrenceEditor } from "./RecurrenceEditor";
-import type { RecurrenceRule } from "@/db/schema/tasks";
+import { DateField } from "./DateField";
+import type { RecurrenceRule, TaskStatus } from "@/db/schema/tasks";
+import { taskStatusLabel } from "@/db/schema/tasks";
 
 export type ProjectOption = { id: string; name: string };
+export type PriorityOption = { id: string; name: string };
 
-const priorityOptions = [
-  { value: "0", label: "None" },
-  { value: "1", label: "Low" },
-  { value: "2", label: "Medium" },
-  { value: "3", label: "High" },
-];
+const statusOptions: TaskStatus[] = ["backlog", "in_progress", "waiting_for", "done", "canceled"];
 
 export function TaskForm({
   projects,
+  priorities,
   defaultProjectId,
   label = "New task",
 }: {
   projects: ProjectOption[];
+  priorities: PriorityOption[];
   defaultProjectId?: string;
   label?: string;
 }) {
@@ -48,8 +48,14 @@ export function TaskForm({
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [projectId, setProjectId] = useState<string | undefined>(defaultProjectId);
-  const [priority, setPriority] = useState<string>("0");
-  const [dueLocal, setDueLocal] = useState<string>("");
+  const [priorityId, setPriorityId] = useState<string | undefined>(undefined);
+  const [status, setStatus] = useState<TaskStatus>("backlog");
+  const [actionAt, setActionAt] = useState<Date | null>(null);
+  const [actionWithTime, setActionWithTime] = useState(false);
+  const [actionEndAt, setActionEndAt] = useState<Date | null>(null);
+  const [showActionEnd, setShowActionEnd] = useState(false);
+  const [dueAt, setDueAt] = useState<Date | null>(null);
+  const [dueWithTime, setDueWithTime] = useState(false);
   const [recurrence, setRecurrence] = useState<RecurrenceRule | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -57,8 +63,14 @@ export function TaskForm({
     setTitle("");
     setNotes("");
     setProjectId(defaultProjectId);
-    setPriority("0");
-    setDueLocal("");
+    setPriorityId(undefined);
+    setStatus("backlog");
+    setActionAt(null);
+    setActionWithTime(false);
+    setActionEndAt(null);
+    setShowActionEnd(false);
+    setDueAt(null);
+    setDueWithTime(false);
     setRecurrence(null);
   }
 
@@ -70,8 +82,11 @@ export function TaskForm({
         title: trimmed,
         notes: notes.trim() || undefined,
         projectId: projectId ?? undefined,
-        priority: Number(priority),
-        dueAt: dueLocal ? new Date(dueLocal) : undefined,
+        priorityId: priorityId ?? undefined,
+        status,
+        actionAt: actionAt ?? undefined,
+        actionEndAt: showActionEnd && actionEndAt ? actionEndAt : undefined,
+        dueAt: dueAt ?? undefined,
         recurrence,
       });
       if (!r.ok) {
@@ -120,26 +135,87 @@ export function TaskForm({
               rows={3}
             />
           </div>
+          <div className="space-y-2 rounded-md border p-3">
+            <div className="flex items-center justify-between">
+              <Label>Action</Label>
+              {!showActionEnd ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowActionEnd(true)}
+                >
+                  + End date
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowActionEnd(false);
+                    setActionEndAt(null);
+                  }}
+                >
+                  <X className="h-3 w-3" /> End
+                </Button>
+              )}
+            </div>
+            <DateField
+              value={actionAt}
+              onChange={setActionAt}
+              withTime={actionWithTime}
+              onToggleTime={setActionWithTime}
+            />
+            {showActionEnd && (
+              <DateField
+                value={actionEndAt}
+                onChange={setActionEndAt}
+                withTime={actionWithTime}
+                onToggleTime={setActionWithTime}
+              />
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="task-due">Due</Label>
+            <DateField
+              value={dueAt}
+              onChange={setDueAt}
+              withTime={dueWithTime}
+              onToggleTime={setDueWithTime}
+              id="task-due"
+            />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="task-due">Due</Label>
-              <Input
-                id="task-due"
-                type="datetime-local"
-                value={dueLocal}
-                onChange={(e) => setDueLocal(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Priority</Label>
-              <Select value={priority} onValueChange={setPriority}>
+              <Label>Status</Label>
+              <Select value={status} onValueChange={(v) => setStatus(v as TaskStatus)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {priorityOptions.map((p) => (
-                    <SelectItem key={p.value} value={p.value}>
-                      {p.label}
+                  {statusOptions.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {taskStatusLabel[s]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Priority</Label>
+              <Select
+                value={priorityId ?? "none"}
+                onValueChange={(v) => setPriorityId(v === "none" ? undefined : v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="None" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {priorities.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -165,7 +241,7 @@ export function TaskForm({
               </SelectContent>
             </Select>
           </div>
-          <RecurrenceEditor value={recurrence} onChange={setRecurrence} />
+          <RecurrenceEditor value={recurrence} onChange={setRecurrence} dueAt={dueAt} />
           <DialogFooter>
             <Button type="submit" disabled={pending || !title.trim()}>
               Create

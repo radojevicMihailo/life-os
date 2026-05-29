@@ -23,9 +23,18 @@ describe("createTaskSchema", () => {
     ).toBe(false);
   });
 
-  it("rejects out-of-range priority", () => {
-    expect(createTaskSchema.safeParse({ title: "x", priority: 4 }).success).toBe(false);
-    expect(createTaskSchema.safeParse({ title: "x", priority: -1 }).success).toBe(false);
+  it("rejects non-uuid priorityId", () => {
+    expect(
+      createTaskSchema.safeParse({ title: "x", priorityId: "not-a-uuid" }).success,
+    ).toBe(false);
+  });
+
+  it("accepts valid status", () => {
+    expect(createTaskSchema.safeParse({ title: "x", status: "in_progress" }).success).toBe(true);
+  });
+
+  it("rejects invalid status", () => {
+    expect(createTaskSchema.safeParse({ title: "x", status: "bogus" }).success).toBe(false);
   });
 });
 

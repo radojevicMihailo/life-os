@@ -5,7 +5,7 @@ import { TaskList } from "./(tasks)/_components/TaskList";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const all = await fetchTasks({ status: "open" });
+  const all = await fetchTasks({ status: "active" });
 
   const now = new Date();
   const today = startOfDay(now);

@@ -3,11 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { task } from "@/db/schema/tasks";
+import { task, type TaskStatus } from "@/db/schema/tasks";
 import { nextOccurrence } from "@/lib/recurrence";
 import {
   createTaskSchema,
   updateTaskSchema,
+  taskStatusSchema,
   type CreateTaskInput,
   type UpdateTaskInput,
 } from "@/lib/validation/tasks";
@@ -23,6 +24,7 @@ function fail(error: string): ActionResult<never> {
 function revalidateTaskRoutes() {
   revalidatePath("/");
   revalidatePath("/tasks");
+  revalidatePath("/projects");
 }
 
 export async function createTask(
@@ -38,7 +40,10 @@ export async function createTask(
       notes: parsed.data.notes ?? null,
       projectId: parsed.data.projectId ?? null,
       parentTaskId: parsed.data.parentTaskId ?? null,
-      priority: parsed.data.priority ?? 0,
+      priorityId: parsed.data.priorityId ?? null,
+      status: parsed.data.status ?? "backlog",
+      actionAt: parsed.data.actionAt ?? null,
+      actionEndAt: parsed.data.actionEndAt ?? null,
       dueAt: parsed.data.dueAt ?? null,
       recurrence: parsed.data.recurrence ?? null,
     })
@@ -62,15 +67,21 @@ export async function updateTask(input: UpdateTaskInput): Promise<ActionResult> 
   return { ok: true, data: undefined };
 }
 
-export async function toggleTask(id: string): Promise<ActionResult> {
+export async function setTaskStatus(id: string, status: TaskStatus): Promise<ActionResult> {
+  const parsed = taskStatusSchema.safeParse(status);
+  if (!parsed.success) return fail("Invalid status");
+
   const existing = await db.query.task.findFirst({ where: eq(task.id, id) });
   if (!existing) return fail("Task not found");
 
   const now = new Date();
 
-  if (!existing.completedAt && existing.recurrence) {
-    const fromDate = existing.dueAt ?? now;
+  if (status === "done" && existing.status !== "done" && existing.recurrence) {
+    const fromDate = existing.dueAt ?? existing.actionAt ?? now;
     const next = nextOccurrence(existing.recurrence, fromDate);
+    const nextAction = existing.actionAt
+      ? nextOccurrence(existing.recurrence, existing.actionAt)
+      : null;
 
     await db.transaction(async (tx) => {
       await tx.insert(task).values({
@@ -78,14 +89,19 @@ export async function toggleTask(id: string): Promise<ActionResult> {
         notes: existing.notes,
         projectId: existing.projectId,
         parentTaskId: existing.parentTaskId,
-        priority: existing.priority,
+        priorityId: existing.priorityId,
+        status: "done",
+        actionAt: existing.actionAt,
         dueAt: existing.dueAt,
-        completedAt: now,
         recurrenceParentId: existing.id,
       });
       await tx
         .update(task)
-        .set({ dueAt: next, updatedAt: sql`now()` })
+        .set({
+          dueAt: next,
+          actionAt: nextAction,
+          updatedAt: sql`now()`,
+        })
         .where(eq(task.id, id));
     });
 
@@ -95,14 +111,17 @@ export async function toggleTask(id: string): Promise<ActionResult> {
 
   await db
     .update(task)
-    .set({
-      completedAt: existing.completedAt ? null : now,
-      updatedAt: sql`now()`,
-    })
+    .set({ status, updatedAt: sql`now()` })
     .where(eq(task.id, id));
 
   revalidateTaskRoutes();
   return { ok: true, data: undefined };
+}
+
+export async function toggleTask(id: string): Promise<ActionResult> {
+  const existing = await db.query.task.findFirst({ where: eq(task.id, id) });
+  if (!existing) return fail("Task not found");
+  return setTaskStatus(id, existing.status === "done" ? "backlog" : "done");
 }
 
 export async function deleteTask(id: string): Promise<ActionResult> {

@@ -10,15 +10,29 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { RecurrenceRule } from "@/db/schema/tasks";
+import { nextOccurrence } from "@/lib/recurrence";
+import { format } from "date-fns";
 
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function previewOccurrences(rule: RecurrenceRule, from: Date, count: number): Date[] {
+  const out: Date[] = [];
+  let cursor = from;
+  for (let i = 0; i < count; i++) {
+    cursor = nextOccurrence(rule, cursor);
+    out.push(cursor);
+  }
+  return out;
+}
 
 export function RecurrenceEditor({
   value,
   onChange,
+  dueAt,
 }: {
   value: RecurrenceRule | null;
   onChange: (value: RecurrenceRule | null) => void;
+  dueAt?: Date | null;
 }) {
   const enabled = value != null;
   const freq = value?.freq ?? "daily";
@@ -84,6 +98,11 @@ export function RecurrenceEditor({
               {freq === "daily" ? "day(s)" : freq === "weekly" ? "week(s)" : "month(s)"}
             </span>
           </div>
+          {value && (
+            <div className="text-xs text-muted-foreground">
+              Next: {previewOccurrences(value, dueAt ?? new Date(), 3).map((d) => format(d, "MMM d")).join(" → ")}
+            </div>
+          )}
           {freq === "weekly" && (
             <div className="flex flex-wrap gap-1">
               {weekdays.map((label, idx) => {

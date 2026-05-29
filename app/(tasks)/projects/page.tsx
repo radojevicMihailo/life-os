@@ -12,7 +12,8 @@ export default async function ProjectsPage() {
       id: project.id,
       name: project.name,
       archivedAt: project.archivedAt,
-      taskCount: sql<number>`(SELECT COUNT(*) FROM ${task} WHERE ${task.projectId} = ${project.id})`,
+      doneCount: sql<number>`(SELECT COUNT(*) FROM ${task} WHERE ${task.projectId} = ${project.id} AND ${task.status} = 'done')`,
+      totalCount: sql<number>`(SELECT COUNT(*) FROM ${task} WHERE ${task.projectId} = ${project.id})`,
     })
     .from(project)
     .orderBy(asc(project.archivedAt), asc(project.name));
@@ -36,7 +37,8 @@ export default async function ProjectsPage() {
               id={p.id}
               name={p.name}
               archived={p.archivedAt != null}
-              taskCount={Number(p.taskCount)}
+              doneCount={Number(p.doneCount)}
+              totalCount={Number(p.totalCount)}
             />
           ))}
         </div>

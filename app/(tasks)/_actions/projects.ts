@@ -34,7 +34,12 @@ export async function createProject(
 
   const [row] = await db
     .insert(project)
-    .values({ name: parsed.data.name })
+    .values({
+      name: parsed.data.name,
+      status: parsed.data.status ?? "active",
+      startAt: parsed.data.startAt ?? null,
+      dueAt: parsed.data.dueAt ?? null,
+    })
     .returning({ id: project.id });
 
   revalidateAll();
@@ -44,12 +49,15 @@ export async function createProject(
 export async function updateProject(input: UpdateProjectInput): Promise<ActionResult> {
   const parsed = updateProjectSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
-  const { id, archived, name } = parsed.data;
+  const { id, archived, name, status, startAt, dueAt } = parsed.data;
 
   await db
     .update(project)
     .set({
       ...(name !== undefined ? { name } : {}),
+      ...(status !== undefined ? { status } : {}),
+      ...(startAt !== undefined ? { startAt } : {}),
+      ...(dueAt !== undefined ? { dueAt } : {}),
       ...(archived !== undefined ? { archivedAt: archived ? new Date() : null } : {}),
       updatedAt: sql`now()`,
     })

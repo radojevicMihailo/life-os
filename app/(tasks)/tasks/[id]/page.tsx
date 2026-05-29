@@ -2,10 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { project, tag, task, taskTag } from "@/db/schema/tasks";
+import { context, project, task, taskContext } from "@/db/schema/tasks";
 import { TaskRow } from "../../_components/TaskRow";
 import { SubtaskAdd } from "../../_components/SubtaskAdd";
-import { TaskTagsEditor } from "../../_components/TaskTagsEditor";
+import { TaskContextsEditor } from "../../_components/TaskContextsEditor";
+import { TaskDetailEditor } from "../../_components/TaskDetailEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -19,15 +20,18 @@ export default async function TaskDetailPage({
   const t = await db.query.task.findFirst({ where: eq(task.id, id) });
   if (!t) notFound();
 
-  const [proj, subtasks, allTags, attachedLinks] = await Promise.all([
+  const [proj, subtasks, allContexts, attachedLinks] = await Promise.all([
     t.projectId
       ? db.query.project.findFirst({ where: eq(project.id, t.projectId) })
       : Promise.resolve(null),
     db.select().from(task).where(eq(task.parentTaskId, id)).orderBy(asc(task.createdAt)),
-    db.select().from(tag).orderBy(asc(tag.name)),
-    db.select({ tagId: taskTag.tagId }).from(taskTag).where(eq(taskTag.taskId, id)),
+    db.select().from(context).orderBy(asc(context.name)),
+    db
+      .select({ contextId: taskContext.contextId })
+      .from(taskContext)
+      .where(eq(taskContext.taskId, id)),
   ]);
-  const attachedTagIds = attachedLinks.map((l) => l.tagId);
+  const attachedContextIds = attachedLinks.map((l) => l.contextId);
 
   return (
     <div className="space-y-8">
@@ -51,11 +55,23 @@ export default async function TaskDetailPage({
         )}
       </header>
 
+      <TaskDetailEditor
+        taskId={t.id}
+        status={t.status}
+        actionAt={t.actionAt}
+        actionEndAt={t.actionEndAt}
+        dueAt={t.dueAt}
+      />
+
       <section className="space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Tags
+          Context
         </h2>
-        <TaskTagsEditor taskId={t.id} allTags={allTags} attachedTagIds={attachedTagIds} />
+        <TaskContextsEditor
+          taskId={t.id}
+          allContexts={allContexts}
+          attachedContextIds={attachedContextIds}
+        />
       </section>
 
       <section className="space-y-3">

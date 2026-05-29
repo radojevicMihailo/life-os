@@ -4,39 +4,39 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 
-export function TagFilter({
-  tags,
+export function ContextFilter({
+  contexts,
 }: {
-  tags: { id: string; name: string; color: string | null }[];
+  contexts: { id: string; name: string; color: string | null }[];
 }) {
   const params = useSearchParams();
-  const active = params.get("tag");
+  const active = params.get("context");
 
   function withParam(value: string | null): string {
     const next = new URLSearchParams(params.toString());
-    if (value) next.set("tag", value);
-    else next.delete("tag");
+    if (value) next.set("context", value);
+    else next.delete("context");
     const q = next.toString();
     return q ? `/tasks?${q}` : `/tasks`;
   }
 
-  if (tags.length === 0) return null;
+  if (contexts.length === 0) return null;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-xs uppercase tracking-wide text-muted-foreground">Tag:</span>
+      <span className="text-xs uppercase tracking-wide text-muted-foreground">Context:</span>
       <Link href={withParam(null)}>
         <Badge variant={active ? "outline" : "default"}>All</Badge>
       </Link>
-      {tags.map((t) => (
-        <Link key={t.id} href={withParam(t.id)}>
+      {contexts.map((c) => (
+        <Link key={c.id} href={withParam(c.id)}>
           <Badge
-            variant={active === t.id ? "default" : "outline"}
+            variant={active === c.id ? "default" : "outline"}
             style={
-              t.color && active === t.id ? { backgroundColor: t.color, color: "white" } : undefined
+              c.color && active === c.id ? { backgroundColor: c.color, color: "white" } : undefined
             }
           >
-            {t.name}
+            {c.name}
           </Badge>
         </Link>
       ))}

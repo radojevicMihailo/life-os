@@ -1,22 +1,24 @@
 import { format, isToday, isTomorrow, isYesterday, isThisYear } from "date-fns";
+import { hasTimeComponent } from "@/lib/date-input";
 
-export function formatDueDate(d: Date): string {
-  if (isToday(d)) return `Today ${format(d, "HH:mm")}`;
-  if (isTomorrow(d)) return `Tomorrow ${format(d, "HH:mm")}`;
-  if (isYesterday(d)) return `Yesterday ${format(d, "HH:mm")}`;
-  return format(d, isThisYear(d) ? "MMM d HH:mm" : "MMM d yyyy");
+export function formatTaskDate(d: Date, withTime?: boolean): string {
+  const showTime = withTime ?? hasTimeComponent(d);
+  const dateLabel = isToday(d)
+    ? "Today"
+    : isTomorrow(d)
+      ? "Tomorrow"
+      : isYesterday(d)
+        ? "Yesterday"
+        : format(d, isThisYear(d) ? "MMM d" : "MMM d yyyy");
+  return showTime ? `${dateLabel} ${format(d, "HH:mm")}` : dateLabel;
 }
 
-export const priorityLabel: Record<number, string> = {
-  0: "None",
-  1: "Low",
-  2: "Medium",
-  3: "High",
-};
+export function formatDateRange(start: Date, end: Date | null): string {
+  if (!end) return formatTaskDate(start);
+  const startStr = formatTaskDate(start);
+  const endStr = formatTaskDate(end);
+  if (startStr === endStr) return startStr;
+  return `${startStr} → ${endStr}`;
+}
 
-export const priorityColor: Record<number, string> = {
-  0: "transparent",
-  1: "#64748b",
-  2: "#f59e0b",
-  3: "#ef4444",
-};
+export const formatDueDate = formatTaskDate;

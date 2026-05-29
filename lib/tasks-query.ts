@@ -1,66 +1,78 @@
 import "server-only";
-import { and, desc, eq, inArray, isNull, isNotNull, type SQL } from "drizzle-orm";
+import { and, desc, eq, inArray, ne, type SQL } from "drizzle-orm";
 import { db } from "@/db";
-import { project, tag, task, taskTag } from "@/db/schema/tasks";
+import { context, priority, project, task, taskContext } from "@/db/schema/tasks";
+import type { TaskStatus } from "@/db/schema/tasks";
 import type { TaskWithMeta } from "@/app/(tasks)/_components/TaskRow";
 
 export type TaskFilters = {
-  status?: "open" | "done" | "all";
+  status?: TaskStatus | "active" | "all";
   projectId?: string;
-  tagId?: string;
-  priority?: number;
+  contextId?: string;
+  priorityId?: string;
 };
 
 export async function fetchTasks(filters: TaskFilters = {}): Promise<TaskWithMeta[]> {
   const conditions: SQL[] = [];
-  const status = filters.status ?? "open";
-  if (status === "open") conditions.push(isNull(task.completedAt));
-  else if (status === "done") conditions.push(isNotNull(task.completedAt));
+  const status = filters.status ?? "active";
+  if (status === "active") {
+    conditions.push(ne(task.status, "done"));
+    conditions.push(ne(task.status, "canceled"));
+  } else if (status !== "all") {
+    conditions.push(eq(task.status, status));
+  }
   if (filters.projectId) conditions.push(eq(task.projectId, filters.projectId));
-  if (typeof filters.priority === "number") conditions.push(eq(task.priority, filters.priority));
+  if (filters.priorityId) conditions.push(eq(task.priorityId, filters.priorityId));
 
-  let taskIdsForTag: string[] | null = null;
-  if (filters.tagId) {
+  if (filters.contextId) {
     const links = await db
-      .select({ taskId: taskTag.taskId })
-      .from(taskTag)
-      .where(eq(taskTag.tagId, filters.tagId));
-    taskIdsForTag = links.map((l) => l.taskId);
-    if (taskIdsForTag.length === 0) return [];
-    conditions.push(inArray(task.id, taskIdsForTag));
+      .select({ taskId: taskContext.taskId })
+      .from(taskContext)
+      .where(eq(taskContext.contextId, filters.contextId));
+    const ids = links.map((l) => l.taskId);
+    if (ids.length === 0) return [];
+    conditions.push(inArray(task.id, ids));
   }
 
   const rows = await db
-    .select({ task, projectName: project.name })
+    .select({
+      task,
+      projectName: project.name,
+      priorityName: priority.name,
+      priorityColor: priority.color,
+    })
     .from(task)
     .leftJoin(project, eq(task.projectId, project.id))
+    .leftJoin(priority, eq(task.priorityId, priority.id))
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(task.createdAt));
 
   if (rows.length === 0) return [];
 
   const ids = rows.map((r) => r.task.id);
-  const tagLinks = await db
+  const contextLinks = await db
     .select({
-      taskId: taskTag.taskId,
-      id: tag.id,
-      name: tag.name,
-      color: tag.color,
+      taskId: taskContext.taskId,
+      id: context.id,
+      name: context.name,
+      color: context.color,
     })
-    .from(taskTag)
-    .innerJoin(tag, eq(taskTag.tagId, tag.id))
-    .where(inArray(taskTag.taskId, ids));
+    .from(taskContext)
+    .innerJoin(context, eq(taskContext.contextId, context.id))
+    .where(inArray(taskContext.taskId, ids));
 
-  const tagsByTask = new Map<string, { id: string; name: string; color: string | null }[]>();
-  for (const t of tagLinks) {
-    const list = tagsByTask.get(t.taskId) ?? [];
-    list.push({ id: t.id, name: t.name, color: t.color });
-    tagsByTask.set(t.taskId, list);
+  const ctxByTask = new Map<string, { id: string; name: string; color: string | null }[]>();
+  for (const c of contextLinks) {
+    const list = ctxByTask.get(c.taskId) ?? [];
+    list.push({ id: c.id, name: c.name, color: c.color });
+    ctxByTask.set(c.taskId, list);
   }
 
   return rows.map((r) => ({
     ...r.task,
     projectName: r.projectName,
-    tags: tagsByTask.get(r.task.id) ?? [],
+    priorityName: r.priorityName,
+    priorityColor: r.priorityColor,
+    contexts: ctxByTask.get(r.task.id) ?? [],
   }));
 }
