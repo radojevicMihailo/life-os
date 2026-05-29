@@ -37,6 +37,7 @@ export async function createPriority(
       .values({
         name: parsed.data.name,
         color: parsed.data.color ?? null,
+        ...(parsed.data.rank !== undefined ? { rank: parsed.data.rank } : {}),
       })
       .returning({ id: priority.id });
     revalidateAll();
