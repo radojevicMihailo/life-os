@@ -2,17 +2,17 @@ import { asc, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { context, priority, project } from "@/db/schema/tasks";
 import { QuickAdd } from "../_components/QuickAdd";
-import { TaskList } from "../_components/TaskList";
+import { TasksTriageShell } from "../_components/TasksTriageShell";
 import { TaskForm } from "../_components/TaskForm";
 import { ContextFilter } from "../_components/ContextFilter";
 import { StatusFilter } from "../_components/StatusFilter";
 import { PriorityFilter } from "../_components/PriorityFilter";
-import { fetchTasks, type TaskFilters } from "@/lib/tasks-query";
-import type { TaskStatus } from "@/db/schema/tasks";
+import { fetchTasks, type TaskFilters, type TaskSort } from "@/lib/tasks-query";
+import type { TaskListView } from "../_components/TaskList";
 
 export const dynamic = "force-dynamic";
 
-const allStatuses = new Set<string>([
+const STATUSES = new Set<string>([
   "active",
   "all",
   "backlog",
@@ -22,17 +22,37 @@ const allStatuses = new Set<string>([
   "done",
 ]);
 
-function parseFilters(sp: Record<string, string | string[] | undefined>): TaskFilters {
+const SORTS = new Set<TaskSort>(["smart", "due", "created", "title"]);
+const VIEWS = new Set<TaskListView>(["grouped", "flat"]);
+
+function parseFilters(sp: Record<string, string | string[] | undefined>): {
+  filters: TaskFilters;
+  view: TaskListView;
+  sort: TaskSort;
+} {
   const get = (k: string) => {
     const v = sp[k];
     return Array.isArray(v) ? v[0] : v;
   };
-  const status = get("status");
+  const statusRaw = get("status");
+  const sortRaw = get("sort");
+  const viewRaw = get("view");
+
+  const sort: TaskSort = sortRaw && SORTS.has(sortRaw as TaskSort) ? (sortRaw as TaskSort) : "smart";
+  const view: TaskListView =
+    viewRaw && VIEWS.has(viewRaw as TaskListView) ? (viewRaw as TaskListView) : "grouped";
+
   return {
-    status: status && allStatuses.has(status) ? (status as TaskFilters["status"]) : "active",
-    projectId: get("project") || undefined,
-    contextId: get("context") || undefined,
-    priorityId: get("priority") || undefined,
+    filters: {
+      status: statusRaw && STATUSES.has(statusRaw) ? (statusRaw as TaskFilters["status"]) : "active",
+      projectId: get("project") || undefined,
+      contextId: get("context") || undefined,
+      priorityId: get("priority") || undefined,
+      parentTaskId: null,
+      sort,
+    },
+    view,
+    sort,
   };
 }
 
@@ -42,7 +62,7 @@ export default async function TasksPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
-  const filters = parseFilters(sp);
+  const { filters, view, sort } = parseFilters(sp);
 
   const [tasks, projects, contexts, priorities] = await Promise.all([
     fetchTasks(filters),
@@ -55,7 +75,7 @@ export default async function TasksPage({
     db
       .select({ id: priority.id, name: priority.name, color: priority.color })
       .from(priority)
-      .orderBy(asc(priority.name)),
+      .orderBy(asc(priority.rank)),
   ]);
 
   return (
@@ -73,7 +93,7 @@ export default async function TasksPage({
         <PriorityFilter priorities={priorities} />
         <ContextFilter contexts={contexts} />
       </div>
-      <TaskList tasks={tasks} />
+      <TasksTriageShell tasks={tasks} view={view} sort={sort} />
     </div>
   );
 }

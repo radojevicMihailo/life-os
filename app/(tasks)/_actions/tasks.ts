@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { task, type TaskStatus } from "@/db/schema/tasks";
@@ -12,6 +11,7 @@ import {
   type CreateTaskInput,
   type UpdateTaskInput,
 } from "@/lib/validation/tasks";
+import { revalidateTaskRoutes } from "./_revalidate";
 
 type ActionResult<T = void> =
   | { ok: true; data: T }
@@ -19,12 +19,6 @@ type ActionResult<T = void> =
 
 function fail(error: string): ActionResult<never> {
   return { ok: false, error };
-}
-
-function revalidateTaskRoutes() {
-  revalidatePath("/");
-  revalidatePath("/tasks");
-  revalidatePath("/projects");
 }
 
 export async function createTask(
@@ -63,7 +57,7 @@ export async function updateTask(input: UpdateTaskInput): Promise<ActionResult> 
     .set({ ...patch, updatedAt: sql`now()` })
     .where(eq(task.id, id));
 
-  revalidateTaskRoutes();
+  revalidateTaskRoutes({ taskId: id });
   return { ok: true, data: undefined };
 }
 
@@ -114,7 +108,7 @@ export async function setTaskStatus(id: string, status: TaskStatus): Promise<Act
     .set({ status, updatedAt: sql`now()` })
     .where(eq(task.id, id));
 
-  revalidateTaskRoutes();
+  revalidateTaskRoutes({ taskId: id });
   return { ok: true, data: undefined };
 }
 
@@ -126,6 +120,6 @@ export async function toggleTask(id: string): Promise<ActionResult> {
 
 export async function deleteTask(id: string): Promise<ActionResult> {
   await db.delete(task).where(eq(task.id, id));
-  revalidateTaskRoutes();
+  revalidateTaskRoutes({ taskId: id });
   return { ok: true, data: undefined };
 }

@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { priority } from "@/db/schema/tasks";
@@ -10,6 +9,7 @@ import {
   type CreatePriorityInput,
   type UpdatePriorityInput,
 } from "@/lib/validation/priorities";
+import { revalidateTaskRoutes } from "./_revalidate";
 
 type ActionResult<T = void> =
   | { ok: true; data: T }
@@ -17,12 +17,6 @@ type ActionResult<T = void> =
 
 function fail(error: string): ActionResult<never> {
   return { ok: false, error };
-}
-
-function revalidateAll() {
-  revalidatePath("/");
-  revalidatePath("/tasks");
-  revalidatePath("/priorities");
 }
 
 export async function createPriority(
@@ -37,9 +31,10 @@ export async function createPriority(
       .values({
         name: parsed.data.name,
         color: parsed.data.color ?? null,
+        ...(parsed.data.rank !== undefined ? { rank: parsed.data.rank } : {}),
       })
       .returning({ id: priority.id });
-    revalidateAll();
+    revalidateTaskRoutes();
     return { ok: true, data: { id: row.id } };
   } catch (e) {
     if (e instanceof Error && e.message.includes("duplicate")) {
@@ -54,12 +49,12 @@ export async function updatePriority(input: UpdatePriorityInput): Promise<Action
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
   const { id, ...patch } = parsed.data;
   await db.update(priority).set(patch).where(eq(priority.id, id));
-  revalidateAll();
+  revalidateTaskRoutes();
   return { ok: true, data: undefined };
 }
 
 export async function deletePriority(id: string): Promise<ActionResult> {
   await db.delete(priority).where(eq(priority.id, id));
-  revalidateAll();
+  revalidateTaskRoutes();
   return { ok: true, data: undefined };
 }

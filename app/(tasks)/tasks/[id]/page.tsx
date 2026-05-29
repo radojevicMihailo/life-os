@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { context, project, task, taskContext } from "@/db/schema/tasks";
+import { fetchTasks } from "@/lib/tasks-query";
 import { TaskRow } from "../../_components/TaskRow";
 import { SubtaskAdd } from "../../_components/SubtaskAdd";
 import { TaskContextsEditor } from "../../_components/TaskContextsEditor";
@@ -24,7 +25,7 @@ export default async function TaskDetailPage({
     t.projectId
       ? db.query.project.findFirst({ where: eq(project.id, t.projectId) })
       : Promise.resolve(null),
-    db.select().from(task).where(eq(task.parentTaskId, id)).orderBy(asc(task.createdAt)),
+    fetchTasks({ parentTaskId: id, status: "all", sort: "created" }),
     db.select().from(context).orderBy(asc(context.name)),
     db
       .select({ contextId: taskContext.contextId })
