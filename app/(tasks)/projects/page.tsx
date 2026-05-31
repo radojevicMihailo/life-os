@@ -1,4 +1,4 @@
-import { asc, sql } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { project, task } from "@/db/schema/tasks";
 import { ProjectForm } from "../_components/ProjectForm";
@@ -12,10 +12,12 @@ export default async function ProjectsPage() {
       id: project.id,
       name: project.name,
       archivedAt: project.archivedAt,
-      doneCount: sql<number>`(SELECT COUNT(*) FROM ${task} WHERE ${task.projectId} = ${project.id} AND ${task.status} = 'done')`,
-      totalCount: sql<number>`(SELECT COUNT(*) FROM ${task} WHERE ${task.projectId} = ${project.id})`,
+      doneCount: sql<number>`COUNT(${task.id}) FILTER (WHERE ${task.status} = 'done')`,
+      totalCount: sql<number>`COUNT(${task.id})`,
     })
     .from(project)
+    .leftJoin(task, eq(task.projectId, project.id))
+    .groupBy(project.id)
     .orderBy(asc(project.archivedAt), asc(project.name));
 
   return (

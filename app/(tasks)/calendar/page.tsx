@@ -22,6 +22,7 @@ export default async function CalendarPage() {
       });
     }
     if (action) {
+      const actionEnd = t.actionEndAt ? new Date(t.actionEndAt) : null;
       items.push({
         id: `${t.id}:action`,
         taskId: t.id,
@@ -29,6 +30,7 @@ export default async function CalendarPage() {
         status: t.status,
         kind: "action",
         dateISO: action.toISOString(),
+        endISO: actionEnd ? actionEnd.toISOString() : undefined,
         hasTime: action.getHours() !== 0 || action.getMinutes() !== 0,
       });
     }

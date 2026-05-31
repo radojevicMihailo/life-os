@@ -22,7 +22,7 @@ const marcellus = Marcellus({
 });
 
 export const metadata: Metadata = {
-  title: "Life-OS",
+  title: "Life OS",
   description: "Personal life tracker",
 };
 

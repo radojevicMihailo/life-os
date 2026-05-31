@@ -85,7 +85,7 @@ export default async function TasksPage({
           <h1 className="text-2xl font-semibold tracking-tight">Tasks</h1>
           <p className="text-sm text-muted-foreground">{tasks.length} shown</p>
         </div>
-        <TaskForm projects={projects} priorities={priorities} />
+        <TaskForm projects={projects} priorities={priorities} contexts={contexts} />
       </header>
       <QuickAdd />
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">

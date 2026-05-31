@@ -30,17 +30,20 @@ import { taskStatusLabel } from "@/db/schema/tasks";
 
 export type ProjectOption = { id: string; name: string };
 export type PriorityOption = { id: string; name: string };
+export type ContextOption = { id: string; name: string; color: string | null };
 
 const statusOptions: TaskStatus[] = ["backlog", "in_progress", "waiting_for", "done", "canceled"];
 
 export function TaskForm({
   projects,
   priorities,
+  contexts = [],
   defaultProjectId,
   label = "New task",
 }: {
   projects: ProjectOption[];
   priorities: PriorityOption[];
+  contexts?: ContextOption[];
   defaultProjectId?: string;
   label?: string;
 }) {
@@ -57,6 +60,7 @@ export function TaskForm({
   const [dueAt, setDueAt] = useState<Date | null>(null);
   const [dueWithTime, setDueWithTime] = useState(false);
   const [recurrence, setRecurrence] = useState<RecurrenceRule | null>(null);
+  const [contextId, setContextId] = useState<string | undefined>(undefined);
   const [pending, startTransition] = useTransition();
 
   function reset() {
@@ -72,6 +76,7 @@ export function TaskForm({
     setDueAt(null);
     setDueWithTime(false);
     setRecurrence(null);
+    setContextId(undefined);
   }
 
   function submit() {
@@ -88,6 +93,7 @@ export function TaskForm({
         actionEndAt: showActionEnd && actionEndAt ? actionEndAt : undefined,
         dueAt: dueAt ?? undefined,
         recurrence,
+        contextIds: contextId ? [contextId] : undefined,
       });
       if (!r.ok) {
         toast.error(r.error);
@@ -186,41 +192,39 @@ export function TaskForm({
               id="task-due"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>Status</Label>
-              <Select value={status} onValueChange={(v) => setStatus(v as TaskStatus)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {statusOptions.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {taskStatusLabel[s]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Priority</Label>
-              <Select
-                value={priorityId ?? "none"}
-                onValueChange={(v) => setPriorityId(v === "none" ? undefined : v)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="None" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {priorities.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-1.5">
+            <Label>Status</Label>
+            <Select value={status} onValueChange={(v) => setStatus(v as TaskStatus)}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {taskStatusLabel[s]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Priority</Label>
+            <Select
+              value={priorityId ?? "none"}
+              onValueChange={(v) => setPriorityId(v === "none" ? undefined : v)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="None" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {priorities.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1.5">
             <Label>Project</Label>
@@ -228,7 +232,7 @@ export function TaskForm({
               value={projectId ?? "none"}
               onValueChange={(v) => setProjectId(v === "none" ? undefined : v)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="None" />
               </SelectTrigger>
               <SelectContent>
@@ -241,6 +245,27 @@ export function TaskForm({
               </SelectContent>
             </Select>
           </div>
+          {contexts.length > 0 && (
+            <div className="space-y-1.5">
+              <Label>Context</Label>
+              <Select
+                value={contextId ?? "none"}
+                onValueChange={(v) => setContextId(v === "none" ? undefined : v)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="None" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {contexts.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <RecurrenceEditor value={recurrence} onChange={setRecurrence} dueAt={dueAt} />
           <DialogFooter>
             <Button type="submit" disabled={pending || !title.trim()}>

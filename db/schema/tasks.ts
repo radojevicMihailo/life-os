@@ -54,7 +54,7 @@ export const projectStatusLabel: Record<ProjectStatus, string> = {
   canceled: "Canceled",
 };
 
-export const project = pgTable("project", {
+export const project = pgTable("projects", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   parentId: uuid("parent_id").references((): AnyPgColumn => project.id, { onDelete: "set null" }),
@@ -66,7 +66,7 @@ export const project = pgTable("project", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
 });
 
-export const priority = pgTable("priority", {
+export const priority = pgTable("priorities", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull().unique(),
   color: text("color"),
@@ -75,7 +75,7 @@ export const priority = pgTable("priority", {
 });
 
 export const task = pgTable(
-  "task",
+  "tasks",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     title: text("title").notNull(),
@@ -106,14 +106,14 @@ export const task = pgTable(
   ],
 );
 
-export const context = pgTable("context", {
+export const context = pgTable("contexts", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull().unique(),
   color: text("color"),
 });
 
 export const taskContext = pgTable(
-  "task_context",
+  "task_contexts",
   {
     taskId: uuid("task_id")
       .notNull()

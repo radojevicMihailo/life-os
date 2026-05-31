@@ -1,12 +1,12 @@
-# Life-OS Task Manager — Design
+# Life OS Task Manager — Design
 
 **Date:** 2026-05-28
 **Status:** Approved (design phase)
-**Module:** Task Manager (first module of Life-OS)
+**Module:** Task Manager (first module of Life OS)
 
 ## Purpose
 
-Life-OS is a personal web app for tracking every part of life. The task manager is the first module. It must work standalone and leave room for additional modules (habits, finance, journal, etc.) to be added later without restructuring.
+Life OS is a personal web app for tracking every part of life. The task manager is the first module. It must work standalone and leave room for additional modules (habits, finance, journal, etc.) to be added later without restructuring.
 
 ## Goals
 

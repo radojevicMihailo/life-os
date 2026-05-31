@@ -2,7 +2,7 @@
 
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { task, type TaskStatus } from "@/db/schema/tasks";
+import { task, taskContext, type TaskStatus } from "@/db/schema/tasks";
 import { nextOccurrence } from "@/lib/recurrence";
 import {
   createTaskSchema,
@@ -27,24 +27,35 @@ export async function createTask(
   const parsed = createTaskSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
 
-  const [row] = await db
-    .insert(task)
-    .values({
-      title: parsed.data.title,
-      notes: parsed.data.notes ?? null,
-      projectId: parsed.data.projectId ?? null,
-      parentTaskId: parsed.data.parentTaskId ?? null,
-      priorityId: parsed.data.priorityId ?? null,
-      status: parsed.data.status ?? "backlog",
-      actionAt: parsed.data.actionAt ?? null,
-      actionEndAt: parsed.data.actionEndAt ?? null,
-      dueAt: parsed.data.dueAt ?? null,
-      recurrence: parsed.data.recurrence ?? null,
-    })
-    .returning({ id: task.id });
+  const contextIds = parsed.data.contextIds ?? [];
+
+  const id = await db.transaction(async (tx) => {
+    const [row] = await tx
+      .insert(task)
+      .values({
+        title: parsed.data.title,
+        notes: parsed.data.notes ?? null,
+        projectId: parsed.data.projectId ?? null,
+        parentTaskId: parsed.data.parentTaskId ?? null,
+        priorityId: parsed.data.priorityId ?? null,
+        status: parsed.data.status ?? "backlog",
+        actionAt: parsed.data.actionAt ?? null,
+        actionEndAt: parsed.data.actionEndAt ?? null,
+        dueAt: parsed.data.dueAt ?? null,
+        recurrence: parsed.data.recurrence ?? null,
+      })
+      .returning({ id: task.id });
+
+    if (contextIds.length > 0) {
+      await tx
+        .insert(taskContext)
+        .values(contextIds.map((contextId) => ({ taskId: row.id, contextId })));
+    }
+    return row.id;
+  });
 
   revalidateTaskRoutes();
-  return { ok: true, data: { id: row.id } };
+  return { ok: true, data: { id } };
 }
 
 export async function updateTask(input: UpdateTaskInput): Promise<ActionResult> {

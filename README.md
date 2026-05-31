@@ -1,4 +1,4 @@
-# Life-OS
+# Life OS
 
 Personal life tracker. First module: task manager.
 

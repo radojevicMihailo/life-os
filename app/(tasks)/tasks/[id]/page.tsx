@@ -8,6 +8,7 @@ import { TaskRow } from "../../_components/TaskRow";
 import { SubtaskAdd } from "../../_components/SubtaskAdd";
 import { TaskContextsEditor } from "../../_components/TaskContextsEditor";
 import { TaskDetailEditor } from "../../_components/TaskDetailEditor";
+import { EditableTitle } from "../../_components/EditableTitle";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +51,7 @@ export default async function TaskDetailPage({
             </>
           )}
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t.title}</h1>
+        <EditableTitle id={t.id} value={t.title} kind="task" />
         {t.notes && (
           <p className="whitespace-pre-wrap text-sm text-muted-foreground">{t.notes}</p>
         )}

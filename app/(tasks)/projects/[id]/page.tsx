@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { asc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { priority, project, task } from "@/db/schema/tasks";
+import { context, priority, project, task } from "@/db/schema/tasks";
 import { TaskList } from "../../_components/TaskList";
 import { TaskForm } from "../../_components/TaskForm";
 import { ProjectDetailEditor } from "../../_components/ProjectDetailEditor";
+import { EditableTitle } from "../../_components/EditableTitle";
 import { fetchTasks } from "@/lib/tasks-query";
 import { Progress } from "@/components/ui/progress";
 
@@ -20,7 +21,7 @@ export default async function ProjectDetailPage({
   const proj = await db.query.project.findFirst({ where: eq(project.id, id) });
   if (!proj) notFound();
 
-  const [tasks, projects, priorities, counts] = await Promise.all([
+  const [tasks, projects, priorities, contexts, counts] = await Promise.all([
     fetchTasks({ projectId: id, status: "all" }),
     db
       .select({ id: project.id, name: project.name })
@@ -31,6 +32,7 @@ export default async function ProjectDetailPage({
       .select({ id: priority.id, name: priority.name })
       .from(priority)
       .orderBy(asc(priority.rank)),
+    db.select().from(context).orderBy(asc(context.name)),
     db
       .select({
         total: sql<number>`COUNT(*)`,
@@ -47,10 +49,11 @@ export default async function ProjectDetailPage({
   return (
     <div className="space-y-6">
       <header className="flex items-start justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">{proj.name}</h1>
+        <EditableTitle id={proj.id} value={proj.name} kind="project" />
         <TaskForm
           projects={projects}
           priorities={priorities}
+          contexts={contexts}
           defaultProjectId={id}
           label="New task in project"
         />

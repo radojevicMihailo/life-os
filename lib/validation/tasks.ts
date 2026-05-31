@@ -25,6 +25,7 @@ export const createTaskSchema = z.object({
   actionEndAt: z.date().optional().nullable(),
   dueAt: z.date().optional().nullable(),
   recurrence: recurrenceRuleSchema.optional().nullable(),
+  contextIds: z.array(z.uuid()).optional(),
 });
 
 export const updateTaskSchema = createTaskSchema.partial().extend({
