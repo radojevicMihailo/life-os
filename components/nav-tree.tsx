@@ -4,7 +4,6 @@ import { useState, type ComponentType } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
   ListTodo,
   FolderKanban,
   CalendarDays,
@@ -15,6 +14,9 @@ import {
   UtensilsCrossed,
   CheckSquare,
   ChevronRight,
+  Settings2,
+  Dumbbell,
+  ClipboardList,
 } from "lucide-react";
 
 type IconType = ComponentType<{ className?: string }>;
@@ -31,22 +33,36 @@ type Section =
     };
 
 const taskChildren: LeafItem[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/tasks", label: "Tasks", icon: ListTodo },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
 ];
 
-const taskPaths = new Set(["/", "/tasks", "/projects", "/context", "/priorities", "/calendar"]);
+const taskPaths = new Set(["/tasks", "/projects", "/calendar"]);
 
 function isTaskRoute(pathname: string): boolean {
   if (taskPaths.has(pathname)) return true;
   return (
     pathname.startsWith("/tasks/") ||
     pathname.startsWith("/projects/") ||
-    pathname.startsWith("/context/") ||
-    pathname.startsWith("/priorities/") ||
     pathname.startsWith("/calendar/")
+  );
+}
+
+const physicalChildren: LeafItem[] = [
+  { href: "/configuration", label: "Configuration", icon: Settings2 },
+  { href: "/activities", label: "Activities", icon: Dumbbell },
+  { href: "/plans", label: "Plans", icon: ClipboardList },
+];
+
+const physicalPaths = new Set(["/configuration", "/activities", "/plans"]);
+
+function isPhysicalRoute(pathname: string): boolean {
+  if (physicalPaths.has(pathname)) return true;
+  return (
+    pathname.startsWith("/configuration/") ||
+    pathname.startsWith("/activities/") ||
+    pathname.startsWith("/plans/")
   );
 }
 
@@ -54,6 +70,7 @@ export function NavTree() {
   const pathname = usePathname() ?? "/";
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     tasks: isTaskRoute(pathname),
+    physical: isPhysicalRoute(pathname),
   });
 
   const sections: Section[] = [
@@ -65,7 +82,13 @@ export function NavTree() {
       children: taskChildren,
     },
     { kind: "leaf", href: "/finance", label: "Finance", icon: Wallet },
-    { kind: "leaf", href: "/physical", label: "Physical Activities", icon: Activity },
+    {
+      kind: "group",
+      id: "physical",
+      label: "Physical Activities",
+      icon: Activity,
+      children: physicalChildren,
+    },
     { kind: "leaf", href: "/habits", label: "Habits", icon: Repeat },
     { kind: "leaf", href: "/goals", label: "Goals", icon: Target },
     { kind: "leaf", href: "/meals", label: "Meals Diary", icon: UtensilsCrossed },
