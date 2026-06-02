@@ -26,15 +26,15 @@ function baseFragment(kind: PhysicalField["kind"]): ZodTypeAny {
   }
 }
 
-function fieldFragment(field: PhysicalField): ZodTypeAny {
+function fieldFragment(field: PhysicalField, forceOptional = false): ZodTypeAny {
   const base = baseFragment(field.kind);
-  return field.required ? base : base.optional().nullable();
+  return field.required && !forceOptional ? base : base.optional().nullable();
 }
 
-function buildValuesSchema(fields: PhysicalField[]) {
+function buildValuesSchema(fields: PhysicalField[], forceOptional = false) {
   const shape: Record<string, ZodTypeAny> = {};
-  for (const f of fields) shape[f.key] = fieldFragment(f);
-  return z.object(shape);
+  for (const f of fields) shape[f.key] = fieldFragment(f, forceOptional);
+  return z.object(shape).loose();
 }
 
 export function buildActivityValuesSchema(fields: PhysicalField[]) {
@@ -45,16 +45,21 @@ export function buildSubrowValuesSchema(fields: PhysicalField[]) {
   return buildValuesSchema(fields.filter((f) => f.scope === "subrow"));
 }
 
+/**
+ * Activity payload schema. All field values are optional+nullable because the form shows
+ * the union of fields across every activity type — `required` cannot be enforced cross-type.
+ */
 export function activityPayloadSchema(
   topFields: PhysicalField[],
   subrowFields: PhysicalField[],
 ) {
-  const valuesSchema = buildActivityValuesSchema(topFields);
-  const subrowValuesSchema = buildSubrowValuesSchema(subrowFields);
+  const valuesSchema = buildValuesSchema(topFields, true);
+  const subrowValuesSchema = buildValuesSchema(subrowFields, true);
   return z.object({
     performedAt: z.date(),
     values: valuesSchema,
     comment: z.string().max(10_000).optional().nullable(),
+    tagIds: z.array(z.uuid()).default([]),
     subrows: z
       .array(
         z.object({
@@ -72,6 +77,7 @@ export function planPayloadSchema(subrowFields: PhysicalField[]) {
   return z.object({
     name: z.string().trim().min(1).max(200),
     notes: z.string().max(20_000).optional().nullable(),
+    tagIds: z.array(z.uuid()).default([]),
     subrows: z
       .array(
         z.object({

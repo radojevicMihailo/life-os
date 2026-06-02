@@ -9,6 +9,7 @@ import {
   jsonb,
   index,
   uniqueIndex,
+  primaryKey,
   AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
@@ -35,7 +36,7 @@ export const fieldKindLabel: Record<FieldKind, string> = {
   duration_sec: "Duration (mm:ss)",
   distance_km: "Distance (km)",
   sets_array: "Sets (weight × reps)",
-  category_ref: "Category reference",
+  category_ref: "Group reference",
   exercise_ref: "Exercise reference",
 };
 
@@ -48,26 +49,37 @@ export type FieldConfig = {
   decimals?: number;
 } | null;
 
-export const modality = pgTable(
-  "modalities",
+export const activityTagGroup = pgTable(
+  "activity_tag_groups",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull().unique(),
     sortOrder: integer("sort_order").notNull().default(0),
-    archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
   },
-  (t) => [index("modality_sort_idx").on(t.sortOrder)],
+);
+
+export const activityTag = pgTable(
+  "activity_tags",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => activityTagGroup.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+  },
+  (t) => [
+    uniqueIndex("activity_tag_group_name_idx").on(t.groupId, t.name),
+    index("activity_tag_group_idx").on(t.groupId),
+  ],
 );
 
 export const physicalField = pgTable(
   "physical_fields",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    modalityId: uuid("modality_id")
-      .notNull()
-      .references(() => modality.id, { onDelete: "cascade" }),
     scope: fieldScopeEnum("scope").notNull(),
     key: text("key").notNull(),
     label: text("label").notNull(),
@@ -78,46 +90,33 @@ export const physicalField = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
   },
-  (t) => [
-    uniqueIndex("physical_field_unique_idx").on(t.modalityId, t.scope, t.key),
-    index("physical_field_modality_idx").on(t.modalityId),
-  ],
+  (t) => [uniqueIndex("physical_field_scope_key_idx").on(t.scope, t.key)],
 );
 
-export const category = pgTable(
-  "physical_categories",
+export const exerciseGroup = pgTable(
+  "exercise_groups",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    modalityId: uuid("modality_id")
-      .notNull()
-      .references(() => modality.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
   },
-  (t) => [
-    uniqueIndex("category_modality_name_idx").on(t.modalityId, t.name),
-    index("category_modality_idx").on(t.modalityId),
-  ],
+  (t) => [uniqueIndex("exercise_group_name_idx").on(t.name)],
 );
 
 export const exercise = pgTable(
   "physical_exercises",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    modalityId: uuid("modality_id")
-      .notNull()
-      .references(() => modality.id, { onDelete: "cascade" }),
-    categoryId: uuid("category_id").references(() => category.id, { onDelete: "set null" }),
+    groupId: uuid("group_id").references(() => exerciseGroup.id, { onDelete: "set null" }),
     name: text("name").notNull(),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
   },
   (t) => [
-    uniqueIndex("exercise_modality_name_idx").on(t.modalityId, t.name),
-    index("exercise_modality_idx").on(t.modalityId),
-    index("exercise_category_idx").on(t.categoryId),
+    uniqueIndex("exercise_name_idx").on(t.name),
+    index("exercise_group_idx").on(t.groupId),
   ],
 );
 
@@ -125,19 +124,13 @@ export const activity = pgTable(
   "physical_activities",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    modalityId: uuid("modality_id")
-      .notNull()
-      .references(() => modality.id, { onDelete: "restrict" }),
     performedAt: timestamp("performed_at", { withTimezone: true }).notNull(),
     values: jsonb("values").$type<Record<string, unknown>>().notNull().default({}),
     comment: text("comment"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
   },
-  (t) => [
-    index("activity_modality_idx").on(t.modalityId),
-    index("activity_performed_at_idx").on(t.performedAt),
-  ],
+  (t) => [index("activity_performed_at_idx").on(t.performedAt)],
 );
 
 export const activitySubrow = pgTable(
@@ -156,20 +149,32 @@ export const activitySubrow = pgTable(
   (t) => [index("activity_subrow_activity_idx").on(t.activityId)],
 );
 
+export const physicalActivityTag = pgTable(
+  "physical_activity_tags",
+  {
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activity.id, { onDelete: "cascade" }),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => activityTag.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.activityId, t.tagId] }),
+    index("physical_activity_tag_tag_idx").on(t.tagId),
+  ],
+);
+
 export const plan = pgTable(
   "physical_plans",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    modalityId: uuid("modality_id")
-      .notNull()
-      .references(() => modality.id, { onDelete: "restrict" }),
     name: text("name").notNull(),
     notes: text("notes"),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
   },
-  (t) => [index("plan_modality_idx").on(t.modalityId)],
 );
 
 export const planSubrow = pgTable(
@@ -188,9 +193,26 @@ export const planSubrow = pgTable(
   (t) => [index("plan_subrow_plan_idx").on(t.planId)],
 );
 
-export type Modality = typeof modality.$inferSelect;
+export const physicalPlanTag = pgTable(
+  "physical_plan_tags",
+  {
+    planId: uuid("plan_id")
+      .notNull()
+      .references(() => plan.id, { onDelete: "cascade" }),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => activityTag.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.planId, t.tagId] }),
+    index("physical_plan_tag_tag_idx").on(t.tagId),
+  ],
+);
+
+export type ActivityTagGroup = typeof activityTagGroup.$inferSelect;
+export type ActivityTag = typeof activityTag.$inferSelect;
 export type PhysicalField = typeof physicalField.$inferSelect;
-export type Category = typeof category.$inferSelect;
+export type ExerciseGroup = typeof exerciseGroup.$inferSelect;
 export type Exercise = typeof exercise.$inferSelect;
 export type Activity = typeof activity.$inferSelect;
 export type ActivitySubrow = typeof activitySubrow.$inferSelect;

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getModalities, getPlans } from "@/lib/queries/physical";
+import { getPlans, getTags } from "@/lib/queries/physical";
 import { PlanList } from "../_components/PlanList";
 
 export const dynamic = "force-dynamic";
@@ -12,11 +12,8 @@ export default async function PlansPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
-  const modalityId = typeof sp.modality === "string" ? sp.modality : undefined;
-  const [modalities, rows] = await Promise.all([
-    getModalities(),
-    getPlans({ modalityId }),
-  ]);
+  const tagId = typeof sp.tag === "string" ? sp.tag : undefined;
+  const [tags, rows] = await Promise.all([getTags(), getPlans({ tagId })]);
   return (
     <div className="mx-auto max-w-3xl px-6 py-8 space-y-6">
       <div className="flex items-center justify-between">
@@ -28,10 +25,7 @@ export default async function PlansPage({
           <Button size="sm"><Plus className="mr-2 h-4 w-4" /> New plan</Button>
         </Link>
       </div>
-      {modalities.length === 0 ? (
-        <p className="text-xs text-muted-foreground">No modalities configured.</p>
-      ) : null}
-      <PlanList rows={rows} />
+      <PlanList rows={rows} tags={tags} />
     </div>
   );
 }

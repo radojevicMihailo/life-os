@@ -2,15 +2,20 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { activity, activitySubrow, physicalField } from "@/db/schema/physical";
+import {
+  activity,
+  activitySubrow,
+  physicalActivityTag,
+  physicalField,
+} from "@/db/schema/physical";
 import { activityPayloadSchema, type ActivityPayload } from "@/lib/validation/physical";
 import { revalidatePhysicalRoutes } from "./_revalidate";
 
 type ActionResult<T = void> = { ok: true; data: T } | { ok: false; error: string };
 const fail = (error: string): ActionResult<never> => ({ ok: false, error });
 
-async function getFields(modalityId: string) {
-  return db.select().from(physicalField).where(eq(physicalField.modalityId, modalityId));
+async function getAllFieldsForValidation() {
+  return db.select().from(physicalField);
 }
 
 function coerceDate(value: unknown): unknown {
@@ -29,11 +34,8 @@ function normalize(raw: unknown): unknown {
   return raw;
 }
 
-export async function createActivity(
-  modalityId: string,
-  raw: unknown,
-): Promise<ActionResult<{ id: string }>> {
-  const fields = await getFields(modalityId);
+export async function createActivity(raw: unknown): Promise<ActionResult<{ id: string }>> {
+  const fields = await getAllFieldsForValidation();
   const schema = activityPayloadSchema(
     fields.filter((f) => f.scope === "top"),
     fields.filter((f) => f.scope === "subrow"),
@@ -46,12 +48,17 @@ export async function createActivity(
     const [row] = await tx
       .insert(activity)
       .values({
-        modalityId,
         performedAt: payload.performedAt,
         values: payload.values,
         comment: payload.comment ?? null,
       })
       .returning({ id: activity.id });
+
+    if (payload.tagIds.length > 0) {
+      await tx
+        .insert(physicalActivityTag)
+        .values(payload.tagIds.map((tagId) => ({ activityId: row.id, tagId })));
+    }
 
     if (payload.subrows.length > 0) {
       await tx.insert(activitySubrow).values(
@@ -70,12 +77,8 @@ export async function createActivity(
   return { ok: true, data: { id } };
 }
 
-export async function updateActivity(
-  activityId: string,
-  modalityId: string,
-  raw: unknown,
-): Promise<ActionResult> {
-  const fields = await getFields(modalityId);
+export async function updateActivity(activityId: string, raw: unknown): Promise<ActionResult> {
+  const fields = await getAllFieldsForValidation();
   const schema = activityPayloadSchema(
     fields.filter((f) => f.scope === "top"),
     fields.filter((f) => f.scope === "subrow"),
@@ -93,6 +96,14 @@ export async function updateActivity(
         comment: payload.comment ?? null,
       })
       .where(eq(activity.id, activityId));
+
+    await tx.delete(physicalActivityTag).where(eq(physicalActivityTag.activityId, activityId));
+    if (payload.tagIds.length > 0) {
+      await tx
+        .insert(physicalActivityTag)
+        .values(payload.tagIds.map((tagId) => ({ activityId, tagId })));
+    }
+
     await tx.delete(activitySubrow).where(eq(activitySubrow.activityId, activityId));
     if (payload.subrows.length > 0) {
       await tx.insert(activitySubrow).values(

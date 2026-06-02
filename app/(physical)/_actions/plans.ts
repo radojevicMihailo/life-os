@@ -2,19 +2,19 @@
 
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { physicalField, plan, planSubrow } from "@/db/schema/physical";
+import { physicalField, physicalPlanTag, plan, planSubrow } from "@/db/schema/physical";
 import { planPayloadSchema } from "@/lib/validation/physical";
 import { revalidatePhysicalRoutes } from "./_revalidate";
 
 type ActionResult<T = void> = { ok: true; data: T } | { ok: false; error: string };
 const fail = (error: string): ActionResult<never> => ({ ok: false, error });
 
-async function getFields(modalityId: string) {
-  return db.select().from(physicalField).where(eq(physicalField.modalityId, modalityId));
+async function getSubrowFields() {
+  return db.select().from(physicalField);
 }
 
-export async function createPlan(modalityId: string, raw: unknown): Promise<ActionResult<{ id: string }>> {
-  const fields = await getFields(modalityId);
+export async function createPlan(raw: unknown): Promise<ActionResult<{ id: string }>> {
+  const fields = await getSubrowFields();
   const schema = planPayloadSchema(fields.filter((f) => f.scope === "subrow"));
   const parsed = schema.safeParse(raw);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
@@ -23,8 +23,15 @@ export async function createPlan(modalityId: string, raw: unknown): Promise<Acti
   const id = await db.transaction(async (tx) => {
     const [row] = await tx
       .insert(plan)
-      .values({ modalityId, name: data.name, notes: data.notes ?? null })
+      .values({ name: data.name, notes: data.notes ?? null })
       .returning({ id: plan.id });
+
+    if (data.tagIds.length > 0) {
+      await tx
+        .insert(physicalPlanTag)
+        .values(data.tagIds.map((tagId) => ({ planId: row.id, tagId })));
+    }
+
     if (data.subrows.length > 0) {
       await tx.insert(planSubrow).values(
         data.subrows.map((s) => ({
@@ -42,8 +49,8 @@ export async function createPlan(modalityId: string, raw: unknown): Promise<Acti
   return { ok: true, data: { id } };
 }
 
-export async function updatePlan(planId: string, modalityId: string, raw: unknown): Promise<ActionResult> {
-  const fields = await getFields(modalityId);
+export async function updatePlan(planId: string, raw: unknown): Promise<ActionResult> {
+  const fields = await getSubrowFields();
   const schema = planPayloadSchema(fields.filter((f) => f.scope === "subrow"));
   const parsed = schema.safeParse(raw);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
@@ -54,6 +61,14 @@ export async function updatePlan(planId: string, modalityId: string, raw: unknow
       .update(plan)
       .set({ name: data.name, notes: data.notes ?? null, updatedAt: sql`now()` })
       .where(eq(plan.id, planId));
+
+    await tx.delete(physicalPlanTag).where(eq(physicalPlanTag.planId, planId));
+    if (data.tagIds.length > 0) {
+      await tx
+        .insert(physicalPlanTag)
+        .values(data.tagIds.map((tagId) => ({ planId, tagId })));
+    }
+
     await tx.delete(planSubrow).where(eq(planSubrow.planId, planId));
     if (data.subrows.length > 0) {
       await tx.insert(planSubrow).values(

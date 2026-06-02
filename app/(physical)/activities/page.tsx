@@ -1,23 +1,13 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getActivities, getModalities } from "@/lib/queries/physical";
-import { ActivityFilters } from "../_components/ActivityFilters";
+import { getActivities, getTags } from "@/lib/queries/physical";
 import { ActivityList } from "../_components/ActivityList";
 
 export const dynamic = "force-dynamic";
 
-export default async function ActivitiesPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const sp = await searchParams;
-  const modalityId = typeof sp.modality === "string" ? sp.modality : undefined;
-  const [modalities, rows] = await Promise.all([
-    getModalities(),
-    getActivities({ modalityId }),
-  ]);
+export default async function ActivitiesPage() {
+  const [tags, rows] = await Promise.all([getTags(), getActivities({})]);
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-8 space-y-6">
       <div className="flex items-center justify-between">
@@ -29,8 +19,7 @@ export default async function ActivitiesPage({
           <Button size="sm"><Plus className="mr-2 h-4 w-4" /> Log activity</Button>
         </Link>
       </div>
-      <ActivityFilters modalities={modalities} />
-      <ActivityList rows={rows} />
+      <ActivityList rows={rows} tags={tags} />
     </div>
   );
 }

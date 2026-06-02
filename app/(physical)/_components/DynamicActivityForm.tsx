@@ -15,11 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { mmSsToSeconds, secondsToMmSs } from "@/lib/physical/formatDuration";
-import { computePace } from "@/lib/physical/pace";
 import {
-  type Category,
+  hhmmssToSeconds,
+  mmSsToSeconds,
+  secondsToHhmmss,
+  secondsToMmSs,
+} from "@/lib/physical/formatDuration";
+import {
+  type ActivityTag,
+  type ActivityTagGroup,
   type Exercise,
+  type ExerciseGroup,
   type PhysicalField,
   type SetEntry,
 } from "@/db/schema/physical";
@@ -38,9 +44,11 @@ export type ActivityInitial = {
   performedAt: Date;
   values: ValueMap;
   comment: string | null;
+  tagIds: string[];
   subrows: SubrowState[];
 };
 
+const NONE = "__none__";
 const EXERCISE_NONE = "__none__";
 
 function emptyValues(fields: PhysicalField[]): ValueMap {
@@ -56,13 +64,13 @@ function FieldInput({
   field,
   value,
   onChange,
-  categories,
+  groups,
   exercises,
 }: {
   field: PhysicalField;
   value: unknown;
   onChange: (v: unknown) => void;
-  categories: Category[];
+  groups: ExerciseGroup[];
   exercises: Exercise[];
 }) {
   switch (field.kind) {
@@ -95,10 +103,10 @@ function FieldInput({
       );
     case "duration_sec":
       return (
-        <Input
-          value={value == null ? "" : secondsToMmSs(value as number)}
-          onChange={(e) => onChange(mmSsToSeconds(e.target.value))}
-          placeholder="mm:ss"
+        <DurationInput
+          value={value as number | null}
+          onChange={onChange}
+          format={field.key === "pace" ? "mmss" : "hhmmss"}
         />
       );
     case "sets_array":
@@ -114,10 +122,10 @@ function FieldInput({
           value={(value as string | null) ?? ""}
           onValueChange={(v) => onChange(v || null)}
         >
-          <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+          <SelectTrigger><SelectValue placeholder="Group" /></SelectTrigger>
           <SelectContent>
-            {categories.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+            {groups.map((g) => (
+              <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -139,33 +147,101 @@ function FieldInput({
   }
 }
 
-function toLocalInputValue(d: Date): string {
+function DurationInput({
+  value,
+  onChange,
+  format,
+}: {
+  value: number | null;
+  onChange: (v: unknown) => void;
+  format: "hhmmss" | "mmss";
+}) {
+  const fmt = format === "hhmmss" ? secondsToHhmmss : secondsToMmSs;
+  const parse = format === "hhmmss" ? hhmmssToSeconds : mmSsToSeconds;
+  const placeholder = format === "hhmmss" ? "hh:mm:ss" : "mm:ss";
+  const [text, setText] = useState<string>(value == null ? "" : fmt(value));
+  return (
+    <Input
+      value={text}
+      onChange={(e) => {
+        const next = e.target.value;
+        setText(next);
+        if (next.trim() === "") {
+          onChange(null);
+          return;
+        }
+        const parsed = parse(next);
+        if (parsed != null) onChange(parsed);
+      }}
+      onBlur={() => {
+        if (text.trim() === "") return;
+        const parsed = parse(text);
+        if (parsed == null) setText(value == null ? "" : fmt(value));
+        else setText(fmt(parsed));
+      }}
+      placeholder={placeholder}
+    />
+  );
+}
+
+function toLocalDateInputValue(d: Date): string {
   const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function fromLocalDateInputValue(v: string): Date {
+  const [y, m, d] = v.split("-").map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1);
 }
 
 export function DynamicActivityForm({
-  modalityId,
-  fields,
-  categories,
+  tagGroups,
+  tags,
+  topFields,
+  subrowFields,
+  exerciseGroups,
   exercises,
   initial,
 }: {
-  modalityId: string;
-  fields: PhysicalField[];
-  categories: Category[];
+  tagGroups: ActivityTagGroup[];
+  tags: ActivityTag[];
+  topFields: PhysicalField[];
+  subrowFields: PhysicalField[];
+  exerciseGroups: ExerciseGroup[];
   exercises: Exercise[];
   initial?: ActivityInitial;
 }) {
   const router = useRouter();
-  const topFields = fields.filter((f) => f.scope === "top").sort((a, b) => a.sortOrder - b.sortOrder);
-  const subrowFields = fields.filter((f) => f.scope === "subrow").sort((a, b) => a.sortOrder - b.sortOrder);
 
+  const tagsByGroup = new Map<string, ActivityTag[]>();
+  for (const t of tags) {
+    const list = tagsByGroup.get(t.groupId) ?? [];
+    list.push(t);
+    tagsByGroup.set(t.groupId, list);
+  }
+  const tagById = new Map(tags.map((t) => [t.id, t]));
+
+  const initialSelection: Record<string, string> = {};
+  for (const id of initial?.tagIds ?? []) {
+    const tag = tagById.get(id);
+    if (tag) initialSelection[tag.groupId] = id;
+  }
+
+  const [selectedTagByGroup, setSelectedTagByGroup] = useState<Record<string, string>>(initialSelection);
   const [performedAt, setPerformedAt] = useState<Date>(initial?.performedAt ?? new Date());
-  const [values, setValues] = useState<ValueMap>(initial?.values ?? emptyValues(topFields));
+  const [values, setValues] = useState<ValueMap>({ ...emptyValues(topFields), ...(initial?.values ?? {}) });
   const [comment, setComment] = useState<string>(initial?.comment ?? "");
   const [subrows, setSubrows] = useState<SubrowState[]>(initial?.subrows ?? []);
   const [pending, startTransition] = useTransition();
+
+  function setTag(groupId: string, value: string) {
+    setSelectedTagByGroup((prev) => {
+      const next = { ...prev };
+      if (value === NONE) delete next[groupId];
+      else next[groupId] = value;
+      return next;
+    });
+  }
 
   function setValue(key: string, v: unknown) {
     setValues((prev) => ({ ...prev, [key]: v }));
@@ -209,16 +285,18 @@ export function DynamicActivityForm({
   }
 
   function submit() {
+    const tagIds = Object.values(selectedTagByGroup);
     const payload = {
       performedAt,
       values,
       comment: comment.trim() === "" ? null : comment,
+      tagIds,
       subrows,
     };
     startTransition(async () => {
       const result = initial?.id
-        ? await updateActivity(initial.id, modalityId, payload)
-        : await createActivity(modalityId, payload);
+        ? await updateActivity(initial.id, payload)
+        : await createActivity(payload);
       if (!result.ok) {
         toast.error(result.error);
         return;
@@ -242,45 +320,52 @@ export function DynamicActivityForm({
     });
   }
 
-  const distanceField = topFields.find((f) => f.kind === "distance_km");
-  const durationField = topFields.find((f) => f.kind === "duration_sec" && f.key !== "pace");
-  const pace =
-    distanceField && durationField
-      ? computePace(
-          Number(values[distanceField.key] ?? 0),
-          Number(values[durationField.key] ?? 0),
-        )
-      : null;
-
   return (
     <div className="space-y-6">
+      {tagGroups.length > 0 ? (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {tagGroups.map((g) => {
+            const groupTags = tagsByGroup.get(g.id) ?? [];
+            return (
+              <div key={g.id} className="space-y-2">
+                <Label>{g.name}</Label>
+                <Select
+                  value={selectedTagByGroup[g.id] ?? NONE}
+                  onValueChange={(v) => setTag(g.id, v)}
+                >
+                  <SelectTrigger><SelectValue placeholder={`Pick ${g.name}`} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NONE}>—</SelectItem>
+                    {groupTags.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+
       <div className="space-y-2">
-        <Label>Performed at</Label>
+        <Label>Date</Label>
         <Input
-          type="datetime-local"
-          value={toLocalInputValue(performedAt)}
-          onChange={(e) => setPerformedAt(new Date(e.target.value))}
+          type="date"
+          value={toLocalDateInputValue(performedAt)}
+          onChange={(e) => setPerformedAt(fromLocalDateInputValue(e.target.value))}
         />
       </div>
 
       {topFields.map((f) => (
         <div key={f.id} className="space-y-2">
-          <Label>
-            {f.label}
-            {f.required ? <span className="ml-1 text-destructive">*</span> : null}
-          </Label>
+          <Label>{f.label}</Label>
           <FieldInput
             field={f}
             value={values[f.key]}
             onChange={(v) => setValue(f.key, v)}
-            categories={categories}
+            groups={exerciseGroups}
             exercises={exercises}
           />
-          {f.kind === "duration_sec" && f.key === "pace" && pace != null ? (
-            <p className="text-xs text-muted-foreground">
-              Computed from distance + duration: {secondsToMmSs(pace)} / km
-            </p>
-          ) : null}
         </div>
       ))}
 
@@ -328,15 +413,12 @@ export function DynamicActivityForm({
               </div>
               {subrowFields.map((f) => (
                 <div key={f.id} className="space-y-2">
-                  <Label>
-                    {f.label}
-                    {f.required ? <span className="ml-1 text-destructive">*</span> : null}
-                  </Label>
+                  <Label>{f.label}</Label>
                   <FieldInput
                     field={f}
                     value={row.values[f.key]}
                     onChange={(v) => setSubrowValue(idx, f.key, v)}
-                    categories={categories}
+                    groups={exerciseGroups}
                     exercises={exercises}
                   />
                 </div>

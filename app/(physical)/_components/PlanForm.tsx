@@ -15,10 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { mmSsToSeconds, secondsToMmSs } from "@/lib/physical/formatDuration";
 import {
-  type Category,
+  hhmmssToSeconds,
+  mmSsToSeconds,
+  secondsToHhmmss,
+  secondsToMmSs,
+} from "@/lib/physical/formatDuration";
+import {
+  type ActivityTag,
+  type ActivityTagGroup,
   type Exercise,
+  type ExerciseGroup,
   type PhysicalField,
   type SetEntry,
 } from "@/db/schema/physical";
@@ -32,10 +39,12 @@ export type PlanInitial = {
   id?: string;
   name: string;
   notes: string | null;
+  tagIds: string[];
   subrows: SubrowState[];
   archivedAt?: Date | null;
 };
 
+const NONE = "__none__";
 const EXERCISE_NONE = "__none__";
 
 function emptyValues(fields: PhysicalField[]): ValueMap {
@@ -47,16 +56,53 @@ function emptyValues(fields: PhysicalField[]): ValueMap {
   return out;
 }
 
+function DurationInput({
+  value,
+  onChange,
+  format,
+}: {
+  value: number | null;
+  onChange: (v: unknown) => void;
+  format: "hhmmss" | "mmss";
+}) {
+  const fmt = format === "hhmmss" ? secondsToHhmmss : secondsToMmSs;
+  const parse = format === "hhmmss" ? hhmmssToSeconds : mmSsToSeconds;
+  const placeholder = format === "hhmmss" ? "hh:mm:ss" : "mm:ss";
+  const [text, setText] = useState<string>(value == null ? "" : fmt(value));
+  return (
+    <Input
+      value={text}
+      onChange={(e) => {
+        const next = e.target.value;
+        setText(next);
+        if (next.trim() === "") {
+          onChange(null);
+          return;
+        }
+        const parsed = parse(next);
+        if (parsed != null) onChange(parsed);
+      }}
+      onBlur={() => {
+        if (text.trim() === "") return;
+        const parsed = parse(text);
+        if (parsed == null) setText(value == null ? "" : fmt(value));
+        else setText(fmt(parsed));
+      }}
+      placeholder={placeholder}
+    />
+  );
+}
+
 function SubrowFieldInput({
   field,
   value,
   onChange,
-  categories,
+  groups,
 }: {
   field: PhysicalField;
   value: unknown;
   onChange: (v: unknown) => void;
-  categories: Category[];
+  groups: ExerciseGroup[];
 }) {
   switch (field.kind) {
     case "text":
@@ -82,10 +128,10 @@ function SubrowFieldInput({
       );
     case "duration_sec":
       return (
-        <Input
-          value={value == null ? "" : secondsToMmSs(value as number)}
-          onChange={(e) => onChange(mmSsToSeconds(e.target.value))}
-          placeholder="mm:ss"
+        <DurationInput
+          value={value as number | null}
+          onChange={onChange}
+          format={field.key === "pace" ? "mmss" : "hhmmss"}
         />
       );
     case "sets_array":
@@ -93,10 +139,10 @@ function SubrowFieldInput({
     case "category_ref":
       return (
         <Select value={(value as string | null) ?? ""} onValueChange={(v) => onChange(v || null)}>
-          <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+          <SelectTrigger><SelectValue placeholder="Group" /></SelectTrigger>
           <SelectContent>
-            {categories.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+            {groups.map((g) => (
+              <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -107,25 +153,49 @@ function SubrowFieldInput({
 }
 
 export function PlanForm({
-  modalityId,
-  fields,
-  categories,
+  tagGroups,
+  tags,
+  subrowFields,
+  exerciseGroups,
   exercises,
   initial,
 }: {
-  modalityId: string;
-  fields: PhysicalField[];
-  categories: Category[];
+  tagGroups: ActivityTagGroup[];
+  tags: ActivityTag[];
+  subrowFields: PhysicalField[];
+  exerciseGroups: ExerciseGroup[];
   exercises: Exercise[];
   initial?: PlanInitial;
 }) {
   const router = useRouter();
-  const subrowFields = fields.filter((f) => f.scope === "subrow").sort((a, b) => a.sortOrder - b.sortOrder);
 
+  const tagsByGroup = new Map<string, ActivityTag[]>();
+  for (const t of tags) {
+    const list = tagsByGroup.get(t.groupId) ?? [];
+    list.push(t);
+    tagsByGroup.set(t.groupId, list);
+  }
+  const tagById = new Map(tags.map((t) => [t.id, t]));
+  const initialSelection: Record<string, string> = {};
+  for (const id of initial?.tagIds ?? []) {
+    const t = tagById.get(id);
+    if (t) initialSelection[t.groupId] = id;
+  }
+
+  const [selectedTagByGroup, setSelectedTagByGroup] = useState<Record<string, string>>(initialSelection);
   const [name, setName] = useState(initial?.name ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [subrows, setSubrows] = useState<SubrowState[]>(initial?.subrows ?? []);
   const [pending, startTransition] = useTransition();
+
+  function setTag(groupId: string, value: string) {
+    setSelectedTagByGroup((prev) => {
+      const next = { ...prev };
+      if (value === NONE) delete next[groupId];
+      else next[groupId] = value;
+      return next;
+    });
+  }
 
   function setSubrowValue(idx: number, key: string, v: unknown) {
     setSubrows((prev) => {
@@ -165,15 +235,17 @@ export function PlanForm({
   }
 
   function submit() {
+    const tagIds = Object.values(selectedTagByGroup);
     const payload = {
       name,
       notes: notes.trim() === "" ? null : notes,
+      tagIds,
       subrows,
     };
     startTransition(async () => {
       const result = initial?.id
-        ? await updatePlan(initial.id, modalityId, payload)
-        : await createPlan(modalityId, payload);
+        ? await updatePlan(initial.id, payload)
+        : await createPlan(payload);
       if (!result.ok) {
         toast.error(result.error);
         return;
@@ -217,6 +289,32 @@ export function PlanForm({
         <Label>Name</Label>
         <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Push Day A" />
       </div>
+
+      {tagGroups.length > 0 ? (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {tagGroups.map((g) => {
+            const groupTags = tagsByGroup.get(g.id) ?? [];
+            return (
+              <div key={g.id} className="space-y-2">
+                <Label>{g.name}</Label>
+                <Select
+                  value={selectedTagByGroup[g.id] ?? NONE}
+                  onValueChange={(v) => setTag(g.id, v)}
+                >
+                  <SelectTrigger><SelectValue placeholder={`Pick ${g.name}`} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NONE}>—</SelectItem>
+                    {groupTags.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+
       <div className="space-y-2">
         <Label>Notes</Label>
         <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={6} placeholder="Goal, intent, references…" />
@@ -258,12 +356,12 @@ export function PlanForm({
               </div>
               {subrowFields.map((f) => (
                 <div key={f.id} className="space-y-2">
-                  <Label>{f.label}{f.required ? <span className="ml-1 text-destructive">*</span> : null}</Label>
+                  <Label>{f.label}</Label>
                   <SubrowFieldInput
                     field={f}
                     value={row.values[f.key]}
                     onChange={(v) => setSubrowValue(idx, f.key, v)}
-                    categories={categories}
+                    groups={exerciseGroups}
                   />
                 </div>
               ))}

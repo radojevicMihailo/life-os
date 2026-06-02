@@ -9,7 +9,6 @@ import type { PhysicalField } from "@/db/schema/physical";
 const baseField = (overrides: Partial<PhysicalField>): PhysicalField =>
   ({
     id: "00000000-0000-0000-0000-000000000000",
-    modalityId: "00000000-0000-0000-0000-000000000001",
     scope: "top",
     key: "f",
     label: "F",
@@ -77,19 +76,21 @@ describe("activityPayloadSchema", () => {
       performedAt: new Date(),
       values: {},
       comment: null,
+      tagIds: [],
       subrows: [],
     });
     expect(result.success).toBe(true);
   });
 
-  it("rejects subrow missing required field", () => {
+  it("accepts subrow with empty values (required is not enforced in the cross-type form)", () => {
     const schema = activityPayloadSchema(top, sub);
     const result = schema.safeParse({
       performedAt: new Date(),
       values: {},
       comment: null,
+      tagIds: [],
       subrows: [{ exerciseId: null, values: {}, sortOrder: 0 }],
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });
