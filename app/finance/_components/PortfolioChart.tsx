@@ -23,7 +23,7 @@ function fmtEur(n: number): string {
 export function PortfolioChart({ groupTotals }: { groupTotals: GroupTotal[] }) {
   if (groupTotals.length === 0) {
     return (
-      <div className="flex h-[32rem] items-center justify-center text-sm text-muted-foreground">
+      <div className="flex h-96 items-center justify-center text-sm text-muted-foreground">
         Nema podataka za prikaz.
       </div>
     );
@@ -37,15 +37,15 @@ export function PortfolioChart({ groupTotals }: { groupTotals: GroupTotal[] }) {
   }));
 
   return (
-    <div className="h-[32rem] w-full">
+    <div className="h-96 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
             dataKey="value"
             nameKey="name"
-            innerRadius="50%"
-            outerRadius="90%"
+            innerRadius="55%"
+            outerRadius="85%"
             paddingAngle={1}
             label={({ percent }) =>
               percent != null && percent >= 0.03 ? `${(percent * 100).toFixed(1)}%` : ""
