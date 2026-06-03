@@ -78,12 +78,32 @@ export const assetGroup = pgTable(
   (t) => [uniqueIndex("finance_asset_group_name_idx").on(t.name)],
 );
 
+export const bucket = pgTable(
+  "finance_buckets",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    assetGroupId: uuid("asset_group_id").references(() => assetGroup.id, {
+      onDelete: "set null",
+    }),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+  },
+  (t) => [
+    uniqueIndex("finance_bucket_name_idx").on(t.name),
+    index("finance_bucket_group_idx").on(t.assetGroupId),
+  ],
+);
+
 export const account = pgTable(
   "finance_accounts",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull(),
     assetGroupId: uuid("asset_group_id").references(() => assetGroup.id, {
+      onDelete: "set null",
+    }),
+    bucketId: uuid("bucket_id").references(() => bucket.id, {
       onDelete: "set null",
     }),
     currencyId: uuid("currency_id").references(() => currency.id, {
@@ -98,6 +118,7 @@ export const account = pgTable(
     uniqueIndex("finance_account_name_idx").on(t.name),
     index("finance_account_group_idx").on(t.assetGroupId),
     index("finance_account_currency_idx").on(t.currencyId),
+    index("finance_account_bucket_idx").on(t.bucketId),
   ],
 );
 
@@ -154,6 +175,7 @@ export const transaction = pgTable(
 
 export type Currency = typeof currency.$inferSelect;
 export type AssetGroup = typeof assetGroup.$inferSelect;
+export type Bucket = typeof bucket.$inferSelect;
 export type Account = typeof account.$inferSelect;
 export type TransactionCategory = typeof transactionCategory.$inferSelect;
 export type Transaction = typeof transaction.$inferSelect;
