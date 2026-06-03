@@ -4,14 +4,24 @@ import { db } from "@/db";
 import {
   account,
   assetGroup,
+  bucket,
   currency,
   transaction,
 } from "@/db/schema/finance";
 import { getEurPerUnitLatest } from "./fx";
+import {
+  computeBucketTotals,
+  computeGroupTotals,
+  type BucketTotal,
+  type GroupTotal,
+} from "./aggregations";
 
 export type PortfolioRow = {
   accountId: string;
+  groupId: string | null;
   groupName: string | null;
+  bucketId: string | null;
+  bucketName: string | null;
   assetName: string;
   amount: number;
   currencyCode: string | null;
@@ -23,14 +33,18 @@ export type PortfolioRow = {
 export type Portfolio = {
   rows: PortfolioRow[];
   netWorthEur: number;
+  groupTotals: GroupTotal[];
+  bucketTotals: BucketTotal[];
 };
 
 export async function getPortfolio(): Promise<Portfolio> {
-  // Aggregate balances per account: inflow on toAccount minus outflow on fromAccount.
   const balances = await db.execute<{
     account_id: string;
     account_name: string;
+    group_id: string | null;
     group_name: string | null;
+    bucket_id: string | null;
+    bucket_name: string | null;
     currency_code: string | null;
     balance: string;
   }>(sql`
@@ -52,11 +66,15 @@ export async function getPortfolio(): Promise<Portfolio> {
     )
     SELECT a.id AS account_id,
            a.name AS account_name,
+           ag.id AS group_id,
            ag.name AS group_name,
+           bk.id AS bucket_id,
+           bk.name AS bucket_name,
            c.code AS currency_code,
            (COALESCE(i.amount, 0) - COALESCE(o.amount, 0))::text AS balance
     FROM ${account} a
     LEFT JOIN ${assetGroup} ag ON ag.id = a.asset_group_id
+    LEFT JOIN ${bucket} bk ON bk.id = a.bucket_id
     LEFT JOIN ${currency} c ON c.id = a.currency_id
     LEFT JOIN inflows i ON i.account_id = a.id
     LEFT JOIN outflows o ON o.account_id = a.id
@@ -66,13 +84,15 @@ export async function getPortfolio(): Promise<Portfolio> {
 
   const raw = balances.rows.map((r) => ({
     accountId: r.account_id,
+    groupId: r.group_id,
     groupName: r.group_name,
+    bucketId: r.bucket_id,
+    bucketName: r.bucket_name,
     assetName: r.account_name,
     amount: Number(r.balance),
     currencyCode: r.currency_code,
   }));
 
-  // Skip zero balances from price lookups.
   const codes = new Set(
     raw.filter((r) => r.amount !== 0 && r.currencyCode).map((r) => r.currencyCode as string),
   );
@@ -103,5 +123,21 @@ export async function getPortfolio(): Promise<Portfolio> {
     share: netWorthEur > 0 && r.totalEur != null ? r.totalEur / netWorthEur : null,
   }));
 
-  return { rows, netWorthEur };
+  const eurRows = withTotals
+    .filter((r) => r.totalEur != null && r.totalEur !== 0)
+    .map((r) => ({
+      accountId: r.accountId,
+      groupId: r.groupId,
+      groupName: r.groupName,
+      bucketId: r.bucketId,
+      bucketName: r.bucketName,
+      eur: r.totalEur as number,
+    }));
+
+  return {
+    rows,
+    netWorthEur,
+    groupTotals: computeGroupTotals(eurRows),
+    bucketTotals: computeBucketTotals(eurRows),
+  };
 }
