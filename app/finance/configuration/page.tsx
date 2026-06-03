@@ -2,12 +2,14 @@ import { Separator } from "@/components/ui/separator";
 import {
   getAccounts,
   getAssetGroups,
+  getBuckets,
   getCategories,
   getCurrencies,
   getTransactionTypes,
 } from "@/lib/queries/finance";
 import { CurrencyEditor } from "../_components/CurrencyEditor";
 import { AssetGroupEditor } from "../_components/AssetGroupEditor";
+import { BucketEditor } from "../_components/BucketEditor";
 import { AccountEditor } from "../_components/AccountEditor";
 import { CategoryEditor } from "../_components/CategoryEditor";
 import { TransactionTypeEditor } from "../_components/TransactionTypeEditor";
@@ -15,9 +17,10 @@ import { TransactionTypeEditor } from "../_components/TransactionTypeEditor";
 export const dynamic = "force-dynamic";
 
 export default async function FinanceConfigurationPage() {
-  const [currencies, groups, accounts, categories, types] = await Promise.all([
+  const [currencies, groups, buckets, accounts, categories, types] = await Promise.all([
     getCurrencies(),
     getAssetGroups(),
+    getBuckets(),
     getAccounts(),
     getCategories(),
     getTransactionTypes(),
@@ -34,7 +37,7 @@ export default async function FinanceConfigurationPage() {
       <div>
         <h1 className="text-2xl font-semibold">Finance configuration</h1>
         <p className="text-sm text-muted-foreground">
-          Tipovi transakcija, kategorije, računi, valute i grupe imovine.
+          Tipovi transakcija, kategorije, računi, valute, grupe i bukete.
         </p>
       </div>
 
@@ -53,7 +56,13 @@ export default async function FinanceConfigurationPage() {
       <Separator />
 
       <section>
-        <AccountEditor accounts={accounts} groups={groups} currencies={currencies} />
+        <BucketEditor buckets={buckets} groups={groups} />
+      </section>
+
+      <Separator />
+
+      <section>
+        <AccountEditor accounts={accounts} groups={groups} buckets={buckets} currencies={currencies} />
       </section>
 
       <Separator />
