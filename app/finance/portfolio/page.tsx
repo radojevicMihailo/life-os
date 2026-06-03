@@ -31,7 +31,7 @@ export default async function PortfolioPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,420px)_1fr]">
         <Card className="p-4">
           <div className="mb-2 text-sm font-medium">Net worth po grupi</div>
           <PortfolioChart groupTotals={groupTotals} />
