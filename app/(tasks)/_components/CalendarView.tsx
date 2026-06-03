@@ -20,14 +20,19 @@ import type { TaskStatus } from "@/db/schema/tasks";
 
 export type CalendarItem = {
   id: string;
-  taskId: string;
+  taskId: string | null;
   title: string;
-  status: TaskStatus;
-  kind: "due" | "action";
+  status: TaskStatus | null;
+  kind: "due" | "action" | "gcal";
+  source?: "task" | "google";
   dateISO: string;
   endISO?: string;
   hasTime: boolean;
 };
+
+function isGcal(it: CalendarItem) {
+  return it.source === "google" || it.kind === "gcal";
+}
 
 const HOUR_PX = 32;
 const DAY_PX = HOUR_PX * 24;
@@ -44,7 +49,13 @@ const statusDot: Record<TaskStatus, string> = {
   done: "bg-green-500",
 };
 
-export function CalendarView({ items }: { items: CalendarItem[] }) {
+export function CalendarView({
+  items,
+  toolbarExtras,
+}: {
+  items: CalendarItem[];
+  toolbarExtras?: React.ReactNode;
+}) {
   const [view, setView] = useState<ViewMode>("week");
   const [cursor, setCursor] = useState<Date>(new Date());
 
@@ -105,6 +116,7 @@ export function CalendarView({ items }: { items: CalendarItem[] }) {
             <ChevronRight className="h-4 w-4" />
           </Button>
           <span className="ml-2 text-sm font-medium">{title}</span>
+          {toolbarExtras}
         </div>
         <div className="inline-flex rounded-md border bg-card p-0.5 text-sm">
           <button
@@ -163,29 +175,45 @@ export function CalendarView({ items }: { items: CalendarItem[] }) {
                   )}
                 </div>
                 <ul className="space-y-0.5">
-                  {dayItems.map((it) => (
-                    <li key={it.id}>
-                      <Link
-                        href={`/tasks/${it.taskId}`}
-                        title={`${it.title} (${it.kind})`}
-                        className={`flex items-center gap-1 truncate rounded px-1 py-0.5 text-xs hover:bg-accent ${
-                          it.status === "done" || it.status === "canceled"
-                            ? "text-muted-foreground line-through"
-                            : ""
-                        }`}
-                      >
-                        <span
-                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[it.status]}`}
-                        />
-                        {it.hasTime && (
-                          <span className="text-[10px] tabular-nums text-muted-foreground">
-                            {format(new Date(it.dateISO), "HHmm")}
-                          </span>
-                        )}
-                        <span className="truncate">{it.title}</span>
-                      </Link>
-                    </li>
-                  ))}
+                  {dayItems.map((it) =>
+                    isGcal(it) ? (
+                      <li key={it.id}>
+                        <div
+                          title={it.title}
+                          className="flex items-center gap-1 truncate rounded bg-slate-200 px-1 py-0.5 text-xs text-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
+                        >
+                          {it.hasTime && (
+                            <span className="text-[10px] tabular-nums">
+                              {format(new Date(it.dateISO), "HHmm")}
+                            </span>
+                          )}
+                          <span className="truncate">{it.title}</span>
+                        </div>
+                      </li>
+                    ) : (
+                      <li key={it.id}>
+                        <Link
+                          href={`/tasks/${it.taskId!}`}
+                          title={`${it.title} (${it.kind})`}
+                          className={`flex items-center gap-1 truncate rounded px-1 py-0.5 text-xs hover:bg-accent ${
+                            it.status === "done" || it.status === "canceled"
+                              ? "text-muted-foreground line-through"
+                              : ""
+                          }`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[it.status!]}`}
+                          />
+                          {it.hasTime && (
+                            <span className="text-[10px] tabular-nums text-muted-foreground">
+                              {format(new Date(it.dateISO), "HHmm")}
+                            </span>
+                          )}
+                          <span className="truncate">{it.title}</span>
+                        </Link>
+                      </li>
+                    ),
+                  )}
                 </ul>
               </div>
             );
@@ -256,24 +284,35 @@ function WeekTimeline({
           return (
             <div key={`ad-${key}`} className="min-h-[28px] border-l p-1">
               <ul className="space-y-0.5">
-                {allDay.map((it) => (
-                  <li key={it.id}>
-                    <Link
-                      href={`/tasks/${it.taskId}`}
-                      title={`${it.title} (${it.kind})`}
-                      className={`flex items-center gap-1 truncate rounded px-1 py-0.5 text-xs hover:bg-accent ${
-                        it.status === "done" || it.status === "canceled"
-                          ? "text-muted-foreground line-through"
-                          : ""
-                      }`}
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[it.status]}`}
-                      />
-                      <span className="truncate">{it.title}</span>
-                    </Link>
-                  </li>
-                ))}
+                {allDay.map((it) =>
+                  isGcal(it) ? (
+                    <li key={it.id}>
+                      <div
+                        title={it.title}
+                        className="truncate rounded bg-slate-200 px-1 py-0.5 text-xs text-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
+                      >
+                        {it.title}
+                      </div>
+                    </li>
+                  ) : (
+                    <li key={it.id}>
+                      <Link
+                        href={`/tasks/${it.taskId!}`}
+                        title={`${it.title} (${it.kind})`}
+                        className={`flex items-center gap-1 truncate rounded px-1 py-0.5 text-xs hover:bg-accent ${
+                          it.status === "done" || it.status === "canceled"
+                            ? "text-muted-foreground line-through"
+                            : ""
+                        }`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[it.status!]}`}
+                        />
+                        <span className="truncate">{it.title}</span>
+                      </Link>
+                    </li>
+                  ),
+                )}
               </ul>
             </div>
           );
@@ -336,11 +375,26 @@ function WeekTimeline({
                   : startMin + 30;
                 const top = (startMin / 60) * HOUR_PX;
                 const height = Math.max(16, ((endMin - startMin) / 60) * HOUR_PX);
+                if (isGcal(it)) {
+                  return (
+                    <div
+                      key={it.id}
+                      title={it.title}
+                      className="absolute left-1 right-1 overflow-hidden rounded border border-slate-300 bg-slate-200 px-1 py-0.5 text-[11px] leading-tight text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
+                      style={{ top, height }}
+                    >
+                      <span className="text-[10px] tabular-nums">
+                        {format(start, "HHmm")}
+                      </span>
+                      <span className="block truncate">{it.title}</span>
+                    </div>
+                  );
+                }
                 const muted = it.status === "done" || it.status === "canceled";
                 return (
                   <Link
                     key={it.id}
-                    href={`/tasks/${it.taskId}`}
+                    href={`/tasks/${it.taskId!}`}
                     title={`${it.title} (${it.kind})`}
                     className={`absolute left-1 right-1 overflow-hidden rounded border bg-card px-1 py-0.5 text-[11px] leading-tight hover:bg-accent ${
                       muted ? "text-muted-foreground line-through" : ""
@@ -349,7 +403,7 @@ function WeekTimeline({
                   >
                     <span className="flex items-center gap-1">
                       <span
-                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[it.status]}`}
+                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[it.status!]}`}
                       />
                       <span className="text-[10px] tabular-nums text-muted-foreground">
                         {format(start, "HHmm")}
