@@ -28,12 +28,14 @@ import {
   type ExerciseGroup,
   type PhysicalField,
   type SetEntry,
+  type SubrowKind,
 } from "@/db/schema/physical";
 import { SetArrayInput } from "./SetArrayInput";
 import { createActivity, deleteActivity, updateActivity } from "../_actions/activities";
 
 type ValueMap = Record<string, unknown>;
 type SubrowState = {
+  kind: SubrowKind;
   exerciseId: string | null;
   values: ValueMap;
   sortOrder: number;
@@ -44,12 +46,20 @@ export type ActivityInitial = {
   performedAt: Date;
   values: ValueMap;
   comment: string | null;
+  stravaUrl: string | null;
   tagIds: string[];
   subrows: SubrowState[];
 };
 
 const NONE = "__none__";
 const EXERCISE_NONE = "__none__";
+const SPLIT_KEYS = ["distance", "duration", "pace"] as const;
+const EXERCISE_KEYS = ["sets"] as const;
+
+function fieldsForKind(fields: PhysicalField[], kind: SubrowKind): PhysicalField[] {
+  const keys = kind === "split" ? SPLIT_KEYS : EXERCISE_KEYS;
+  return fields.filter((f) => (keys as readonly string[]).includes(f.key));
+}
 
 function emptyValues(fields: PhysicalField[]): ValueMap {
   const out: ValueMap = {};
@@ -231,6 +241,7 @@ export function DynamicActivityForm({
   const [performedAt, setPerformedAt] = useState<Date>(initial?.performedAt ?? new Date());
   const [values, setValues] = useState<ValueMap>({ ...emptyValues(topFields), ...(initial?.values ?? {}) });
   const [comment, setComment] = useState<string>(initial?.comment ?? "");
+  const [stravaUrl, setStravaUrl] = useState<string>(initial?.stravaUrl ?? "");
   const [subrows, setSubrows] = useState<SubrowState[]>(initial?.subrows ?? []);
   const [pending, startTransition] = useTransition();
 
@@ -263,10 +274,30 @@ export function DynamicActivityForm({
     });
   }
 
-  function addSubrow() {
+  function setSubrowKind(idx: number, kind: SubrowKind) {
+    setSubrows((prev) => {
+      const next = prev.slice();
+      const current = next[idx];
+      if (current.kind === kind) return prev;
+      next[idx] = {
+        ...current,
+        kind,
+        exerciseId: kind === "exercise" ? current.exerciseId : null,
+        values: emptyValues(fieldsForKind(subrowFields, kind)),
+      };
+      return next;
+    });
+  }
+
+  function addSubrow(kind: SubrowKind) {
     setSubrows((prev) => [
       ...prev,
-      { exerciseId: null, values: emptyValues(subrowFields), sortOrder: prev.length },
+      {
+        kind,
+        exerciseId: null,
+        values: emptyValues(fieldsForKind(subrowFields, kind)),
+        sortOrder: prev.length,
+      },
     ]);
   }
 
@@ -290,6 +321,7 @@ export function DynamicActivityForm({
       performedAt,
       values,
       comment: comment.trim() === "" ? null : comment,
+      stravaUrl: stravaUrl.trim() === "" ? null : stravaUrl.trim(),
       tagIds,
       subrows,
     };
@@ -371,62 +403,93 @@ export function DynamicActivityForm({
 
       {subrowFields.length > 0 ? (
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label>Subrows</Label>
-            <Button size="sm" variant="outline" onClick={addSubrow}>
-              <Plus className="mr-2 h-4 w-4" /> Add row
-            </Button>
-          </div>
+          <Label>Subrows</Label>
           {subrows.length === 0 ? (
             <p className="text-xs text-muted-foreground">No subrows.</p>
           ) : null}
-          {subrows.map((row, idx) => (
-            <div key={idx} className="rounded-md border p-3 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Row {idx + 1}</span>
-                <div className="flex gap-1">
-                  <Button size="icon" variant="ghost" onClick={() => moveSubrow(idx, -1)}>
-                    <ArrowUp className="h-4 w-4" />
-                  </Button>
-                  <Button size="icon" variant="ghost" onClick={() => moveSubrow(idx, 1)}>
-                    <ArrowDown className="h-4 w-4" />
-                  </Button>
-                  <Button size="icon" variant="ghost" onClick={() => removeSubrow(idx)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+          {subrows.map((row, idx) => {
+            const rowFields = fieldsForKind(subrowFields, row.kind);
+            return (
+              <div key={idx} className="rounded-md border p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Row {idx + 1}</span>
+                    <Select
+                      value={row.kind}
+                      onValueChange={(v) => setSubrowKind(idx, v as SubrowKind)}
+                    >
+                      <SelectTrigger className="h-7 w-32"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="exercise">Exercise</SelectItem>
+                        <SelectItem value="split">Split</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button size="icon" variant="ghost" onClick={() => moveSubrow(idx, -1)}>
+                      <ArrowUp className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => moveSubrow(idx, 1)}>
+                      <ArrowDown className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => removeSubrow(idx)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
+                {row.kind === "exercise" ? (
+                  <div className="space-y-2">
+                    <Label>Exercise</Label>
+                    <Select
+                      value={row.exerciseId ?? EXERCISE_NONE}
+                      onValueChange={(v) => setSubrowExercise(idx, v === EXERCISE_NONE ? null : v)}
+                    >
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={EXERCISE_NONE}>None</SelectItem>
+                        {exercises.map((ex) => (
+                          <SelectItem key={ex.id} value={ex.id}>{ex.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : null}
+                {rowFields.map((f) => (
+                  <div key={f.id} className="space-y-2">
+                    <Label>{f.label}</Label>
+                    <FieldInput
+                      field={f}
+                      value={row.values[f.key]}
+                      onChange={(v) => setSubrowValue(idx, f.key, v)}
+                      groups={exerciseGroups}
+                      exercises={exercises}
+                    />
+                  </div>
+                ))}
               </div>
-              <div className="space-y-2">
-                <Label>Exercise</Label>
-                <Select
-                  value={row.exerciseId ?? EXERCISE_NONE}
-                  onValueChange={(v) => setSubrowExercise(idx, v === EXERCISE_NONE ? null : v)}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={EXERCISE_NONE}>None</SelectItem>
-                    {exercises.map((ex) => (
-                      <SelectItem key={ex.id} value={ex.id}>{ex.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {subrowFields.map((f) => (
-                <div key={f.id} className="space-y-2">
-                  <Label>{f.label}</Label>
-                  <FieldInput
-                    field={f}
-                    value={row.values[f.key]}
-                    onChange={(v) => setSubrowValue(idx, f.key, v)}
-                    groups={exerciseGroups}
-                    exercises={exercises}
-                  />
-                </div>
-              ))}
-            </div>
-          ))}
+            );
+          })}
+          <div className="flex gap-2 pt-1">
+            <Button size="sm" variant="outline" onClick={() => addSubrow("exercise")}>
+              <Plus className="mr-2 h-4 w-4" /> Exercise
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => addSubrow("split")}>
+              <Plus className="mr-2 h-4 w-4" /> Split
+            </Button>
+          </div>
         </div>
       ) : null}
+
+      <div className="space-y-2">
+        <Label>Strava workout URL</Label>
+        <Input
+          type="url"
+          inputMode="url"
+          placeholder="https://www.strava.com/activities/..."
+          value={stravaUrl}
+          onChange={(e) => setStravaUrl(e.target.value)}
+        />
+      </div>
 
       <div className="space-y-2">
         <Label>Comment</Label>

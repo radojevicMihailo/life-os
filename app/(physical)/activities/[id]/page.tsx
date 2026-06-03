@@ -31,6 +31,7 @@ export default async function ActivityDetailPage({
   ]);
 
   const subrows = data.subrows.map((s) => ({
+    kind: s.kind,
     exerciseId: s.exerciseId,
     values: (s.values ?? {}) as Record<string, unknown>,
     sortOrder: s.sortOrder,
@@ -54,6 +55,7 @@ export default async function ActivityDetailPage({
           performedAt: data.activity.performedAt,
           values: (data.activity.values ?? {}) as Record<string, unknown>,
           comment: data.activity.comment,
+          stravaUrl: data.activity.stravaUrl,
           tagIds: data.tagIds,
           subrows,
         }}

@@ -4,6 +4,7 @@ import type { PhysicalField } from "@/db/schema/physical";
 export const setEntrySchema = z.object({
   weight: z.number().nonnegative(),
   reps: z.number().int().nonnegative(),
+  bodyweight: z.boolean().optional(),
 });
 
 function baseFragment(kind: PhysicalField["kind"]): ZodTypeAny {
@@ -59,10 +60,12 @@ export function activityPayloadSchema(
     performedAt: z.date(),
     values: valuesSchema,
     comment: z.string().max(10_000).optional().nullable(),
+    stravaUrl: z.url().max(2_000).optional().nullable(),
     tagIds: z.array(z.uuid()).default([]),
     subrows: z
       .array(
         z.object({
+          kind: z.enum(["exercise", "split"]).default("exercise"),
           exerciseId: z.uuid().optional().nullable(),
           values: subrowValuesSchema,
           sortOrder: z.number().int().nonnegative(),

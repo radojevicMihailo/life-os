@@ -51,6 +51,7 @@ export async function createActivity(raw: unknown): Promise<ActionResult<{ id: s
         performedAt: payload.performedAt,
         values: payload.values,
         comment: payload.comment ?? null,
+        stravaUrl: payload.stravaUrl ? payload.stravaUrl : null,
       })
       .returning({ id: activity.id });
 
@@ -64,7 +65,8 @@ export async function createActivity(raw: unknown): Promise<ActionResult<{ id: s
       await tx.insert(activitySubrow).values(
         payload.subrows.map((s) => ({
           activityId: row.id,
-          exerciseId: s.exerciseId ?? null,
+          kind: s.kind,
+          exerciseId: s.kind === "exercise" ? s.exerciseId ?? null : null,
           values: s.values,
           sortOrder: s.sortOrder,
         })),
@@ -94,6 +96,7 @@ export async function updateActivity(activityId: string, raw: unknown): Promise<
         performedAt: payload.performedAt,
         values: payload.values,
         comment: payload.comment ?? null,
+        stravaUrl: payload.stravaUrl ? payload.stravaUrl : null,
       })
       .where(eq(activity.id, activityId));
 
@@ -109,7 +112,8 @@ export async function updateActivity(activityId: string, raw: unknown): Promise<
       await tx.insert(activitySubrow).values(
         payload.subrows.map((s) => ({
           activityId,
-          exerciseId: s.exerciseId ?? null,
+          kind: s.kind,
+          exerciseId: s.kind === "exercise" ? s.exerciseId ?? null : null,
           values: s.values,
           sortOrder: s.sortOrder,
         })),

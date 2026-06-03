@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   addDays,
@@ -206,7 +206,14 @@ function WeekTimeline({
   byDay: Map<string, CalendarItem[]>;
 }) {
   const hours = Array.from({ length: 24 }, (_, i) => i);
-  const today = new Date();
+  const [now, setNow] = useState<Date>(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  const today = now;
+  const todayIdx = days.findIndex((d) => isSameDay(d, today));
+  const nowTop = ((today.getHours() * 60 + today.getMinutes()) / 60) * HOUR_PX;
 
   return (
     <div className="overflow-hidden rounded-md border bg-card">
@@ -293,12 +300,21 @@ function WeekTimeline({
           })}
         </div>
 
-        {days.map((day) => {
+        {days.map((day, idx) => {
           const key = format(day, "yyyy-MM-dd");
           const dayItems = byDay.get(key) ?? [];
           const timed = dayItems.filter((i) => i.hasTime);
+          const isToday = idx === todayIdx;
           return (
             <div key={`t-${key}`} className="relative border-l">
+              {isToday && (
+                <div
+                  className="pointer-events-none absolute left-0 right-0 z-10 border-t-2 border-red-500"
+                  style={{ top: nowTop }}
+                >
+                  <span className="absolute -left-1 -top-1.5 h-2.5 w-2.5 rounded-full bg-red-500" />
+                </div>
+              )}
               {hours.map((h) => (
                 <div key={`hr-${h}`}>
                   <div

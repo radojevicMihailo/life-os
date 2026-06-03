@@ -33,6 +33,7 @@ export function ActivityList({
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground">
+                    {r.stravaUrl ? "Strava · " : ""}
                     {r.subrowCount} {r.subrowCount === 1 ? "row" : "rows"}
                   </div>
                 </div>

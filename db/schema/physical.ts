@@ -40,7 +40,7 @@ export const fieldKindLabel: Record<FieldKind, string> = {
   exercise_ref: "Exercise reference",
 };
 
-export type SetEntry = { weight: number; reps: number };
+export type SetEntry = { weight: number; reps: number; bodyweight?: boolean };
 
 export type FieldConfig = {
   min?: number;
@@ -127,11 +127,14 @@ export const activity = pgTable(
     performedAt: timestamp("performed_at", { withTimezone: true }).notNull(),
     values: jsonb("values").$type<Record<string, unknown>>().notNull().default({}),
     comment: text("comment"),
+    stravaUrl: text("strava_url"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
   },
   (t) => [index("activity_performed_at_idx").on(t.performedAt)],
 );
+
+export type SubrowKind = "exercise" | "split";
 
 export const activitySubrow = pgTable(
   "physical_activity_subrows",
@@ -140,6 +143,7 @@ export const activitySubrow = pgTable(
     activityId: uuid("activity_id")
       .notNull()
       .references(() => activity.id, { onDelete: "cascade" }),
+    kind: text("kind").$type<SubrowKind>().notNull().default("exercise"),
     exerciseId: uuid("exercise_id").references((): AnyPgColumn => exercise.id, {
       onDelete: "restrict",
     }),

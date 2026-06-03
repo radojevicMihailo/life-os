@@ -66,11 +66,22 @@ function isPhysicalRoute(pathname: string): boolean {
   );
 }
 
+const financeChildren: LeafItem[] = [
+  { href: "/finance/configuration", label: "Configuration", icon: Settings2 },
+  { href: "/finance/transactions", label: "Transactions", icon: ListTodo },
+  { href: "/finance/portfolio", label: "Portfolio", icon: Wallet },
+];
+
+function isFinanceRoute(pathname: string): boolean {
+  return pathname === "/finance" || pathname.startsWith("/finance/");
+}
+
 export function NavTree() {
   const pathname = usePathname() ?? "/";
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     tasks: isTaskRoute(pathname),
     physical: isPhysicalRoute(pathname),
+    finance: isFinanceRoute(pathname),
   });
 
   const sections: Section[] = [
@@ -81,7 +92,13 @@ export function NavTree() {
       icon: CheckSquare,
       children: taskChildren,
     },
-    { kind: "leaf", href: "/finance", label: "Finance", icon: Wallet },
+    {
+      kind: "group",
+      id: "finance",
+      label: "Finance",
+      icon: Wallet,
+      children: financeChildren,
+    },
     {
       kind: "group",
       id: "physical",
