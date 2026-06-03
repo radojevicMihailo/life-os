@@ -30,12 +30,27 @@ export type PortfolioRow = {
   share: number | null;
 };
 
+export type BucketDisplay = BucketTotal & {
+  displayCode: "EUR" | "RSD";
+  displayAmount: number;
+};
+
 export type Portfolio = {
   rows: PortfolioRow[];
   netWorthEur: number;
   groupTotals: GroupTotal[];
-  bucketTotals: BucketTotal[];
+  bucketTotals: BucketDisplay[];
 };
+
+const RSD_BUCKETS = new Set(["potrazivanja", "gotovina rsd", "dinarski racun raiffeisen"]);
+
+function normalize(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
+}
 
 export async function getPortfolio(): Promise<Portfolio> {
   const balances = await db.execute<{
@@ -134,10 +149,22 @@ export async function getPortfolio(): Promise<Portfolio> {
       eur: r.totalEur as number,
     }));
 
+  const bucketTotalsRaw = computeBucketTotals(eurRows);
+  const eurPerRsd = bucketTotalsRaw.some((b) => RSD_BUCKETS.has(normalize(b.name)))
+    ? await getEurPerUnitLatest("RSD")
+    : null;
+
+  const bucketTotals: BucketDisplay[] = bucketTotalsRaw.map((b) => {
+    if (RSD_BUCKETS.has(normalize(b.name)) && eurPerRsd && eurPerRsd > 0) {
+      return { ...b, displayCode: "RSD", displayAmount: b.eur / eurPerRsd };
+    }
+    return { ...b, displayCode: "EUR", displayAmount: b.eur };
+  });
+
   return {
     rows,
     netWorthEur,
     groupTotals: computeGroupTotals(eurRows),
-    bucketTotals: computeBucketTotals(eurRows),
+    bucketTotals,
   };
 }

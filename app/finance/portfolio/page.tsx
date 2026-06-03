@@ -18,6 +18,13 @@ function fmtPct(n: number | null): string {
   return `${(n * 100).toFixed(2)}%`;
 }
 
+const SYMBOL: Record<"EUR" | "RSD", string> = { EUR: "€", RSD: "дин." };
+
+function fmtMoney(n: number, code: "EUR" | "RSD"): string {
+  const formatted = n.toLocaleString("sr-RS", { maximumFractionDigits: 2 });
+  return code === "EUR" ? `${SYMBOL.EUR} ${formatted}` : `${formatted} ${SYMBOL.RSD}`;
+}
+
 export default async function PortfolioPage() {
   const { rows, netWorthEur, groupTotals, bucketTotals } = await getPortfolio();
   const visibleRows = rows.filter((r) => r.amount !== 0);
@@ -57,7 +64,9 @@ export default async function PortfolioPage() {
                 {bucketTotals.map((b) => (
                   <tr key={b.bucketId ?? "__null__"} className="border-t">
                     <td className="px-4 py-2">{b.name}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{fmtEur(b.eur)}</td>
+                    <td className="px-4 py-2 text-right tabular-nums">
+                      {fmtMoney(b.displayAmount, b.displayCode)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
