@@ -74,7 +74,7 @@ describe("google calendar client", () => {
     const eventsSpy = mockFetchOnce({ items: [] });
     const mod = await import("./calendar");
     await mod.listEvents("cal1", "2026-06-01T00:00:00.000Z", "2026-06-08T00:00:00.000Z");
-    const url = eventsSpy.mock.calls[0]![0] as string;
+    const url = eventsSpy.mock.calls.at(-1)![0] as string;
     expect(url).toContain("/calendars/cal1/events");
     expect(url).toContain("singleEvents=true");
     expect(url).toContain("orderBy=startTime");
