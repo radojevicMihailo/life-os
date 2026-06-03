@@ -4,12 +4,14 @@ import { db } from "@/db";
 import {
   account,
   assetGroup,
+  bucket,
   currency,
   transaction,
   transactionCategory,
   transactionType,
   type Account,
   type AssetGroup,
+  type Bucket,
   type Currency,
   type Transaction,
   type TransactionCategory,
@@ -52,4 +54,8 @@ export async function getTransactions(): Promise<Transaction[]> {
 export async function getTransaction(id: string): Promise<Transaction | null> {
   const [row] = await db.select().from(transaction).where(eq(transaction.id, id)).limit(1);
   return row ?? null;
+}
+
+export async function getBuckets(): Promise<Bucket[]> {
+  return db.select().from(bucket).orderBy(asc(bucket.sortOrder), asc(bucket.name));
 }
