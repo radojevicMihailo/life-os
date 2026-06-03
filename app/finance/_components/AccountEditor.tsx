@@ -14,29 +14,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { addAccount, removeAccount, updateAccount } from "../_actions/accounts";
-import type { Account, AssetGroup, Currency } from "@/db/schema/finance";
+import type { Account, AssetGroup, Bucket, Currency } from "@/db/schema/finance";
 
 const NONE = "__none__";
 
 export function AccountEditor({
   accounts,
   groups,
+  buckets,
   currencies,
 }: {
   accounts: Account[];
   groups: AssetGroup[];
+  buckets: Bucket[];
   currencies: Currency[];
 }) {
   const [name, setName] = useState("");
   const [groupId, setGroupId] = useState<string>(NONE);
+  const [bucketId, setBucketId] = useState<string>(NONE);
   const [currencyId, setCurrencyId] = useState<string>(NONE);
   const [pending, startTransition] = useTransition();
+
+  function bucketsFor(groupIdValue: string | null): Bucket[] {
+    if (!groupIdValue) return buckets;
+    return buckets.filter((b) => b.assetGroupId === groupIdValue || b.assetGroupId === null);
+  }
 
   function submit() {
     startTransition(async () => {
       const r = await addAccount({
         name,
         assetGroupId: groupId === NONE ? null : groupId,
+        bucketId: bucketId === NONE ? null : bucketId,
         currencyId: currencyId === NONE ? null : currencyId,
         sortOrder: accounts.length,
       });
@@ -45,6 +54,7 @@ export function AccountEditor({
         return;
       }
       setName("");
+      setBucketId(NONE);
     });
   }
 
@@ -61,6 +71,15 @@ export function AccountEditor({
     if (v === a.assetGroupId) return;
     startTransition(async () => {
       const r = await updateAccount({ id: a.id, assetGroupId: v });
+      if (!r.ok) toast.error(r.error);
+    });
+  }
+
+  function setBucket(a: Account, value: string) {
+    const v = value === NONE ? null : value;
+    if (v === a.bucketId) return;
+    startTransition(async () => {
+      const r = await updateAccount({ id: a.id, bucketId: v });
       if (!r.ok) toast.error(r.error);
     });
   }
@@ -87,7 +106,7 @@ export function AccountEditor({
       <div>
         <h3 className="font-medium">Računi / Imovina</h3>
         <p className="text-xs text-muted-foreground">
-          Svaki račun ima ime, grupu imovine i jednu valutu.
+          Svaki račun ima ime, grupu, buket i jednu valutu.
         </p>
       </div>
 
@@ -97,7 +116,7 @@ export function AccountEditor({
             <Input
               defaultValue={a.name}
               onBlur={(e) => rename(a, e.target.value.trim())}
-              className="col-span-6"
+              className="col-span-4"
             />
             <div className="col-span-3">
               <Select value={a.assetGroupId ?? NONE} onValueChange={(v) => setGroup(a, v)}>
@@ -114,7 +133,22 @@ export function AccountEditor({
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-2">
+            <div className="col-span-3">
+              <Select value={a.bucketId ?? NONE} onValueChange={(v) => setBucket(a, v)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Buket" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE}>—</SelectItem>
+                  {bucketsFor(a.assetGroupId).map((b) => (
+                    <SelectItem key={b.id} value={b.id}>
+                      {b.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-1">
               <Select value={a.currencyId ?? NONE} onValueChange={(v) => setCurrency(a, v)}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Valuta" />
@@ -143,7 +177,7 @@ export function AccountEditor({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="New account"
-          className="col-span-6"
+          className="col-span-4"
         />
         <div className="col-span-3">
           <Select value={groupId} onValueChange={setGroupId}>
@@ -160,7 +194,22 @@ export function AccountEditor({
             </SelectContent>
           </Select>
         </div>
-        <div className="col-span-2">
+        <div className="col-span-3">
+          <Select value={bucketId} onValueChange={setBucketId}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Buket" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NONE}>—</SelectItem>
+              {bucketsFor(groupId === NONE ? null : groupId).map((b) => (
+                <SelectItem key={b.id} value={b.id}>
+                  {b.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="col-span-1">
           <Select value={currencyId} onValueChange={setCurrencyId}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Valuta" />

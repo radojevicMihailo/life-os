@@ -12,6 +12,7 @@ const fail = (error: string): ActionResult<never> => ({ ok: false, error });
 const addSchema = z.object({
   name: z.string().trim().min(1).max(200),
   assetGroupId: z.uuid().nullable().optional(),
+  bucketId: z.uuid().nullable().optional(),
   currencyId: z.uuid().nullable().optional(),
   sortOrder: z.number().int().nonnegative().default(0),
 });
@@ -25,6 +26,7 @@ export async function addAccount(input: z.input<typeof addSchema>): Promise<Acti
       .values({
         name: parsed.data.name,
         assetGroupId: parsed.data.assetGroupId ?? null,
+        bucketId: parsed.data.bucketId ?? null,
         currencyId: parsed.data.currencyId ?? null,
         sortOrder: parsed.data.sortOrder,
       })
@@ -41,6 +43,7 @@ const updateSchema = z.object({
   id: z.uuid(),
   name: z.string().trim().min(1).max(200).optional(),
   assetGroupId: z.uuid().nullable().optional(),
+  bucketId: z.uuid().nullable().optional(),
   currencyId: z.uuid().nullable().optional(),
 });
 
@@ -50,6 +53,7 @@ export async function updateAccount(input: z.input<typeof updateSchema>): Promis
   const patch: Record<string, unknown> = { updatedAt: sql`now()` };
   if (parsed.data.name !== undefined) patch.name = parsed.data.name;
   if (parsed.data.assetGroupId !== undefined) patch.assetGroupId = parsed.data.assetGroupId;
+  if (parsed.data.bucketId !== undefined) patch.bucketId = parsed.data.bucketId;
   if (parsed.data.currencyId !== undefined) patch.currencyId = parsed.data.currencyId;
   try {
     await db.update(account).set(patch).where(eq(account.id, parsed.data.id));
