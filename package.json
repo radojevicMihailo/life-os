@@ -17,7 +17,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:apply": "node scripts/db-apply.mjs",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "google:oauth": "node scripts/google-oauth.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
