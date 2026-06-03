@@ -47,6 +47,10 @@ export function PortfolioChart({ groupTotals }: { groupTotals: GroupTotal[] }) {
             innerRadius="55%"
             outerRadius="85%"
             paddingAngle={1}
+            label={({ percent }) =>
+              percent != null && percent >= 0.03 ? `${(percent * 100).toFixed(1)}%` : ""
+            }
+            labelLine={false}
           >
             {data.map((d) => (
               <Cell key={d.name} fill={d.color} />
