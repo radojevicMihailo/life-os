@@ -9,6 +9,7 @@ const TABS = [
   { href: "/meals/calendar", label: "Calendar", match: (p: string) => p.startsWith("/meals/calendar") },
   { href: "/meals/library", label: "Library", match: (p: string) => p.startsWith("/meals/library") },
   { href: "/meals/templates", label: "Templates", match: (p: string) => p.startsWith("/meals/templates") },
+  { href: "/meals/targets", label: "Targets", match: (p: string) => p.startsWith("/meals/targets") },
 ];
 
 export function MealsNav() {
