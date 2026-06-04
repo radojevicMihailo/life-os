@@ -9,6 +9,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { TaskStatus } from "@/db/schema/tasks";
 import { taskStatusLabel } from "@/db/schema/tasks";
 import { setTaskStatus, updateTask } from "../_actions/tasks";
@@ -35,17 +42,22 @@ export function TaskDetailEditor({
   actionAt: initialAction,
   actionEndAt: initialActionEnd,
   dueAt: initialDue,
+  projectId: initialProjectId,
+  projects,
 }: {
   taskId: string;
   status: TaskStatus;
   actionAt: Date | null;
   actionEndAt: Date | null;
   dueAt: Date | null;
+  projectId: string | null;
+  projects: { id: string; name: string }[];
 }) {
   const [status, setStatus] = useState(initialStatus);
   const [actionAt, setActionAt] = useState(initialAction);
   const [actionEndAt, setActionEndAt] = useState(initialActionEnd);
   const [dueAt, setDueAt] = useState(initialDue);
+  const [projectId, setProjectId] = useState<string | null>(initialProjectId);
   const [actionWithTime, setActionWithTime] = useState(
     hasTimeComponent(initialAction) || hasTimeComponent(initialActionEnd),
   );
@@ -64,15 +76,33 @@ export function TaskDetailEditor({
     });
   }
 
-  function patch(fields: { actionAt?: Date | null; actionEndAt?: Date | null; dueAt?: Date | null }) {
+  function patch(fields: {
+    actionAt?: Date | null;
+    actionEndAt?: Date | null;
+    dueAt?: Date | null;
+    projectId?: string | null;
+  }) {
     startTransition(async () => {
       const r = await updateTask({ id: taskId, ...fields });
       if (!r.ok) toast.error(r.error);
     });
   }
 
+  function changeProject(v: string) {
+    const next = v === "none" ? null : v;
+    const prev = projectId;
+    setProjectId(next);
+    startTransition(async () => {
+      const r = await updateTask({ id: taskId, projectId: next });
+      if (!r.ok) {
+        toast.error(r.error);
+        setProjectId(prev);
+      }
+    });
+  }
+
   return (
-    <div className="grid gap-4 rounded-md border bg-card p-4 sm:grid-cols-3">
+    <div className="grid gap-4 rounded-md border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4">
       <div className="space-y-2">
         <Label>Status</Label>
         <DropdownMenu>
@@ -130,6 +160,23 @@ export function TaskDetailEditor({
             patch({ dueAt: d });
           }}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Project</Label>
+        <Select value={projectId ?? "none"} onValueChange={changeProject}>
+          <SelectTrigger className="w-full" disabled={pending}>
+            <SelectValue placeholder="None" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">None</SelectItem>
+            {projects.map((p) => (
+              <SelectItem key={p.id} value={p.id}>
+                {p.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

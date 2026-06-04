@@ -22,7 +22,7 @@ export default async function TaskDetailPage({
   const t = await db.query.task.findFirst({ where: eq(task.id, id) });
   if (!t) notFound();
 
-  const [proj, subtasks, allContexts, attachedLinks] = await Promise.all([
+  const [proj, subtasks, allContexts, attachedLinks, allProjects] = await Promise.all([
     t.projectId
       ? db.query.project.findFirst({ where: eq(project.id, t.projectId) })
       : Promise.resolve(null),
@@ -32,6 +32,10 @@ export default async function TaskDetailPage({
       .select({ contextId: taskContext.contextId })
       .from(taskContext)
       .where(eq(taskContext.taskId, id)),
+    db
+      .select({ id: project.id, name: project.name })
+      .from(project)
+      .orderBy(asc(project.name)),
   ]);
   const attachedContextIds = attachedLinks.map((l) => l.contextId);
 
@@ -63,6 +67,8 @@ export default async function TaskDetailPage({
         actionAt={t.actionAt}
         actionEndAt={t.actionEndAt}
         dueAt={t.dueAt}
+        projectId={t.projectId}
+        projects={allProjects}
       />
 
       <section className="space-y-3">

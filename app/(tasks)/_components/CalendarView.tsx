@@ -379,14 +379,14 @@ function WeekTimeline({
                   return (
                     <div
                       key={it.id}
-                      title={it.title}
-                      className="absolute left-1 right-1 overflow-hidden rounded border border-slate-300 bg-slate-200 px-1 py-0.5 text-[11px] leading-tight text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
-                      style={{ top, height }}
+                      title={`${format(start, "HH:mm")} ${it.title}`}
+                      className="absolute left-1 right-1 flex items-start gap-1 overflow-hidden rounded border border-slate-300 bg-slate-200 px-1 py-0.5 text-[11px] leading-tight text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
+                      style={{ top, height: Math.max(20, height) }}
                     >
-                      <span className="text-[10px] tabular-nums">
-                        {format(start, "HHmm")}
+                      <span className="shrink-0 text-[10px] tabular-nums opacity-70">
+                        {format(start, "HH:mm")}
                       </span>
-                      <span className="block truncate">{it.title}</span>
+                      <span className="truncate font-medium">{it.title}</span>
                     </div>
                   );
                 }
