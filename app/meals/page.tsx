@@ -1,12 +1,6 @@
-import { UtensilsCrossed } from "lucide-react";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { format } from "date-fns";
+import { DayView } from "./_components/DayView";
 
-export default function MealsPage() {
-  return (
-    <PlaceholderPage
-      icon={UtensilsCrossed}
-      title="Meals Diary"
-      description="Log meals, calories and nutrition. Coming soon."
-    />
-  );
+export default function MealsTodayPage() {
+  return <DayView date={format(new Date(), "yyyy-MM-dd")} />;
 }
