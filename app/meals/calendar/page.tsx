@@ -5,7 +5,6 @@ import { db } from "@/db";
 import { meal, mealItem } from "@/db/schema/meals";
 import { Button } from "@/components/ui/button";
 import { CalendarGrid } from "../_components/CalendarGrid";
-import { MealsNav } from "../_components/MealsNav";
 import { getMealTargets } from "../_actions/settings";
 
 export default async function MealsCalendarPage({
@@ -41,7 +40,6 @@ export default async function MealsCalendarPage({
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <MealsNav />
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">

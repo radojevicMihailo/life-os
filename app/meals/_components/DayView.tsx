@@ -9,7 +9,6 @@ import { getMealTargets } from "../_actions/settings";
 import { AddMealDialog } from "./AddMealDialog";
 import { MealCard } from "./MealCard";
 import { TargetsBar } from "./TargetsBar";
-import { MealsNav } from "./MealsNav";
 
 export async function DayView({ date }: { date: string }) {
   const meals = await db
@@ -41,7 +40,6 @@ export async function DayView({ date }: { date: string }) {
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <MealsNav />
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">

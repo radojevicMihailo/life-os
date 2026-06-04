@@ -3,7 +3,6 @@ import { desc, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { foodItem } from "@/db/schema/meals";
 import { Button } from "@/components/ui/button";
-import { MealsNav } from "../_components/MealsNav";
 
 export default async function FoodLibraryPage() {
   const rows = await db
@@ -15,7 +14,6 @@ export default async function FoodLibraryPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <MealsNav />
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-semibold">Food library</h1>
         <Button asChild>

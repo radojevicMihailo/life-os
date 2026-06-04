@@ -76,12 +76,25 @@ function isFinanceRoute(pathname: string): boolean {
   return pathname === "/finance" || pathname.startsWith("/finance/");
 }
 
+const mealsChildren: LeafItem[] = [
+  { href: "/meals", label: "Day", icon: CalendarDays },
+  { href: "/meals/calendar", label: "Calendar", icon: CalendarDays },
+  { href: "/meals/library", label: "Library", icon: ClipboardList },
+  { href: "/meals/templates", label: "Templates", icon: ListTodo },
+  { href: "/meals/targets", label: "Targets", icon: Target },
+];
+
+function isMealsRoute(pathname: string): boolean {
+  return pathname === "/meals" || pathname.startsWith("/meals/");
+}
+
 export function NavTree() {
   const pathname = usePathname() ?? "/";
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     tasks: isTaskRoute(pathname),
     physical: isPhysicalRoute(pathname),
     finance: isFinanceRoute(pathname),
+    meals: isMealsRoute(pathname),
   });
 
   const sections: Section[] = [
@@ -108,7 +121,13 @@ export function NavTree() {
     },
     { kind: "leaf", href: "/habits", label: "Habits", icon: Repeat },
     { kind: "leaf", href: "/goals", label: "Goals", icon: Target },
-    { kind: "leaf", href: "/meals", label: "Meals Diary", icon: UtensilsCrossed },
+    {
+      kind: "group",
+      id: "meals",
+      label: "Meals Diary",
+      icon: UtensilsCrossed,
+      children: mealsChildren,
+    },
   ];
 
   function toggle(id: string) {

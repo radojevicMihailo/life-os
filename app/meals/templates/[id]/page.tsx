@@ -2,7 +2,6 @@ import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { mealTemplate, mealTemplateItem } from "@/db/schema/meals";
-import { MealsNav } from "../../_components/MealsNav";
 import { TemplateForm } from "../../_components/TemplateForm";
 import type { DraftItem } from "../../_components/MealItemRow";
 
@@ -39,7 +38,6 @@ export default async function EditTemplatePage({
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <MealsNav />
       <h1 className="text-xl font-semibold mb-4">Edit template</h1>
       <TemplateForm
         mode={{ kind: "edit", id: t.id }}

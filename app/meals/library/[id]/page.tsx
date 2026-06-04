@@ -2,7 +2,6 @@ import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { foodItem } from "@/db/schema/meals";
-import { MealsNav } from "../../_components/MealsNav";
 import { FoodForm } from "../../_components/FoodForm";
 
 export default async function EditFoodPage({
@@ -15,7 +14,6 @@ export default async function EditFoodPage({
   if (!row) notFound();
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <MealsNav />
       <h1 className="text-xl font-semibold mb-4">Edit food</h1>
       <FoodForm
         mode={{ kind: "edit", id: row.id }}

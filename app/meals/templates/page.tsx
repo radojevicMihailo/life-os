@@ -4,7 +4,6 @@ import { db } from "@/db";
 import { mealTemplate, mealTemplateItem } from "@/db/schema/meals";
 import { Button } from "@/components/ui/button";
 import { mealTotals } from "@/lib/meals/totals";
-import { MealsNav } from "../_components/MealsNav";
 import { ApplyTemplateButton } from "../_components/ApplyTemplateButton";
 
 export default async function TemplatesPage() {
@@ -26,7 +25,6 @@ export default async function TemplatesPage() {
   }
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <MealsNav />
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-semibold">Templates</h1>
         <Button asChild>
