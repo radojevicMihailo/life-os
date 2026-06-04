@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { foodItem } from "@/db/schema/meals";
 import { fetchOffProduct, searchOff, type NormalizedFood } from "@/lib/meals/off";
+import type { LibraryFoodHit } from "./foods-search";
 import { revalidateMealRoutes } from "./_revalidate";
 
 type ActionResult<T = void> = { ok: true; data: T } | { ok: false; error: string };
@@ -20,15 +21,27 @@ export async function searchOffFoods(
   }
 }
 
+function rowToHit(row: typeof foodItem.$inferSelect): LibraryFoodHit {
+  return {
+    id: row.id,
+    name: row.name,
+    brand: row.brand,
+    kcalPer100g: Number(row.kcalPer100g),
+    proteinPer100g: Number(row.proteinPer100g),
+    carbsPer100g: Number(row.carbsPer100g),
+    fatPer100g: Number(row.fatPer100g),
+  };
+}
+
 export async function importOffFood(
   offId: string,
-): Promise<ActionResult<{ id: string }>> {
+): Promise<ActionResult<LibraryFoodHit>> {
   const existing = await db
-    .select({ id: foodItem.id })
+    .select()
     .from(foodItem)
     .where(eq(foodItem.offId, offId))
     .limit(1);
-  if (existing[0]) return { ok: true, data: { id: existing[0].id } };
+  if (existing[0]) return { ok: true, data: rowToHit(existing[0]) };
 
   let product;
   try {
@@ -50,7 +63,7 @@ export async function importOffFood(
       source: "off",
       offId: product.offId,
     })
-    .returning({ id: foodItem.id });
+    .returning();
   revalidateMealRoutes({ foodId: row.id });
-  return { ok: true, data: { id: row.id } };
+  return { ok: true, data: rowToHit(row) };
 }

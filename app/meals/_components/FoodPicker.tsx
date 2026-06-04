@@ -74,11 +74,7 @@ export function FoodPicker({ onPick }: { onPick: (f: PickedFood) => void }) {
         setOffError(res.error);
         return;
       }
-      const r = await searchLibraryFoods("");
-      if (r.ok) {
-        const f = r.data.find((x) => x.id === res.data.id);
-        if (f) pickLib(f);
-      }
+      pickLib(res.data);
     });
   }
 
