@@ -60,7 +60,7 @@ export async function DayView({ date }: { date: string }) {
       <div className="space-y-3">
         {meals.length === 0 && (
           <div className="text-sm text-muted-foreground border rounded p-4">
-            No meals logged. Click "Add meal" to start.
+            No meals logged. Click &ldquo;Add meal&rdquo; to start.
           </div>
         )}
         {meals.map((m) => (

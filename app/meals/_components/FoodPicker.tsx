@@ -27,10 +27,7 @@ export function FoodPicker({ onPick }: { onPick: (f: PickedFood) => void }) {
 
   useEffect(() => {
     const term = q.trim();
-    if (term.length < 2) {
-      setLib([]);
-      return;
-    }
+    if (term.length < 2) return;
     const handle = setTimeout(() => {
       start(async () => {
         const res = await searchLibraryFoods(term);
@@ -39,6 +36,8 @@ export function FoodPicker({ onPick }: { onPick: (f: PickedFood) => void }) {
     }, 200);
     return () => clearTimeout(handle);
   }, [q]);
+
+  const showLib = q.trim().length >= 2 && lib.length > 0;
 
   function offSearch() {
     setOffError(null);
@@ -85,7 +84,7 @@ export function FoodPicker({ onPick }: { onPick: (f: PickedFood) => void }) {
         value={q}
         onChange={(e) => setQ(e.target.value)}
       />
-      {lib.length > 0 && (
+      {showLib && (
         <ul className="border rounded divide-y max-h-56 overflow-auto">
           {lib.map((f) => (
             <li key={f.id}>
