@@ -18,6 +18,7 @@ const upsertSchema = z.object({
   type: typeSchema,
   description: z.string().trim().max(1000).nullable().optional(),
   categoryId: z.uuid().nullable().optional(),
+  subcategoryId: z.uuid().nullable().optional(),
   fromAccountId: z.uuid().nullable().optional(),
   toAccountId: z.uuid().nullable().optional(),
   outflowAmount: z
@@ -96,6 +97,7 @@ export async function saveTransaction(
     type: d.type,
     description: d.description ?? null,
     categoryId: d.categoryId ?? null,
+    subcategoryId: d.subcategoryId ?? null,
     fromAccountId: d.fromAccountId ?? null,
     toAccountId: d.toAccountId ?? null,
     outflowAmount: toNumeric(d.outflowAmount ?? null),

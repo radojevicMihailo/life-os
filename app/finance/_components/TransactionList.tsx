@@ -16,6 +16,7 @@ import type {
   Currency,
   Transaction,
   TransactionCategory,
+  TransactionSubcategory,
   TransactionTypeRow,
 } from "@/db/schema/finance";
 import { colorStyle } from "@/lib/finance/colors";
@@ -37,12 +38,14 @@ export function TransactionList({
   accounts,
   currencies,
   categories,
+  subcategories,
 }: {
   rows: Transaction[];
   types: TransactionTypeRow[];
   accounts: Account[];
   currencies: Currency[];
   categories: TransactionCategory[];
+  subcategories: TransactionSubcategory[];
 }) {
   const [sort, setSort] = useState<SortKey>("date_desc");
   const [typeFilter, setTypeFilter] = useState<string>(ALL);
@@ -51,6 +54,10 @@ export function TransactionList({
   const accById = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
   const ccyById = useMemo(() => new Map(currencies.map((c) => [c.id, c.code])), [currencies]);
   const catById = useMemo(() => new Map(categories.map((c) => [c.id, c.name])), [categories]);
+  const subById = useMemo(
+    () => new Map(subcategories.map((s) => [s.id, s.name])),
+    [subcategories],
+  );
   const typeByKey = useMemo(() => new Map(types.map((t) => [t.key, t])), [types]);
 
   const filteredSorted = useMemo(() => {
@@ -138,6 +145,8 @@ export function TransactionList({
             const from = r.fromAccountId ? accById.get(r.fromAccountId)?.name : null;
             const to = r.toAccountId ? accById.get(r.toAccountId)?.name : null;
             const cat = r.categoryId ? catById.get(r.categoryId) : null;
+            const sub = r.subcategoryId ? subById.get(r.subcategoryId) : null;
+            const catLabel = cat && sub ? `${cat} / ${sub}` : (cat ?? sub ?? null);
             const outflow = fmtAmount(r.outflowAmount, r.outflowCurrencyId ? ccyById.get(r.outflowCurrencyId) : undefined);
             const inflow = fmtAmount(r.inflowAmount, r.inflowCurrencyId ? ccyById.get(r.inflowCurrencyId) : undefined);
             const type = typeByKey.get(r.type);
@@ -152,7 +161,9 @@ export function TransactionList({
                           <span className={`shrink-0 rounded-md border px-2 py-0.5 text-xs ${tStyle.badge}`}>
                             {type?.label ?? r.type}
                           </span>
-                          {cat ? <span className="text-muted-foreground truncate">{cat}</span> : null}
+                          {catLabel ? (
+                            <span className="text-muted-foreground truncate">{catLabel}</span>
+                          ) : null}
                         </div>
                         <div className="text-xs text-muted-foreground truncate">
                           {r.occurredOn}

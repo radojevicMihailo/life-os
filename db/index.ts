@@ -8,6 +8,7 @@ import * as settingsSchema from "./schema/settings";
 import * as goalsSchema from "./schema/goals";
 import * as habitsSchema from "./schema/habits";
 import * as mealsSchema from "./schema/meals";
+import * as travelsSchema from "./schema/travels";
 
 const globalForDb = globalThis as unknown as { pool?: Pool };
 
@@ -28,5 +29,6 @@ export const db = drizzle(pool, {
     ...goalsSchema,
     ...habitsSchema,
     ...mealsSchema,
+    ...travelsSchema,
   },
 });

@@ -10,9 +10,11 @@ import {
   exerciseGroup,
   physicalActivityTag,
   physicalField,
-  physicalPlanTag,
-  plan,
-  planSubrow,
+  split,
+  splitDay,
+  splitDayTag,
+  workoutPlan,
+  workoutPlanExercise,
   type Activity,
   type ActivitySubrow,
   type ActivityTag,
@@ -20,8 +22,10 @@ import {
   type Exercise,
   type ExerciseGroup,
   type PhysicalField,
-  type Plan,
-  type PlanSubrow,
+  type Split,
+  type SplitDay,
+  type WorkoutPlan,
+  type WorkoutPlanExercise,
 } from "@/db/schema/physical";
 
 export async function getTagGroups(): Promise<ActivityTagGroup[]> {
@@ -157,54 +161,86 @@ export async function getActivity(id: string): Promise<ActivityDetail | null> {
   return { activity: a, subrows, tagIds: tagLinks.map((t) => t.tagId) };
 }
 
-export type PlanListRow = Plan & { tagIds: string[] };
+export type WorkoutPlanListRow = WorkoutPlan & { exerciseCount: number };
 
-export async function getPlans(filters: { tagId?: string }): Promise<PlanListRow[]> {
-  const conditions = [isNull(plan.archivedAt)];
-
-  if (filters.tagId) {
-    const tagged = await db
-      .select({ id: physicalPlanTag.planId })
-      .from(physicalPlanTag)
-      .where(eq(physicalPlanTag.tagId, filters.tagId));
-    const ids = tagged.map((r) => r.id);
-    if (ids.length === 0) return [];
-    conditions.push(inArray(plan.id, ids));
-  }
-
-  const rows = await db.select().from(plan).where(and(...conditions)).orderBy(asc(plan.name));
-  if (rows.length === 0) return [];
-
-  const tagLinks = await db
+export async function getWorkoutPlans(): Promise<WorkoutPlanListRow[]> {
+  const rows = await db
     .select()
-    .from(physicalPlanTag)
-    .where(inArray(physicalPlanTag.planId, rows.map((p) => p.id)));
-  const tagMap = new Map<string, string[]>();
-  for (const t of tagLinks) {
-    const list = tagMap.get(t.planId) ?? [];
-    list.push(t.tagId);
-    tagMap.set(t.planId, list);
-  }
-
-  return rows.map((p) => ({ ...p, tagIds: tagMap.get(p.id) ?? [] }));
+    .from(workoutPlan)
+    .where(isNull(workoutPlan.archivedAt))
+    .orderBy(asc(workoutPlan.name));
+  if (rows.length === 0) return [];
+  const exs = await db
+    .select()
+    .from(workoutPlanExercise)
+    .where(inArray(workoutPlanExercise.planId, rows.map((p) => p.id)));
+  const count = new Map<string, number>();
+  for (const e of exs) count.set(e.planId, (count.get(e.planId) ?? 0) + 1);
+  return rows.map((p) => ({ ...p, exerciseCount: count.get(p.id) ?? 0 }));
 }
 
-export type PlanDetail = {
-  plan: Plan;
-  subrows: PlanSubrow[];
-  tagIds: string[];
+export type WorkoutPlanDetail = {
+  plan: WorkoutPlan;
+  exercises: WorkoutPlanExercise[];
 };
 
-export async function getPlan(id: string): Promise<PlanDetail | null> {
-  const [p] = await db.select().from(plan).where(eq(plan.id, id)).limit(1);
+export async function getWorkoutPlan(id: string): Promise<WorkoutPlanDetail | null> {
+  const [p] = await db.select().from(workoutPlan).where(eq(workoutPlan.id, id)).limit(1);
   if (!p) return null;
-  const [subrows, tagLinks] = await Promise.all([
-    db
-      .select()
-      .from(planSubrow)
-      .where(eq(planSubrow.planId, id))
-      .orderBy(asc(planSubrow.sortOrder)),
-    db.select().from(physicalPlanTag).where(eq(physicalPlanTag.planId, id)),
-  ]);
-  return { plan: p, subrows, tagIds: tagLinks.map((t) => t.tagId) };
+  const exercises = await db
+    .select()
+    .from(workoutPlanExercise)
+    .where(eq(workoutPlanExercise.planId, id))
+    .orderBy(asc(workoutPlanExercise.sortOrder));
+  return { plan: p, exercises };
+}
+
+export type SplitListRow = Split & { dayCount: number };
+
+export async function getSplits(): Promise<SplitListRow[]> {
+  const rows = await db
+    .select()
+    .from(split)
+    .where(isNull(split.archivedAt))
+    .orderBy(asc(split.name));
+  if (rows.length === 0) return [];
+  const days = await db
+    .select()
+    .from(splitDay)
+    .where(inArray(splitDay.splitId, rows.map((s) => s.id)));
+  const count = new Map<string, number>();
+  for (const d of days) count.set(d.splitId, (count.get(d.splitId) ?? 0) + 1);
+  return rows.map((s) => ({ ...s, dayCount: count.get(s.id) ?? 0 }));
+}
+
+export type SplitDayWithTags = SplitDay & { tagIds: string[] };
+
+export type SplitDetail = {
+  split: Split;
+  days: SplitDayWithTags[];
+};
+
+export async function getSplit(id: string): Promise<SplitDetail | null> {
+  const [s] = await db.select().from(split).where(eq(split.id, id)).limit(1);
+  if (!s) return null;
+  const days = await db
+    .select()
+    .from(splitDay)
+    .where(eq(splitDay.splitId, id))
+    .orderBy(asc(splitDay.sortOrder));
+  if (days.length === 0) return { split: s, days: [] };
+  const tagLinks = await db
+    .select()
+    .from(splitDayTag)
+    .where(inArray(splitDayTag.dayId, days.map((d) => d.id)));
+  const tagMap = new Map<string, string[]>();
+  for (const t of tagLinks) {
+    const list = tagMap.get(t.dayId) ?? [];
+    list.push(t.tagId);
+    tagMap.set(t.dayId, list);
+  }
+  return {
+    split: s,
+    days: days.map((d) => ({ ...d, tagIds: tagMap.get(d.id) ?? [] })),
+  };
 }

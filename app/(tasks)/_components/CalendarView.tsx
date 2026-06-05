@@ -17,6 +17,7 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { TaskStatus } from "@/db/schema/tasks";
+import { CreateTaskDialog, type CreateTaskDialogInitial } from "./CreateTaskDialog";
 
 export type CalendarItem = {
   id: string;
@@ -58,6 +59,13 @@ export function CalendarView({
 }) {
   const [view, setView] = useState<ViewMode>("week");
   const [cursor, setCursor] = useState<Date>(new Date());
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogInitial, setDialogInitial] = useState<CreateTaskDialogInitial | null>(null);
+
+  function openCreate(date: Date, withTime: boolean) {
+    setDialogInitial({ date, withTime });
+    setDialogOpen(true);
+  }
 
   const days = useMemo(() => {
     if (view === "week") {
@@ -158,7 +166,10 @@ export function CalendarView({
             return (
               <div
                 key={key}
-                className={`min-h-[110px] bg-card p-1.5 ${muted ? "opacity-50" : ""}`}
+                onClick={() => openCreate(day, false)}
+                className={`min-h-[110px] cursor-pointer bg-card p-1.5 hover:bg-accent/40 ${
+                  muted ? "opacity-50" : ""
+                }`}
               >
                 <div className="mb-1 flex items-center justify-between">
                   <span
@@ -177,7 +188,7 @@ export function CalendarView({
                 <ul className="space-y-0.5">
                   {dayItems.map((it) =>
                     isGcal(it) ? (
-                      <li key={it.id}>
+                      <li key={it.id} onClick={(e) => e.stopPropagation()}>
                         <div
                           title={it.title}
                           className="flex items-center gap-1 truncate rounded bg-slate-200 px-1 py-0.5 text-xs text-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
@@ -191,7 +202,7 @@ export function CalendarView({
                         </div>
                       </li>
                     ) : (
-                      <li key={it.id}>
+                      <li key={it.id} onClick={(e) => e.stopPropagation()}>
                         <Link
                           href={`/tasks/${it.taskId!}`}
                           title={`${it.title} (${it.kind})`}
@@ -220,8 +231,10 @@ export function CalendarView({
           })}
         </div>
       ) : (
-        <WeekTimeline days={days} byDay={byDay} />
+        <WeekTimeline days={days} byDay={byDay} onCreate={openCreate} />
       )}
+
+      <CreateTaskDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={dialogInitial} />
     </div>
   );
 }
@@ -229,9 +242,11 @@ export function CalendarView({
 function WeekTimeline({
   days,
   byDay,
+  onCreate,
 }: {
   days: Date[];
   byDay: Map<string, CalendarItem[]>;
+  onCreate: (date: Date, withTime: boolean) => void;
 }) {
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const [now, setNow] = useState<Date>(() => new Date());
@@ -282,11 +297,15 @@ function WeekTimeline({
           const dayItems = byDay.get(key) ?? [];
           const allDay = dayItems.filter((i) => !i.hasTime);
           return (
-            <div key={`ad-${key}`} className="min-h-[28px] border-l p-1">
+            <div
+              key={`ad-${key}`}
+              onClick={() => onCreate(day, false)}
+              className="min-h-[28px] cursor-pointer border-l p-1 hover:bg-accent/40"
+            >
               <ul className="space-y-0.5">
                 {allDay.map((it) =>
                   isGcal(it) ? (
-                    <li key={it.id}>
+                    <li key={it.id} onClick={(e) => e.stopPropagation()}>
                       <div
                         title={it.title}
                         className="truncate rounded bg-slate-200 px-1 py-0.5 text-xs text-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
@@ -295,7 +314,7 @@ function WeekTimeline({
                       </div>
                     </li>
                   ) : (
-                    <li key={it.id}>
+                    <li key={it.id} onClick={(e) => e.stopPropagation()}>
                       <Link
                         href={`/tasks/${it.taskId!}`}
                         title={`${it.title} (${it.kind})`}
@@ -345,7 +364,18 @@ function WeekTimeline({
           const timed = dayItems.filter((i) => i.hasTime);
           const isToday = idx === todayIdx;
           return (
-            <div key={`t-${key}`} className="relative border-l">
+            <div
+              key={`t-${key}`}
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const y = e.clientY - rect.top;
+                const minutes = Math.max(0, Math.min(24 * 60 - 15, Math.round((y / HOUR_PX) * 60 / 15) * 15));
+                const d = new Date(day);
+                d.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+                onCreate(d, true);
+              }}
+              className="relative cursor-pointer border-l hover:bg-accent/20"
+            >
               {isToday && (
                 <div
                   className="pointer-events-none absolute left-0 right-0 z-10 border-t-2 border-red-500"
@@ -379,6 +409,7 @@ function WeekTimeline({
                   return (
                     <div
                       key={it.id}
+                      onClick={(e) => e.stopPropagation()}
                       title={`${format(start, "HH:mm")} ${it.title}`}
                       className="absolute left-1 right-1 flex items-start gap-1 overflow-hidden rounded border border-slate-300 bg-slate-200 px-1 py-0.5 text-[11px] leading-tight text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
                       style={{ top, height: Math.max(20, height) }}
@@ -394,6 +425,7 @@ function WeekTimeline({
                 return (
                   <Link
                     key={it.id}
+                    onClick={(e) => e.stopPropagation()}
                     href={`/tasks/${it.taskId!}`}
                     title={`${it.title} (${it.kind})`}
                     className={`absolute left-1 right-1 overflow-hidden rounded border bg-card px-1 py-0.5 text-[11px] leading-tight hover:bg-accent ${

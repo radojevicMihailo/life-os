@@ -5,6 +5,7 @@ import {
   getBuckets,
   getCategories,
   getCurrencies,
+  getSubcategories,
   getTransactionTypes,
 } from "@/lib/queries/finance";
 import { CurrencyEditor } from "../_components/CurrencyEditor";
@@ -13,18 +14,21 @@ import { BucketEditor } from "../_components/BucketEditor";
 import { AccountEditor } from "../_components/AccountEditor";
 import { CategoryEditor } from "../_components/CategoryEditor";
 import { TransactionTypeEditor } from "../_components/TransactionTypeEditor";
+import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 
 export const dynamic = "force-dynamic";
 
 export default async function FinanceConfigurationPage() {
-  const [currencies, groups, buckets, accounts, categories, types] = await Promise.all([
-    getCurrencies(),
-    getAssetGroups(),
-    getBuckets(),
-    getAccounts(),
-    getCategories(),
-    getTransactionTypes(),
-  ]);
+  const [currencies, groups, buckets, accounts, categories, subcategories, types] =
+    await Promise.all([
+      getCurrencies(),
+      getAssetGroups(),
+      getBuckets(),
+      getAccounts(),
+      getCategories(),
+      getSubcategories(),
+      getTransactionTypes(),
+    ]);
 
   const byKind = {
     income: categories.filter((c) => c.kind === "income"),
@@ -73,18 +77,23 @@ export default async function FinanceConfigurationPage() {
           kind="income"
           title="Kategorije za Prihod"
           categories={byKind.income}
+          subcategories={subcategories}
         />
         <CategoryEditor
           kind="expense"
           title="Kategorije za Trošak"
           categories={byKind.expense}
+          subcategories={subcategories}
         />
         <CategoryEditor
           kind="investment"
           title="Kategorije za Investicije"
           categories={byKind.investment}
+          subcategories={subcategories}
         />
       </section>
+
+      <ScrollToTopButton />
     </div>
   );
 }

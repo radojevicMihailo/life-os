@@ -19,6 +19,7 @@ import type {
   Currency,
   Transaction,
   TransactionCategory,
+  TransactionSubcategory,
   TransactionTypeRow,
 } from "@/db/schema/finance";
 import { saveTransaction, deleteTransaction } from "../_actions/transactions";
@@ -32,6 +33,7 @@ type Props = {
   accounts: Account[];
   currencies: Currency[];
   categories: TransactionCategory[];
+  subcategories: TransactionSubcategory[];
 };
 
 export function TransactionForm({
@@ -40,6 +42,7 @@ export function TransactionForm({
   accounts,
   currencies,
   categories,
+  subcategories,
 }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -53,6 +56,9 @@ export function TransactionForm({
   const [typeKey, setTypeKey] = useState<string>(defaultTypeKey);
   const [description, setDescription] = useState(transaction?.description ?? "");
   const [categoryId, setCategoryId] = useState<string>(transaction?.categoryId ?? NONE);
+  const [subcategoryId, setSubcategoryId] = useState<string>(
+    transaction?.subcategoryId ?? NONE,
+  );
   const [fromAccountId, setFromAccountId] = useState<string>(transaction?.fromAccountId ?? NONE);
   const [toAccountId, setToAccountId] = useState<string>(transaction?.toAccountId ?? NONE);
   const [outflowAmount, setOutflowAmount] = useState(transaction?.outflowAmount?.toString() ?? "");
@@ -75,10 +81,21 @@ export function TransactionForm({
     return categories.filter((c) => c.kind === kind);
   }, [currentType, categories]);
 
+  const visibleSubcategories = useMemo(() => {
+    if (categoryId === NONE) return [] as TransactionSubcategory[];
+    return subcategories.filter((s) => s.categoryId === categoryId);
+  }, [subcategories, categoryId]);
+
+  function pickCategory(id: string) {
+    setCategoryId(id);
+    setSubcategoryId(NONE);
+  }
+
   function syncDefaultsForType(nextKey: string) {
     const next = types.find((t) => t.key === nextKey);
     setTypeKey(nextKey);
     setCategoryId(NONE);
+    setSubcategoryId(NONE);
     if (!next) return;
     if (!next.showsFrom) setFromAccountId(NONE);
     if (!next.showsTo) setToAccountId(NONE);
@@ -118,6 +135,7 @@ export function TransactionForm({
         type: typeKey,
         description: description.trim() || null,
         categoryId: categoryId === NONE ? null : categoryId,
+        subcategoryId: subcategoryId === NONE ? null : subcategoryId,
         fromAccountId: fromAccountId === NONE ? null : fromAccountId,
         toAccountId: toAccountId === NONE ? null : toAccountId,
         outflowAmount: outflowAmount.trim() === "" ? null : outflowAmount,
@@ -202,21 +220,43 @@ export function TransactionForm({
       </div>
 
       {showCategory && (
-        <div className="space-y-2">
-          <Label>Kategorija</Label>
-          <Select value={categoryId} onValueChange={setCategoryId}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="—" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NONE}>—</SelectItem>
-              {visibleCategories.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Kategorija</Label>
+            <Select value={categoryId} onValueChange={pickCategory}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="—" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NONE}>—</SelectItem>
+                {visibleCategories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Potkategorija</Label>
+            <Select
+              value={subcategoryId}
+              onValueChange={setSubcategoryId}
+              disabled={categoryId === NONE || visibleSubcategories.length === 0}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="—" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NONE}>—</SelectItem>
+                {visibleSubcategories.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       )}
 

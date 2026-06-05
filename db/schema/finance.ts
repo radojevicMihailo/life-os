@@ -134,6 +134,20 @@ export const transactionCategory = pgTable(
   (t) => [uniqueIndex("finance_category_kind_name_idx").on(t.kind, t.name)],
 );
 
+export const transactionSubcategory = pgTable(
+  "finance_subcategories",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    categoryId: uuid("category_id")
+      .notNull()
+      .references(() => transactionCategory.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+  },
+  (t) => [uniqueIndex("finance_subcategory_cat_name_idx").on(t.categoryId, t.name)],
+);
+
 export const transaction = pgTable(
   "finance_transactions",
   {
@@ -142,6 +156,9 @@ export const transaction = pgTable(
     type: text("type").notNull(),
     description: text("description"),
     categoryId: uuid("category_id").references(() => transactionCategory.id, {
+      onDelete: "set null",
+    }),
+    subcategoryId: uuid("subcategory_id").references(() => transactionSubcategory.id, {
       onDelete: "set null",
     }),
     fromAccountId: uuid("from_account_id").references(() => account.id, {
@@ -170,6 +187,7 @@ export const transaction = pgTable(
     index("finance_tx_category_idx").on(t.categoryId),
     index("finance_tx_from_idx").on(t.fromAccountId),
     index("finance_tx_to_idx").on(t.toAccountId),
+    index("finance_tx_subcategory_idx").on(t.subcategoryId),
   ],
 );
 
@@ -178,5 +196,6 @@ export type AssetGroup = typeof assetGroup.$inferSelect;
 export type Bucket = typeof bucket.$inferSelect;
 export type Account = typeof account.$inferSelect;
 export type TransactionCategory = typeof transactionCategory.$inferSelect;
+export type TransactionSubcategory = typeof transactionSubcategory.$inferSelect;
 export type Transaction = typeof transaction.$inferSelect;
 export type TransactionTypeRow = typeof transactionType.$inferSelect;

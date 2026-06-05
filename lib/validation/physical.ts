@@ -5,6 +5,7 @@ export const setEntrySchema = z.object({
   weight: z.number().nonnegative(),
   reps: z.number().int().nonnegative(),
   bodyweight: z.boolean().optional(),
+  warmup: z.boolean().optional(),
 });
 
 function baseFragment(kind: PhysicalField["kind"]): ZodTypeAny {
@@ -75,23 +76,34 @@ export function activityPayloadSchema(
   });
 }
 
-export function planPayloadSchema(subrowFields: PhysicalField[]) {
-  const subrowValuesSchema = buildSubrowValuesSchema(subrowFields);
-  return z.object({
-    name: z.string().trim().min(1).max(200),
-    notes: z.string().max(20_000).optional().nullable(),
-    tagIds: z.array(z.uuid()).default([]),
-    subrows: z
-      .array(
-        z.object({
-          exerciseId: z.uuid().optional().nullable(),
-          values: subrowValuesSchema,
-          sortOrder: z.number().int().nonnegative(),
-        }),
-      )
-      .default([]),
-  });
-}
+export const workoutPlanPayloadSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  notes: z.string().max(20_000).optional().nullable(),
+  exercises: z
+    .array(
+      z.object({
+        exerciseId: z.uuid(),
+        setCount: z.number().int().min(1).max(99),
+        sortOrder: z.number().int().nonnegative(),
+        linkNext: z.boolean().default(false),
+      }),
+    )
+    .default([]),
+});
+
+export const splitPayloadSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  notes: z.string().max(20_000).optional().nullable(),
+  days: z
+    .array(
+      z.object({
+        tagIds: z.array(z.uuid()).default([]),
+        sortOrder: z.number().int().nonnegative(),
+      }),
+    )
+    .default([]),
+});
 
 export type ActivityPayload = z.infer<ReturnType<typeof activityPayloadSchema>>;
-export type PlanPayload = z.infer<ReturnType<typeof planPayloadSchema>>;
+export type WorkoutPlanPayload = z.infer<typeof workoutPlanPayloadSchema>;
+export type SplitPayload = z.infer<typeof splitPayloadSchema>;

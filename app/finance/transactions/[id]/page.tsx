@@ -3,6 +3,7 @@ import {
   getAccounts,
   getCategories,
   getCurrencies,
+  getSubcategories,
   getTransaction,
   getTransactionTypes,
 } from "@/lib/queries/finance";
@@ -16,11 +17,12 @@ export default async function TransactionDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [tx, accounts, currencies, categories, types] = await Promise.all([
+  const [tx, accounts, currencies, categories, subcategories, types] = await Promise.all([
     getTransaction(id),
     getAccounts(),
     getCurrencies(),
     getCategories(),
+    getSubcategories(),
     getTransactionTypes(),
   ]);
   if (!tx) notFound();
@@ -38,6 +40,7 @@ export default async function TransactionDetailPage({
         accounts={accounts}
         currencies={currencies}
         categories={categories}
+        subcategories={subcategories}
       />
     </div>
   );

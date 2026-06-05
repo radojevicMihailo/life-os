@@ -5,6 +5,7 @@ import {
   getAccounts,
   getCategories,
   getCurrencies,
+  getSubcategories,
   getTransactionTypes,
   getTransactions,
 } from "@/lib/queries/finance";
@@ -13,12 +14,13 @@ import { TransactionList } from "../_components/TransactionList";
 export const dynamic = "force-dynamic";
 
 export default async function TransactionsPage() {
-  const [rows, types, accounts, currencies, categories] = await Promise.all([
+  const [rows, types, accounts, currencies, categories, subcategories] = await Promise.all([
     getTransactions(),
     getTransactionTypes(),
     getAccounts(),
     getCurrencies(),
     getCategories(),
+    getSubcategories(),
   ]);
 
   return (
@@ -42,6 +44,7 @@ export default async function TransactionsPage() {
         accounts={accounts}
         currencies={currencies}
         categories={categories}
+        subcategories={subcategories}
       />
     </div>
   );

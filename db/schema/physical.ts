@@ -40,7 +40,7 @@ export const fieldKindLabel: Record<FieldKind, string> = {
   exercise_ref: "Exercise reference",
 };
 
-export type SetEntry = { weight: number; reps: number; bodyweight?: boolean };
+export type SetEntry = { weight: number; reps: number; bodyweight?: boolean; warmup?: boolean };
 
 export type FieldConfig = {
   min?: number;
@@ -169,8 +169,8 @@ export const physicalActivityTag = pgTable(
   ],
 );
 
-export const plan = pgTable(
-  "physical_plans",
+export const workoutPlan = pgTable(
+  "physical_workout_plans",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull(),
@@ -181,35 +181,60 @@ export const plan = pgTable(
   },
 );
 
-export const planSubrow = pgTable(
-  "physical_plan_subrows",
+export const workoutPlanExercise = pgTable(
+  "physical_workout_plan_exercises",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     planId: uuid("plan_id")
       .notNull()
-      .references(() => plan.id, { onDelete: "cascade" }),
-    exerciseId: uuid("exercise_id").references((): AnyPgColumn => exercise.id, {
-      onDelete: "restrict",
-    }),
-    values: jsonb("values").$type<Record<string, unknown>>().notNull().default({}),
+      .references(() => workoutPlan.id, { onDelete: "cascade" }),
+    exerciseId: uuid("exercise_id")
+      .notNull()
+      .references((): AnyPgColumn => exercise.id, { onDelete: "restrict" }),
+    setCount: integer("set_count").notNull().default(1),
     sortOrder: integer("sort_order").notNull().default(0),
+    linkNext: boolean("link_next").notNull().default(false),
   },
-  (t) => [index("plan_subrow_plan_idx").on(t.planId)],
+  (t) => [index("workout_plan_exercise_plan_idx").on(t.planId)],
 );
 
-export const physicalPlanTag = pgTable(
-  "physical_plan_tags",
+export const split = pgTable(
+  "physical_splits",
   {
-    planId: uuid("plan_id")
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    notes: text("notes"),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
+  },
+);
+
+export const splitDay = pgTable(
+  "physical_split_days",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    splitId: uuid("split_id")
       .notNull()
-      .references(() => plan.id, { onDelete: "cascade" }),
+      .references(() => split.id, { onDelete: "cascade" }),
+    sortOrder: integer("sort_order").notNull().default(0),
+  },
+  (t) => [index("split_day_split_idx").on(t.splitId)],
+);
+
+export const splitDayTag = pgTable(
+  "physical_split_day_tags",
+  {
+    dayId: uuid("day_id")
+      .notNull()
+      .references(() => splitDay.id, { onDelete: "cascade" }),
     tagId: uuid("tag_id")
       .notNull()
       .references(() => activityTag.id, { onDelete: "cascade" }),
   },
   (t) => [
-    primaryKey({ columns: [t.planId, t.tagId] }),
-    index("physical_plan_tag_tag_idx").on(t.tagId),
+    primaryKey({ columns: [t.dayId, t.tagId] }),
+    index("split_day_tag_tag_idx").on(t.tagId),
   ],
 );
 
@@ -220,5 +245,8 @@ export type ExerciseGroup = typeof exerciseGroup.$inferSelect;
 export type Exercise = typeof exercise.$inferSelect;
 export type Activity = typeof activity.$inferSelect;
 export type ActivitySubrow = typeof activitySubrow.$inferSelect;
-export type Plan = typeof plan.$inferSelect;
-export type PlanSubrow = typeof planSubrow.$inferSelect;
+export type WorkoutPlan = typeof workoutPlan.$inferSelect;
+export type WorkoutPlanExercise = typeof workoutPlanExercise.$inferSelect;
+export type Split = typeof split.$inferSelect;
+export type SplitDay = typeof splitDay.$inferSelect;
+export type SplitDayTag = typeof splitDayTag.$inferSelect;

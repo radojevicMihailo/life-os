@@ -2,6 +2,7 @@ import {
   getAccounts,
   getCategories,
   getCurrencies,
+  getSubcategories,
   getTransactionTypes,
 } from "@/lib/queries/finance";
 import { TransactionForm } from "../../_components/TransactionForm";
@@ -9,10 +10,11 @@ import { TransactionForm } from "../../_components/TransactionForm";
 export const dynamic = "force-dynamic";
 
 export default async function NewTransactionPage() {
-  const [accounts, currencies, categories, types] = await Promise.all([
+  const [accounts, currencies, categories, subcategories, types] = await Promise.all([
     getAccounts(),
     getCurrencies(),
     getCategories(),
+    getSubcategories(),
     getTransactionTypes(),
   ]);
   return (
@@ -28,6 +30,7 @@ export default async function NewTransactionPage() {
         accounts={accounts}
         currencies={currencies}
         categories={categories}
+        subcategories={subcategories}
       />
     </div>
   );

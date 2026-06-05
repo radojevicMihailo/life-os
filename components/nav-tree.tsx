@@ -17,6 +17,7 @@ import {
   Settings2,
   Dumbbell,
   ClipboardList,
+  Plane,
 } from "lucide-react";
 
 type IconType = ComponentType<{ className?: string }>;
@@ -128,6 +129,7 @@ export function NavTree() {
       icon: UtensilsCrossed,
       children: mealsChildren,
     },
+    { kind: "leaf", href: "/travels", label: "Travels", icon: Plane },
   ];
 
   function toggle(id: string) {

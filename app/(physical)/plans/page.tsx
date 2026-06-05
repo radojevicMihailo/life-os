@@ -1,31 +1,40 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { getPlans, getTags } from "@/lib/queries/physical";
-import { PlanList } from "../_components/PlanList";
+import { Dumbbell, CalendarDays } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
-export default async function PlansPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const sp = await searchParams;
-  const tagId = typeof sp.tag === "string" ? sp.tag : undefined;
-  const [tags, rows] = await Promise.all([getTags(), getPlans({ tagId })]);
+export default function PlansPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Plans</h1>
-          <p className="text-sm text-muted-foreground">Reference workout templates.</p>
-        </div>
-        <Link href="/plans/new">
-          <Button size="sm"><Plus className="mr-2 h-4 w-4" /> New plan</Button>
+      <div>
+        <h1 className="text-2xl font-semibold">Plans</h1>
+        <p className="text-sm text-muted-foreground">Workout templates and training splits.</p>
+      </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Link href="/plans/workouts">
+          <Card className="px-5 py-6 hover:bg-accent">
+            <div className="flex items-center gap-3">
+              <Dumbbell className="h-6 w-6" />
+              <div>
+                <div className="text-base font-medium">Workout plans</div>
+                <p className="text-xs text-muted-foreground">Gym templates: exercises and set counts.</p>
+              </div>
+            </div>
+          </Card>
+        </Link>
+        <Link href="/plans/splits">
+          <Card className="px-5 py-6 hover:bg-accent">
+            <div className="flex items-center gap-3">
+              <CalendarDays className="h-6 w-6" />
+              <div>
+                <div className="text-base font-medium">Splits</div>
+                <p className="text-xs text-muted-foreground">Ordered day rotations of tagged sessions.</p>
+              </div>
+            </div>
+          </Card>
         </Link>
       </div>
-      <PlanList rows={rows} tags={tags} />
     </div>
   );
 }

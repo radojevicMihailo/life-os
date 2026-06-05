@@ -8,6 +8,7 @@ import {
   currency,
   transaction,
   transactionCategory,
+  transactionSubcategory,
   transactionType,
   type Account,
   type AssetGroup,
@@ -15,6 +16,7 @@ import {
   type Currency,
   type Transaction,
   type TransactionCategory,
+  type TransactionSubcategory,
   type TransactionTypeRow,
 } from "@/db/schema/finance";
 
@@ -35,6 +37,13 @@ export async function getCategories(): Promise<TransactionCategory[]> {
     .select()
     .from(transactionCategory)
     .orderBy(asc(transactionCategory.sortOrder), asc(transactionCategory.name));
+}
+
+export async function getSubcategories(): Promise<TransactionSubcategory[]> {
+  return db
+    .select()
+    .from(transactionSubcategory)
+    .orderBy(asc(transactionSubcategory.sortOrder), asc(transactionSubcategory.name));
 }
 
 export async function getTransactionTypes(): Promise<TransactionTypeRow[]> {

@@ -33,14 +33,16 @@ export function SetArrayInput({
       {value.length === 0 ? (
         <p className="text-xs text-muted-foreground">No sets.</p>
       ) : (
-        <div className="grid grid-cols-[auto_auto_1fr_1fr_auto] items-end gap-2">
+        <div className="grid grid-cols-[auto_auto_auto_1fr_1fr_auto] items-end gap-2">
           <Label className="text-xs">#</Label>
           <Label className="text-xs">BW</Label>
+          <Label className="text-xs" title="Warm-up set">W</Label>
           <Label className="text-xs">Weight</Label>
           <Label className="text-xs">Reps</Label>
           <span />
           {value.map((s, i) => {
             const bw = s.bodyweight === true;
+            const wu = s.warmup === true;
             return (
               <div key={i} className="contents">
                 <div className="flex h-9 items-center text-sm text-muted-foreground">{i + 1}</div>
@@ -48,6 +50,12 @@ export function SetArrayInput({
                   <Checkbox
                     checked={bw}
                     onCheckedChange={(c) => update(i, { bodyweight: c === true })}
+                  />
+                </div>
+                <div className="flex h-9 items-center justify-center">
+                  <Checkbox
+                    checked={wu}
+                    onCheckedChange={(c) => update(i, { warmup: c === true })}
                   />
                 </div>
                 <Input

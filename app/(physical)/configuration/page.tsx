@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { TagGroupEditor } from "../_components/TagGroupEditor";
 import { ExerciseGroupEditor } from "../_components/ExerciseGroupEditor";
 import { ExerciseEditor } from "../_components/ExerciseEditor";
+import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,8 @@ export default async function ConfigurationPage() {
         <p className="text-xs text-muted-foreground">Each exercise has a name and an optional group.</p>
         <ExerciseEditor groups={groups} exercises={exercises} />
       </section>
+
+      <ScrollToTopButton />
     </div>
   );
 }
