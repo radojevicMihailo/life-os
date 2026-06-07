@@ -9,20 +9,37 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { createGoal } from "../_actions/goals";
 import { DateField } from "@/app/(tasks)/_components/DateField";
 import { formatTaskDate } from "@/lib/format";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  type GoalHorizon,
+  goalHorizonLabel,
+  goalHorizonOrder,
+} from "@/db/schema/goals";
 
-export function GoalQuickAdd() {
+export function GoalQuickAdd({ defaultHorizon = "yearly" }: { defaultHorizon?: GoalHorizon }) {
   const [title, setTitle] = useState("");
   const [targetDate, setTargetDate] = useState<Date | null>(null);
+  const [horizon, setHorizon] = useState<GoalHorizon>(defaultHorizon);
   const [pending, startTransition] = useTransition();
 
   function submit() {
     const trimmed = title.trim();
     if (!trimmed) return;
     startTransition(async () => {
-      const r = await createGoal({ title: trimmed, targetDate: targetDate ?? undefined });
+      const r = await createGoal({
+        title: trimmed,
+        horizon,
+        targetDate: targetDate ?? undefined,
+      });
       if (r.ok) {
         setTitle("");
         setTargetDate(null);
+        setHorizon(defaultHorizon);
       } else {
         toast.error(r.error);
       }
@@ -44,6 +61,20 @@ export function GoalQuickAdd() {
         disabled={pending}
         autoFocus
       />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button type="button" variant="outline" size="sm" disabled={pending}>
+            {goalHorizonLabel[horizon]}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {goalHorizonOrder.map((h) => (
+            <DropdownMenuItem key={h} onSelect={() => setHorizon(h)}>
+              {goalHorizonLabel[h]}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Popover>
         <PopoverTrigger asChild>
           <Button type="button" variant="outline" size="sm" className="gap-1">

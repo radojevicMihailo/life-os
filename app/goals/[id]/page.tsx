@@ -44,6 +44,7 @@ export default async function GoalDetailPage({
       <GoalDetailEditor
         goalId={g.id}
         status={g.status}
+        horizon={g.horizon}
         targetDate={g.targetDate}
         description={g.description}
       />

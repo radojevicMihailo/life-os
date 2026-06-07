@@ -10,8 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { GoalStatus } from "@/db/schema/goals";
-import { goalStatusLabel } from "@/db/schema/goals";
+import type { GoalStatus, GoalHorizon } from "@/db/schema/goals";
+import { goalStatusLabel, goalHorizonLabel, goalHorizonOrder } from "@/db/schema/goals";
 import { setGoalStatus, updateGoal } from "../_actions/goals";
 import { DateField } from "@/app/(tasks)/_components/DateField";
 
@@ -27,18 +27,33 @@ const statusBadgeStyle: Record<GoalStatus, string> = {
 export function GoalDetailEditor({
   goalId,
   status: initialStatus,
+  horizon: initialHorizon,
   targetDate: initialTarget,
   description: initialDescription,
 }: {
   goalId: string;
   status: GoalStatus;
+  horizon: GoalHorizon;
   targetDate: Date | null;
   description: string | null;
 }) {
   const [status, setStatus] = useState(initialStatus);
+  const [horizon, setHorizon] = useState(initialHorizon);
   const [targetDate, setTargetDate] = useState(initialTarget);
   const [description, setDescription] = useState(initialDescription ?? "");
   const [pending, startTransition] = useTransition();
+
+  function changeHorizon(h: GoalHorizon) {
+    const prev = horizon;
+    setHorizon(h);
+    startTransition(async () => {
+      const r = await updateGoal({ id: goalId, horizon: h });
+      if (!r.ok) {
+        toast.error(r.error);
+        setHorizon(prev);
+      }
+    });
+  }
 
   function changeStatus(s: GoalStatus) {
     const prev = status;
@@ -86,6 +101,28 @@ export function GoalDetailEditor({
             {statusOrder.map((s) => (
               <DropdownMenuItem key={s} onSelect={() => changeStatus(s)}>
                 {goalStatusLabel[s]}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Horizon</Label>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="w-full rounded border px-3 py-2 text-sm text-left bg-card"
+              disabled={pending}
+            >
+              {goalHorizonLabel[horizon]}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {goalHorizonOrder.map((h) => (
+              <DropdownMenuItem key={h} onSelect={() => changeHorizon(h)}>
+                {goalHorizonLabel[h]}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>

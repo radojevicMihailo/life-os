@@ -2,14 +2,14 @@
 
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { split, splitDay, splitDayTag } from "@/db/schema/physical";
+import { split, splitDay, splitDayTag, splitDayWorkoutPlan } from "@/db/schema/physical";
 import { splitPayloadSchema } from "@/lib/validation/physical";
 import { revalidatePhysicalRoutes } from "./_revalidate";
 
 type ActionResult<T = void> = { ok: true; data: T } | { ok: false; error: string };
 const fail = (error: string): ActionResult<never> => ({ ok: false, error });
 
-type DayInput = { tagIds: string[]; sortOrder: number };
+type DayInput = { tagIds: string[]; workoutPlanIds: string[]; sortOrder: number };
 
 async function insertDaysWithTags(
   tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
@@ -29,6 +29,14 @@ async function insertDaysWithTags(
   });
   if (tagRows.length > 0) {
     await tx.insert(splitDayTag).values(tagRows);
+  }
+  const planRows = days.flatMap((d) => {
+    const dayId = bySort.get(d.sortOrder);
+    if (!dayId) return [];
+    return d.workoutPlanIds.map((planId) => ({ dayId, planId }));
+  });
+  if (planRows.length > 0) {
+    await tx.insert(splitDayWorkoutPlan).values(planRows);
   }
 }
 

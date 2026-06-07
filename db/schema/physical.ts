@@ -238,6 +238,22 @@ export const splitDayTag = pgTable(
   ],
 );
 
+export const splitDayWorkoutPlan = pgTable(
+  "physical_split_day_workout_plans",
+  {
+    dayId: uuid("day_id")
+      .notNull()
+      .references(() => splitDay.id, { onDelete: "cascade" }),
+    planId: uuid("plan_id")
+      .notNull()
+      .references(() => workoutPlan.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.dayId, t.planId] }),
+    index("split_day_workout_plan_plan_idx").on(t.planId),
+  ],
+);
+
 export type ActivityTagGroup = typeof activityTagGroup.$inferSelect;
 export type ActivityTag = typeof activityTag.$inferSelect;
 export type PhysicalField = typeof physicalField.$inferSelect;
@@ -250,3 +266,4 @@ export type WorkoutPlanExercise = typeof workoutPlanExercise.$inferSelect;
 export type Split = typeof split.$inferSelect;
 export type SplitDay = typeof splitDay.$inferSelect;
 export type SplitDayTag = typeof splitDayTag.$inferSelect;
+export type SplitDayWorkoutPlan = typeof splitDayWorkoutPlan.$inferSelect;

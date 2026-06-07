@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { getSplit, getTagGroups, getTags } from "@/lib/queries/physical";
+import { getSplit, getTagGroups, getTags, getWorkoutPlans } from "@/lib/queries/physical";
 import { SplitForm } from "../../../_components/SplitForm";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,12 @@ export default async function EditSplitPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [data, tagGroups, tags] = await Promise.all([getSplit(id), getTagGroups(), getTags()]);
+  const [data, tagGroups, tags, workoutPlans] = await Promise.all([
+    getSplit(id),
+    getTagGroups(),
+    getTags(),
+    getWorkoutPlans(),
+  ]);
   if (!data) notFound();
 
   return (
@@ -24,12 +29,17 @@ export default async function EditSplitPage({
       <SplitForm
         tagGroups={tagGroups}
         tags={tags}
+        workoutPlans={workoutPlans}
         initial={{
           id: data.split.id,
           name: data.split.name,
           notes: data.split.notes,
           archivedAt: data.split.archivedAt,
-          days: data.days.map((d) => ({ tagIds: d.tagIds, sortOrder: d.sortOrder })),
+          days: data.days.map((d) => ({
+            tagIds: d.tagIds,
+            workoutPlanIds: d.workoutPlanIds,
+            sortOrder: d.sortOrder,
+          })),
         }}
       />
     </div>

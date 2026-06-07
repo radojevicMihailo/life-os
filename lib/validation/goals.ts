@@ -1,11 +1,13 @@
 import { z } from "zod";
 
 export const goalStatusSchema = z.enum(["active", "done", "paused", "canceled"]);
+export const goalHorizonSchema = z.enum(["yearly", "monthly", "weekly", "daily"]);
 
 export const createGoalSchema = z.object({
   title: z.string().trim().min(1, "Title required").max(500),
   description: z.string().max(10_000).optional().nullable(),
   status: goalStatusSchema.optional(),
+  horizon: goalHorizonSchema.optional(),
   targetDate: z.date().optional().nullable(),
 });
 

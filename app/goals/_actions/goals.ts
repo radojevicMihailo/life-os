@@ -28,6 +28,7 @@ export async function createGoal(input: CreateGoalInput): Promise<ActionResult<{
       title: parsed.data.title,
       description: parsed.data.description ?? null,
       status: parsed.data.status ?? "active",
+      horizon: parsed.data.horizon ?? "yearly",
       targetDate: parsed.data.targetDate ?? null,
     })
     .returning({ id: goal.id });

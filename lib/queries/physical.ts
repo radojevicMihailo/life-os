@@ -13,6 +13,7 @@ import {
   split,
   splitDay,
   splitDayTag,
+  splitDayWorkoutPlan,
   workoutPlan,
   workoutPlanExercise,
   type Activity,
@@ -213,7 +214,7 @@ export async function getSplits(): Promise<SplitListRow[]> {
   return rows.map((s) => ({ ...s, dayCount: count.get(s.id) ?? 0 }));
 }
 
-export type SplitDayWithTags = SplitDay & { tagIds: string[] };
+export type SplitDayWithTags = SplitDay & { tagIds: string[]; workoutPlanIds: string[] };
 
 export type SplitDetail = {
   split: Split;
@@ -229,18 +230,29 @@ export async function getSplit(id: string): Promise<SplitDetail | null> {
     .where(eq(splitDay.splitId, id))
     .orderBy(asc(splitDay.sortOrder));
   if (days.length === 0) return { split: s, days: [] };
-  const tagLinks = await db
-    .select()
-    .from(splitDayTag)
-    .where(inArray(splitDayTag.dayId, days.map((d) => d.id)));
+  const dayIds = days.map((d) => d.id);
+  const [tagLinks, planLinks] = await Promise.all([
+    db.select().from(splitDayTag).where(inArray(splitDayTag.dayId, dayIds)),
+    db.select().from(splitDayWorkoutPlan).where(inArray(splitDayWorkoutPlan.dayId, dayIds)),
+  ]);
   const tagMap = new Map<string, string[]>();
   for (const t of tagLinks) {
     const list = tagMap.get(t.dayId) ?? [];
     list.push(t.tagId);
     tagMap.set(t.dayId, list);
   }
+  const planMap = new Map<string, string[]>();
+  for (const p of planLinks) {
+    const list = planMap.get(p.dayId) ?? [];
+    list.push(p.planId);
+    planMap.set(p.dayId, list);
+  }
   return {
     split: s,
-    days: days.map((d) => ({ ...d, tagIds: tagMap.get(d.id) ?? [] })),
+    days: days.map((d) => ({
+      ...d,
+      tagIds: tagMap.get(d.id) ?? [],
+      workoutPlanIds: planMap.get(d.id) ?? [],
+    })),
   };
 }

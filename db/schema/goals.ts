@@ -25,6 +25,24 @@ export const goalStatusLabel: Record<GoalStatus, string> = {
   canceled: "Canceled",
 };
 
+export const goalHorizonEnum = pgEnum("goal_horizon", [
+  "yearly",
+  "monthly",
+  "weekly",
+  "daily",
+]);
+
+export type GoalHorizon = (typeof goalHorizonEnum.enumValues)[number];
+
+export const goalHorizonLabel: Record<GoalHorizon, string> = {
+  yearly: "Yearly",
+  monthly: "Monthly",
+  weekly: "Weekly",
+  daily: "Daily",
+};
+
+export const goalHorizonOrder: GoalHorizon[] = ["yearly", "monthly", "weekly", "daily"];
+
 export const goal = pgTable(
   "goals",
   {
@@ -32,12 +50,16 @@ export const goal = pgTable(
     title: text("title").notNull(),
     description: text("description"),
     status: goalStatusEnum("status").notNull().default("active"),
+    horizon: goalHorizonEnum("horizon").notNull().default("yearly"),
     targetDate: timestamp("target_date", { withTimezone: true }),
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
   },
-  (t) => [index("goal_status_idx").on(t.status)],
+  (t) => [
+    index("goal_status_idx").on(t.status),
+    index("goal_horizon_idx").on(t.horizon),
+  ],
 );
 
 export const milestone = pgTable(

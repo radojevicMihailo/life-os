@@ -98,6 +98,7 @@ export const splitPayloadSchema = z.object({
     .array(
       z.object({
         tagIds: z.array(z.uuid()).default([]),
+        workoutPlanIds: z.array(z.uuid()).default([]),
         sortOrder: z.number().int().nonnegative(),
       }),
     )

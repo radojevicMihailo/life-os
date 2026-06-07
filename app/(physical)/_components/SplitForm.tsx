@@ -15,10 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { ActivityTag, ActivityTagGroup } from "@/db/schema/physical";
+import type { ActivityTag, ActivityTagGroup, WorkoutPlan } from "@/db/schema/physical";
 import { archiveSplit, createSplit, deleteSplit, updateSplit } from "../_actions/splits";
 
-type DayRow = { tagIds: string[]; sortOrder: number };
+type DayRow = { tagIds: string[]; workoutPlanIds: string[]; sortOrder: number };
 
 export type SplitInitial = {
   id?: string;
@@ -33,10 +33,12 @@ const NONE = "__none__";
 export function SplitForm({
   tagGroups,
   tags,
+  workoutPlans,
   initial,
 }: {
   tagGroups: ActivityTagGroup[];
   tags: ActivityTag[];
+  workoutPlans: WorkoutPlan[];
   initial?: SplitInitial;
 }) {
   const router = useRouter();
@@ -71,8 +73,25 @@ export function SplitForm({
     });
   }
 
+  const planById = new Map(workoutPlans.map((p) => [p.id, p]));
+
+  function togglePlanForDay(idx: number, planId: string) {
+    setDays((prev) => {
+      const next = prev.slice();
+      const day = next[idx];
+      const has = day.workoutPlanIds.includes(planId);
+      next[idx] = {
+        ...day,
+        workoutPlanIds: has
+          ? day.workoutPlanIds.filter((p) => p !== planId)
+          : [...day.workoutPlanIds, planId],
+      };
+      return next;
+    });
+  }
+
   function add() {
-    setDays((prev) => [...prev, { tagIds: [], sortOrder: prev.length }]);
+    setDays((prev) => [...prev, { tagIds: [], workoutPlanIds: [], sortOrder: prev.length }]);
   }
 
   function remove(idx: number) {
@@ -93,7 +112,11 @@ export function SplitForm({
     const payload = {
       name,
       notes: notes.trim() === "" ? null : notes,
-      days: days.map((d, i) => ({ tagIds: d.tagIds, sortOrder: i })),
+      days: days.map((d, i) => ({
+        tagIds: d.tagIds,
+        workoutPlanIds: d.workoutPlanIds,
+        sortOrder: i,
+      })),
     };
     startTransition(async () => {
       const result = initial?.id
@@ -176,6 +199,58 @@ export function SplitForm({
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Workout plans</Label>
+              {workoutPlans.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No workout plans yet.</p>
+              ) : (
+                <>
+                  <Select
+                    value={NONE}
+                    onValueChange={(v) => {
+                      if (v !== NONE) togglePlanForDay(idx, v);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Add workout plan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {workoutPlans
+                        .filter((p) => !day.workoutPlanIds.includes(p.id))
+                        .map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name}
+                          </SelectItem>
+                        ))}
+                      {workoutPlans.every((p) => day.workoutPlanIds.includes(p.id)) ? (
+                        <SelectItem value={NONE} disabled>
+                          All added
+                        </SelectItem>
+                      ) : null}
+                    </SelectContent>
+                  </Select>
+                  {day.workoutPlanIds.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {day.workoutPlanIds.map((id) => {
+                        const p = planById.get(id);
+                        return (
+                          <Button
+                            key={id}
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => togglePlanForDay(idx, id)}
+                          >
+                            {p?.name ?? id}
+                            <Trash2 className="ml-1 h-3 w-3" />
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                </>
+              )}
             </div>
             {tagGroups.length === 0 ? (
               <p className="text-xs text-muted-foreground">No tag groups. Create some in Configuration.</p>
