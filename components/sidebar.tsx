@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NavTree } from "@/components/nav-tree";
+import { PomodoroBadge } from "@/components/pomodoro-badge";
 
 export function Sidebar() {
   return (
@@ -12,6 +13,7 @@ export function Sidebar() {
       <nav className="flex flex-1 flex-col gap-4 px-3 pb-4">
         <NavTree />
       </nav>
+      <PomodoroBadge />
     </aside>
   );
 }
