@@ -19,6 +19,7 @@ import {
   ClipboardList,
   Plane,
   BarChart3,
+  Timer,
 } from "lucide-react";
 
 type IconType = ComponentType<{ className?: string }>;
@@ -37,17 +38,19 @@ type Section =
 const taskChildren: LeafItem[] = [
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/tasks", label: "Tasks", icon: ListTodo },
+  { href: "/pomodoro", label: "Pomodoro", icon: Timer },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
 ];
 
-const taskPaths = new Set(["/tasks", "/projects", "/calendar"]);
+const taskPaths = new Set(["/tasks", "/projects", "/calendar", "/pomodoro"]);
 
 function isTaskRoute(pathname: string): boolean {
   if (taskPaths.has(pathname)) return true;
   return (
     pathname.startsWith("/tasks/") ||
     pathname.startsWith("/projects/") ||
-    pathname.startsWith("/calendar/")
+    pathname.startsWith("/calendar/") ||
+    pathname.startsWith("/pomodoro/")
   );
 }
 

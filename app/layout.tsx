@@ -4,6 +4,7 @@ import "./globals.css";
 import { Sidebar } from "@/components/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
+import { PomodoroProvider } from "@/lib/pomodoro/context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,12 +38,14 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${marcellus.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="flex-1 p-6 md:p-8">{children}</main>
-        </div>
-        <Toaster richColors position="top-right" />
-        <KeyboardShortcuts />
+        <PomodoroProvider>
+          <div className="flex min-h-screen">
+            <Sidebar />
+            <main className="flex-1 p-6 md:p-8">{children}</main>
+          </div>
+          <Toaster richColors position="top-right" />
+          <KeyboardShortcuts />
+        </PomodoroProvider>
       </body>
     </html>
   );
