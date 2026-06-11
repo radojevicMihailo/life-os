@@ -18,6 +18,7 @@ import {
   Dumbbell,
   ClipboardList,
   Plane,
+  BarChart3,
 } from "lucide-react";
 
 type IconType = ComponentType<{ className?: string }>;
@@ -68,9 +69,10 @@ function isPhysicalRoute(pathname: string): boolean {
 }
 
 const financeChildren: LeafItem[] = [
-  { href: "/finance/configuration", label: "Configuration", icon: Settings2 },
+  { href: "/finance/overview", label: "Overview", icon: BarChart3 },
   { href: "/finance/transactions", label: "Transactions", icon: ListTodo },
   { href: "/finance/portfolio", label: "Portfolio", icon: Wallet },
+  { href: "/finance/configuration", label: "Configuration", icon: Settings2 },
 ];
 
 function isFinanceRoute(pathname: string): boolean {
