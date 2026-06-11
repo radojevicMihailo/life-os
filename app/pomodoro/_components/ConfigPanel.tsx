@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePomodoro } from "@/lib/pomodoro/context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,18 +21,39 @@ function NumberField({
   max: number;
   onChange: (n: number) => void;
 }) {
+  const [raw, setRaw] = useState<string>(String(value));
+
+  useEffect(() => {
+    setRaw(String(value));
+  }, [value]);
+
+  function commit() {
+    const n = Number(raw);
+    if (!Number.isFinite(n)) {
+      setRaw(String(value));
+      return;
+    }
+    const clamped = Math.max(min, Math.min(max, Math.floor(n)));
+    setRaw(String(clamped));
+    if (clamped !== value) onChange(clamped);
+  }
+
   return (
     <div className="flex flex-col gap-1">
       <Label htmlFor={id}>{label}</Label>
       <Input
         id={id}
         type="number"
+        inputMode="numeric"
         min={min}
         max={max}
-        value={value}
-        onChange={(e) => {
-          const n = Number(e.target.value);
-          if (Number.isFinite(n)) onChange(Math.max(min, Math.min(max, Math.floor(n))));
+        value={raw}
+        onChange={(e) => setRaw(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.currentTarget.blur();
+          }
         }}
         className="w-24"
       />
