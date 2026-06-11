@@ -10,6 +10,11 @@ export type GoogleCalendarInfo = {
   primary: boolean;
 };
 
+export type GoogleCalendarInfoWithAccount = GoogleCalendarInfo & {
+  accountIdx: number;
+  accountLabel: string;
+};
+
 export type GoogleEvent = {
   id: string;
   calendarId: string;
@@ -20,22 +25,48 @@ export type GoogleEvent = {
 };
 
 type TokenCache = { token: string; expiresAt: number };
-let cached: TokenCache | null = null;
+const cached: Map<number, TokenCache> = new Map();
+
+function getRefreshTokens(): string[] {
+  const multi = process.env.GOOGLE_REFRESH_TOKENS;
+  if (multi) {
+    return multi
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+  }
+  const single = process.env.GOOGLE_REFRESH_TOKEN;
+  return single ? [single] : [];
+}
+
+function getAccountLabels(): string[] {
+  const raw = process.env.GOOGLE_ACCOUNT_LABELS;
+  if (!raw) return [];
+  return raw.split(",").map((s) => s.trim());
+}
+
+export function getAccountCount(): number {
+  return getRefreshTokens().length;
+}
 
 export function isConfigured(): boolean {
   return Boolean(
     process.env.GOOGLE_CLIENT_ID &&
       process.env.GOOGLE_CLIENT_SECRET &&
-      process.env.GOOGLE_REFRESH_TOKEN,
+      getRefreshTokens().length > 0,
   );
 }
 
-export async function getAccessToken(): Promise<string> {
-  if (cached && cached.expiresAt - 60_000 > Date.now()) return cached.token;
+export async function getAccessToken(accountIdx = 0): Promise<string> {
+  const tokens = getRefreshTokens();
+  const refreshToken = tokens[accountIdx];
+  if (!refreshToken) throw new GoogleAuthError(`no refresh token for account ${accountIdx}`);
+  const hit = cached.get(accountIdx);
+  if (hit && hit.expiresAt - 60_000 > Date.now()) return hit.token;
   const body = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID ?? "",
     client_secret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-    refresh_token: process.env.GOOGLE_REFRESH_TOKEN ?? "",
+    refresh_token: refreshToken,
     grant_type: "refresh_token",
   });
   const res = await fetch(TOKEN_URL, {
@@ -48,17 +79,20 @@ export async function getAccessToken(): Promise<string> {
     throw new GoogleAuthError(`token refresh failed: ${res.status} ${text}`);
   }
   const json = (await res.json()) as { access_token: string; expires_in: number };
-  cached = { token: json.access_token, expiresAt: Date.now() + json.expires_in * 1000 };
+  cached.set(accountIdx, {
+    token: json.access_token,
+    expiresAt: Date.now() + json.expires_in * 1000,
+  });
   return json.access_token;
 }
 
-async function apiGet<T>(path: string): Promise<T> {
-  const token = await getAccessToken();
+async function apiGet<T>(path: string, accountIdx = 0): Promise<T> {
+  const token = await getAccessToken(accountIdx);
   const res = await fetch(`${API}${path}`, {
     headers: { authorization: `Bearer ${token}` },
   });
   if (res.status === 401 || res.status === 403) {
-    cached = null;
+    cached.delete(accountIdx);
     throw new GoogleAuthError(`google api auth failed: ${res.status}`);
   }
   if (!res.ok) {
@@ -67,9 +101,9 @@ async function apiGet<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-export async function listCalendars(): Promise<GoogleCalendarInfo[]> {
+export async function listCalendars(accountIdx = 0): Promise<GoogleCalendarInfo[]> {
   type Resp = { items?: { id: string; summary?: string; primary?: boolean }[] };
-  const json = await apiGet<Resp>("/users/me/calendarList");
+  const json = await apiGet<Resp>("/users/me/calendarList", accountIdx);
   return (json.items ?? []).map((c) => ({
     id: c.id,
     summary: c.summary ?? c.id,
@@ -77,10 +111,30 @@ export async function listCalendars(): Promise<GoogleCalendarInfo[]> {
   }));
 }
 
+export async function listAllCalendars(): Promise<GoogleCalendarInfoWithAccount[]> {
+  const count = getAccountCount();
+  const labels = getAccountLabels();
+  const results = await Promise.allSettled(
+    Array.from({ length: count }, (_, i) => listCalendars(i)),
+  );
+  const out: GoogleCalendarInfoWithAccount[] = [];
+  results.forEach((r, idx) => {
+    if (r.status !== "fulfilled") {
+      console.error(`[google] listCalendars account ${idx} failed`, r.reason);
+      return;
+    }
+    const primary = r.value.find((c) => c.primary);
+    const label = labels[idx] ?? primary?.summary ?? `Account ${idx + 1}`;
+    for (const c of r.value) out.push({ ...c, accountIdx: idx, accountLabel: label });
+  });
+  return out;
+}
+
 export async function listEvents(
   calendarId: string,
   timeMinISO: string,
   timeMaxISO: string,
+  accountIdx = 0,
 ): Promise<GoogleEvent[]> {
   type RawEvent = {
     id: string;
@@ -98,6 +152,7 @@ export async function listEvents(
   });
   const json = await apiGet<Resp>(
     `/calendars/${encodeURIComponent(calendarId)}/events?${qs.toString()}`,
+    accountIdx,
   );
   return (json.items ?? []).map((e) => {
     const startDateTime = e.start?.dateTime;
@@ -108,7 +163,7 @@ export async function listEvents(
     const startISO = startDateTime ?? (startDate ? `${startDate}T00:00:00.000Z` : "");
     const endISO = endDateTime ?? (endDate ? `${endDate}T00:00:00.000Z` : undefined);
     return {
-      id: `${calendarId}:${e.id}`,
+      id: `${accountIdx}:${calendarId}:${e.id}`,
       calendarId,
       summary: e.summary ?? "(no title)",
       startISO,

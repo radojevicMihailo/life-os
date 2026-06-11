@@ -4,9 +4,9 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import {
   isConfigured,
-  listCalendars,
+  listAllCalendars,
   listEvents,
-  type GoogleCalendarInfo,
+  type GoogleCalendarInfoWithAccount,
 } from "@/lib/google/calendar";
 import { GoogleAuthError } from "@/lib/google/errors";
 import {
@@ -28,24 +28,39 @@ export type GoogleCalendarItem = {
 
 export type ListCalendarsResult = {
   connected: boolean;
-  calendars: GoogleCalendarInfo[];
+  calendars: GoogleCalendarInfoWithAccount[];
   selected: string[];
 };
+
+function toCompositeId(accountIdx: number, calendarId: string) {
+  return `${accountIdx}:${calendarId}`;
+}
+
+function parseCompositeId(raw: string): { accountIdx: number; calendarId: string } {
+  const m = /^(\d+):(.+)$/.exec(raw);
+  if (m) return { accountIdx: Number(m[1]), calendarId: m[2] };
+  return { accountIdx: 0, calendarId: raw };
+}
 
 export async function listGoogleCalendarsAction(): Promise<ListCalendarsResult> {
   if (!isConfigured()) return { connected: false, calendars: [], selected: [] };
   try {
-    const [calendars, selected] = await Promise.all([
-      listCalendars(),
+    const [calendars, selectedRaw] = await Promise.all([
+      listAllCalendars(),
       getSelectedGoogleCalendars(),
     ]);
+    const selected = selectedRaw.map((s) => {
+      const { accountIdx, calendarId } = parseCompositeId(s);
+      return toCompositeId(accountIdx, calendarId);
+    });
     return { connected: true, calendars, selected };
-  } catch {
+  } catch (err) {
+    console.error("[google] listGoogleCalendarsAction failed", err);
     return { connected: true, calendars: [], selected: [] };
   }
 }
 
-const idsSchema = z.array(z.string().min(1)).max(50);
+const idsSchema = z.array(z.string().min(1)).max(100);
 
 export async function saveSelectedGoogleCalendarsAction(ids: string[]): Promise<void> {
   const parsed = idsSchema.parse(ids);
@@ -71,8 +86,9 @@ export async function fetchGoogleEventsAction(
   }
   if (selected.length === 0) return { items: [], error: null };
 
+  const targets = selected.map(parseCompositeId);
   const results = await Promise.allSettled(
-    selected.map((id) => listEvents(id, startISO, endISO)),
+    targets.map((t) => listEvents(t.calendarId, startISO, endISO, t.accountIdx)),
   );
 
   let anyAuth = false;

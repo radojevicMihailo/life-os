@@ -35,8 +35,40 @@ function isGcal(it: CalendarItem) {
   return it.source === "google" || it.kind === "gcal";
 }
 
-const HOUR_PX = 32;
-const DAY_PX = HOUR_PX * 24;
+const ACTIVE_START_HOUR = 7;
+const ACTIVE_END_HOUR = 23;
+const ACTIVE_HOUR_PX = 56;
+
+function hourPx(h: number) {
+  return h >= ACTIVE_START_HOUR && h < ACTIVE_END_HOUR ? ACTIVE_HOUR_PX : 0;
+}
+
+const HOUR_TOPS: number[] = (() => {
+  const out: number[] = [];
+  let acc = 0;
+  for (let h = 0; h < 24; h++) {
+    out.push(acc);
+    acc += hourPx(h);
+  }
+  out.push(acc);
+  return out;
+})();
+const DAY_PX = HOUR_TOPS[24];
+
+function minutesToPx(minutes: number) {
+  const m = Math.max(0, Math.min(24 * 60, minutes));
+  const h = Math.min(23, Math.floor(m / 60));
+  return HOUR_TOPS[h] + ((m - h * 60) / 60) * hourPx(h);
+}
+
+function pxToMinutes(y: number) {
+  if (y <= 0) return 0;
+  if (y >= DAY_PX) return 24 * 60;
+  let h = 0;
+  while (h < 23 && HOUR_TOPS[h + 1] <= y) h++;
+  const within = ((y - HOUR_TOPS[h]) / hourPx(h)) * 60;
+  return h * 60 + within;
+}
 
 type ViewMode = "week" | "month";
 
@@ -248,7 +280,10 @@ function WeekTimeline({
   byDay: Map<string, CalendarItem[]>;
   onCreate: (date: Date, withTime: boolean) => void;
 }) {
-  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const hours = Array.from(
+    { length: ACTIVE_END_HOUR - ACTIVE_START_HOUR },
+    (_, i) => ACTIVE_START_HOUR + i,
+  );
   const [now, setNow] = useState<Date>(() => new Date());
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000);
@@ -256,7 +291,7 @@ function WeekTimeline({
   }, []);
   const today = now;
   const todayIdx = days.findIndex((d) => isSameDay(d, today));
-  const nowTop = ((today.getHours() * 60 + today.getMinutes()) / 60) * HOUR_PX;
+  const nowTop = minutesToPx(today.getHours() * 60 + today.getMinutes());
 
   return (
     <div className="overflow-hidden rounded-md border bg-card">
@@ -343,14 +378,19 @@ function WeekTimeline({
         style={{ gridTemplateColumns: `60px repeat(7, minmax(0, 1fr))`, height: DAY_PX }}
       >
         <div className="relative">
-          {hours.map((h) => {
+          {[...hours, ACTIVE_END_HOUR].map((h) => {
             const label = `${h.toString().padStart(2, "0")}00`;
-            const isFirst = h === 0;
+            const isFirst = h === ACTIVE_START_HOUR;
+            const isLast = h === ACTIVE_END_HOUR;
+            const top = isFirst ? 0 : isLast ? DAY_PX : HOUR_TOPS[h];
             return (
               <div
                 key={h}
                 className="absolute right-1 text-[10px] tabular-nums text-muted-foreground"
-                style={{ top: isFirst ? 0 : h * HOUR_PX, transform: isFirst ? undefined : "translateY(-50%)" }}
+                style={{
+                  top,
+                  transform: isFirst ? undefined : isLast ? "translateY(-100%)" : "translateY(-50%)",
+                }}
               >
                 {label}
               </div>
@@ -369,7 +409,8 @@ function WeekTimeline({
               onClick={(e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
                 const y = e.clientY - rect.top;
-                const minutes = Math.max(0, Math.min(24 * 60 - 15, Math.round((y / HOUR_PX) * 60 / 15) * 15));
+                const raw = pxToMinutes(y);
+                const minutes = Math.max(0, Math.min(24 * 60 - 15, Math.round(raw / 15) * 15));
                 const d = new Date(day);
                 d.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
                 onCreate(d, true);
@@ -388,11 +429,11 @@ function WeekTimeline({
                 <div key={`hr-${h}`}>
                   <div
                     className="absolute left-0 right-0 border-t border-border/60"
-                    style={{ top: h * HOUR_PX }}
+                    style={{ top: HOUR_TOPS[h] }}
                   />
                   <div
                     className="absolute left-0 right-0 border-t border-border/40"
-                    style={{ top: h * HOUR_PX + HOUR_PX / 2 }}
+                    style={{ top: HOUR_TOPS[h] + hourPx(h) / 2 }}
                   />
                 </div>
               ))}
@@ -403,8 +444,8 @@ function WeekTimeline({
                 const endMin = end
                   ? Math.min(24 * 60, end.getHours() * 60 + end.getMinutes() || 24 * 60)
                   : startMin + 30;
-                const top = (startMin / 60) * HOUR_PX;
-                const height = Math.max(16, ((endMin - startMin) / 60) * HOUR_PX);
+                const top = minutesToPx(startMin);
+                const height = Math.max(16, minutesToPx(endMin) - top);
                 if (isGcal(it)) {
                   return (
                     <div

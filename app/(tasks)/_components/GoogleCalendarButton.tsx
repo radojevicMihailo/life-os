@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,13 +8,23 @@ import {
   saveSelectedGoogleCalendarsAction,
 } from "../_actions/google";
 
-type CalInfo = { id: string; summary: string; primary: boolean };
+type CalInfo = {
+  id: string;
+  summary: string;
+  primary: boolean;
+  accountIdx: number;
+  accountLabel: string;
+};
 
 type LoadedState = {
   status: "idle" | "loading" | "ready" | "disconnected";
   calendars: CalInfo[];
   selected: Set<string>;
 };
+
+function compositeId(accountIdx: number, calendarId: string) {
+  return `${accountIdx}:${calendarId}`;
+}
 
 export function GoogleCalendarButton({ initialConnected }: { initialConnected: boolean }) {
   const [open, setOpen] = useState(false);
@@ -65,6 +75,16 @@ export function GoogleCalendarButton({ initialConnected }: { initialConnected: b
     });
   }
 
+  const grouped = useMemo(() => {
+    const m = new Map<number, { label: string; cals: CalInfo[] }>();
+    for (const c of state.calendars) {
+      const g = m.get(c.accountIdx) ?? { label: c.accountLabel, cals: [] };
+      g.cals.push(c);
+      m.set(c.accountIdx, g);
+    }
+    return Array.from(m.entries()).sort((a, b) => a[0] - b[0]);
+  }, [state.calendars]);
+
   if (state.status === "disconnected") {
     return (
       <div className="relative">
@@ -72,7 +92,7 @@ export function GoogleCalendarButton({ initialConnected }: { initialConnected: b
           Connect Google Calendar
         </Button>
         {open && (
-          <div className="absolute right-0 z-20 mt-2 w-80 rounded-md border bg-popover p-3 text-sm shadow">
+          <div className="absolute right-0 z-20 mt-2 w-96 rounded-md border bg-popover p-3 text-sm shadow">
             <p className="font-medium">Connect Google Calendar</p>
             <ol className="mt-2 list-decimal space-y-1 pl-4 text-muted-foreground">
               <li>
@@ -84,8 +104,14 @@ export function GoogleCalendarButton({ initialConnected }: { initialConnected: b
                 <code>.env.local</code>.
               </li>
               <li>
-                Run <code>pnpm google:oauth</code> and paste the printed{" "}
-                <code>GOOGLE_REFRESH_TOKEN</code> into <code>.env.local</code>.
+                Run <code>pnpm google:oauth</code> once per Google account. Collect each printed
+                refresh token.
+              </li>
+              <li>
+                Set <code>GOOGLE_REFRESH_TOKENS</code> in <code>.env.local</code> to a
+                comma-separated list of those tokens (single <code>GOOGLE_REFRESH_TOKEN</code> still
+                works for one account). Optionally set{" "}
+                <code>GOOGLE_ACCOUNT_LABELS</code> to a matching comma-separated list of labels.
               </li>
               <li>Restart the dev server and refresh this page.</li>
             </ol>
@@ -106,29 +132,41 @@ export function GoogleCalendarButton({ initialConnected }: { initialConnected: b
         {label}
       </Button>
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-80 rounded-md border bg-popover p-3 text-sm shadow">
+        <div className="absolute right-0 z-20 mt-2 w-96 rounded-md border bg-popover p-3 text-sm shadow">
           {state.status === "loading" && <p>Loading calendars…</p>}
           {state.status === "ready" && (
             <>
               <p className="mb-2 font-medium">Show events from</p>
-              <ul className="max-h-64 space-y-1 overflow-auto">
-                {state.calendars.map((c) => (
-                  <li key={c.id} className="flex items-center gap-2">
-                    <input
-                      id={`gcal-${c.id}`}
-                      type="checkbox"
-                      checked={state.selected.has(c.id)}
-                      onChange={() => toggleId(c.id)}
-                    />
-                    <label htmlFor={`gcal-${c.id}`} className="truncate">
-                      {c.summary} {c.primary ? "(primary)" : ""}
-                    </label>
-                  </li>
+              <div className="max-h-72 space-y-3 overflow-auto">
+                {grouped.map(([idx, group]) => (
+                  <div key={idx}>
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {group.label}
+                    </p>
+                    <ul className="space-y-1">
+                      {group.cals.map((c) => {
+                        const cid = compositeId(c.accountIdx, c.id);
+                        return (
+                          <li key={cid} className="flex items-center gap-2">
+                            <input
+                              id={`gcal-${cid}`}
+                              type="checkbox"
+                              checked={state.selected.has(cid)}
+                              onChange={() => toggleId(cid)}
+                            />
+                            <label htmlFor={`gcal-${cid}`} className="truncate">
+                              {c.summary} {c.primary ? "(primary)" : ""}
+                            </label>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
                 ))}
                 {state.calendars.length === 0 && (
-                  <li className="text-muted-foreground">No calendars returned.</li>
+                  <p className="text-muted-foreground">No calendars returned.</p>
                 )}
-              </ul>
+              </div>
               <div className="mt-3 flex justify-end gap-2">
                 <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
                   Cancel

@@ -6,7 +6,7 @@ vi.mock("@/lib/queries/settings", () => ({
 }));
 vi.mock("@/lib/google/calendar", () => ({
   isConfigured: vi.fn(),
-  listCalendars: vi.fn(),
+  listAllCalendars: vi.fn(),
   listEvents: vi.fn(),
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
@@ -27,16 +27,16 @@ describe("google server actions", () => {
 
   it("listGoogleCalendarsAction merges calendars + selection when connected", async () => {
     (gcal.isConfigured as ReturnType<typeof vi.fn>).mockReturnValue(true);
-    (gcal.listCalendars as ReturnType<typeof vi.fn>).mockResolvedValue([
-      { id: "a", summary: "A", primary: true },
+    (gcal.listAllCalendars as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "a", summary: "A", primary: true, accountIdx: 0, accountLabel: "A" },
     ]);
     (settings.getSelectedGoogleCalendars as ReturnType<typeof vi.fn>).mockResolvedValue(["a"]);
     const mod = await import("./google");
     const res = await mod.listGoogleCalendarsAction();
     expect(res).toEqual({
       connected: true,
-      calendars: [{ id: "a", summary: "A", primary: true }],
-      selected: ["a"],
+      calendars: [{ id: "a", summary: "A", primary: true, accountIdx: 0, accountLabel: "A" }],
+      selected: ["0:a"],
     });
   });
 

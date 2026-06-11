@@ -111,7 +111,7 @@ export function TaskForm({
           <Plus className="mr-1 h-4 w-4" /> {label}
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{label}</DialogTitle>
         </DialogHeader>
@@ -120,9 +120,9 @@ export function TaskForm({
             e.preventDefault();
             submit();
           }}
-          className="space-y-4"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
         >
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="task-title">Title</Label>
             <Input
               id="task-title"
@@ -132,7 +132,7 @@ export function TaskForm({
               required
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="task-notes">Notes</Label>
             <Textarea
               id="task-notes"
@@ -141,7 +141,7 @@ export function TaskForm({
               rows={3}
             />
           </div>
-          <div className="space-y-2 rounded-md border p-3">
+          <div className="space-y-2 rounded-md border p-3 sm:col-span-2">
             <div className="flex items-center justify-between">
               <Label>Action</Label>
               {!showActionEnd ? (
@@ -266,8 +266,10 @@ export function TaskForm({
               </Select>
             </div>
           )}
-          <RecurrenceEditor value={recurrence} onChange={setRecurrence} dueAt={dueAt} />
-          <DialogFooter>
+          <div className="sm:col-span-2">
+            <RecurrenceEditor value={recurrence} onChange={setRecurrence} dueAt={dueAt} />
+          </div>
+          <DialogFooter className="sm:col-span-2">
             <Button type="submit" disabled={pending || !title.trim()}>
               Create
             </Button>
