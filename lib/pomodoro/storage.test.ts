@@ -14,8 +14,12 @@ class MemoryStorage {
 
 beforeEach(() => {
   const memStorage = new MemoryStorage();
-  (globalThis as any).window = { localStorage: memStorage };
-  (globalThis as any).localStorage = memStorage;
+  const g = globalThis as unknown as {
+    window: { localStorage: MemoryStorage };
+    localStorage: MemoryStorage;
+  };
+  g.window = { localStorage: memStorage };
+  g.localStorage = memStorage;
 });
 
 describe("state storage", () => {
