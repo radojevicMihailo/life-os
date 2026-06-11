@@ -1,40 +1,57 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getInvestmentSummary } from "../_actions/overview";
 import { fmtEur, fmtPct } from "@/lib/finance/overview/formatters";
 import type { InvestmentSummary } from "@/lib/finance/overview/types";
 
+type State =
+  | { status: "loading" }
+  | { status: "success"; data: InvestmentSummary }
+  | { status: "error"; message: string };
+
+type Action =
+  | { type: "fetch" }
+  | { type: "success"; data: InvestmentSummary }
+  | { type: "error"; message: string };
+
+function reducer(_state: State, action: Action): State {
+  switch (action.type) {
+    case "fetch":
+      return { status: "loading" };
+    case "success":
+      return { status: "success", data: action.data };
+    case "error":
+      return { status: "error", message: action.message };
+  }
+}
+
 export function InvestmentSummaryCard({ from, to }: { from: string; to: string }) {
-  const [data, setData] = useState<InvestmentSummary | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [attempt, setAttempt] = useState(0);
+  const [state, dispatch] = useReducer(reducer, { status: "loading" } as State);
+  const [attempt, setAttempt] = useReducer((n: number) => n + 1, 0);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
+    dispatch({ type: "fetch" });
     getInvestmentSummary(from, to)
       .then((res) => {
-        if (cancelled) return;
-        setData(res);
+        if (!cancelled) dispatch({ type: "success", data: res });
       })
       .catch((e: unknown) => {
-        if (cancelled) return;
-        setError(e instanceof Error ? e.message : "Greška");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled)
+          dispatch({
+            type: "error",
+            message: e instanceof Error ? e.message : "Greška",
+          });
       });
     return () => {
       cancelled = true;
     };
   }, [from, to, attempt]);
 
-  if (loading) {
+  if (state.status === "loading") {
     return (
       <Card className="p-4 space-y-2">
         <div className="text-sm text-muted-foreground">Investicije</div>
@@ -44,20 +61,19 @@ export function InvestmentSummaryCard({ from, to }: { from: string; to: string }
     );
   }
 
-  if (error) {
+  if (state.status === "error") {
     return (
       <Card className="p-4 space-y-2">
         <div className="text-sm text-muted-foreground">Investicije</div>
-        <div className="text-sm text-rose-600">Greška: {error}</div>
-        <Button size="sm" variant="outline" onClick={() => setAttempt((a) => a + 1)}>
+        <div className="text-sm text-rose-600">Greška: {state.message}</div>
+        <Button size="sm" variant="outline" onClick={() => setAttempt()}>
           Pokušaj ponovo
         </Button>
       </Card>
     );
   }
 
-  if (!data) return null;
-
+  const data = state.data;
   const pnlColor = data.pnlAbsolute >= 0 ? "text-emerald-600" : "text-rose-600";
 
   return (
