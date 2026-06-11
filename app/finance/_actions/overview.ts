@@ -100,10 +100,16 @@ async function fetchCashflow(
   to: string,
   granularity: Granularity,
 ): Promise<OverviewAggregates["cashflowBuckets"]> {
-  const truncUnit = granularity;
+  const truncUnit: "day" | "week" | "month" =
+    granularity === "day" || granularity === "week" || granularity === "month"
+      ? granularity
+      : "day";
+  const truncExpr = sql.raw(
+    `date_trunc('${truncUnit}', "finance_transactions"."occurred_on"::timestamp)`,
+  );
   const rows = await db
     .select({
-      bucket: sql<string>`to_char(date_trunc(${truncUnit}, ${transaction.occurredOn}::timestamp), 'YYYY-MM-DD')`,
+      bucket: sql<string>`to_char(${truncExpr}, 'YYYY-MM-DD')`,
       kind: transactionCategory.kind,
       eurSum: sql<string>`sum(${transaction.eurAmount})`,
     })
@@ -117,10 +123,7 @@ async function fetchCashflow(
         isNotNull(transaction.eurAmount),
       ),
     )
-    .groupBy(
-      sql`date_trunc(${truncUnit}, ${transaction.occurredOn}::timestamp)`,
-      transactionCategory.kind,
-    );
+    .groupBy(truncExpr, transactionCategory.kind);
 
   const map = new Map<string, { income: number; expense: number }>();
   for (const r of rows) {
