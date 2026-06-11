@@ -12,6 +12,7 @@ import { buildBreakdown } from "@/lib/finance/overview/buildBreakdown";
 import { chooseGranularity } from "@/lib/finance/overview/granularity";
 import { priorWindow } from "@/lib/finance/overview/momWindow";
 import { sixMonthRange } from "@/lib/finance/overview/sixMonths";
+import { getPortfolio } from "@/lib/finance/portfolio";
 import type {
   FlatBreakdownInput,
   Granularity,
@@ -165,6 +166,42 @@ export async function getSixMonthBars(todayIso: string): Promise<SixMonthBar[]> 
     }),
   );
   return results;
+}
+
+export async function getInvestmentSummary(
+  from: string,
+  to: string,
+): Promise<import("@/lib/finance/overview/types").InvestmentSummary> {
+  const rows = await db
+    .select({
+      eurAmount: transaction.eurAmount,
+      outflowAmount: transaction.outflowAmount,
+    })
+    .from(transaction)
+    .innerJoin(transactionType, eq(transactionType.key, transaction.type))
+    .innerJoin(transactionCategory, eq(transactionCategory.id, transaction.categoryId))
+    .where(
+      and(
+        between(transaction.occurredOn, from, to),
+        eq(transactionCategory.kind, "investment"),
+        isNotNull(transaction.eurAmount),
+        isNotNull(transaction.outflowAmount),
+      ),
+    );
+
+  let investedInWindow = 0;
+  for (const r of rows) investedInWindow += n(r.eurAmount);
+
+  // NOTE: portfolio helper returns total net worth across all accounts; refining to
+  // "investment-only" accounts requires an asset-group tag that does not yet exist.
+  // Tracked as a follow-up; for now we surface net worth as proxy for current value.
+  const portfolio = await getPortfolio();
+  const currentValue = portfolio.netWorthEur ?? 0;
+
+  const pnlAbsolute = currentValue - investedInWindow;
+  const pnlPercent = investedInWindow === 0 ? 0 : pnlAbsolute / investedInWindow;
+
+  return { investedInWindow, currentValue, pnlAbsolute, pnlPercent };
 }
 
 export type { OverviewAggregates, MomComparison, SixMonthBar } from "@/lib/finance/overview/types";
