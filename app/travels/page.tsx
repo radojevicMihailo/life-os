@@ -1,6 +1,7 @@
 import { desc, asc } from "drizzle-orm";
 import { db } from "@/db";
 import { travel, type Travel } from "@/db/schema/travels";
+import { PageHeader } from "@/components/page-header";
 import { TravelQuickAdd } from "./_components/TravelQuickAdd";
 import { TravelsTable } from "./_components/TravelsTable";
 
@@ -15,7 +16,7 @@ export default async function TravelsPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-3">
-        <h1 className="text-2xl font-semibold">Travels</h1>
+        <PageHeader title="Travels" />
         <TravelQuickAdd />
       </header>
       <TravelsTable travels={rows} />

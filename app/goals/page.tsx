@@ -7,6 +7,7 @@ import {
   type GoalHorizon,
   goalHorizonOrder,
 } from "@/db/schema/goals";
+import { PageHeader } from "@/components/page-header";
 import { GoalQuickAdd } from "./_components/GoalQuickAdd";
 import { GoalRow, type GoalWithProgress } from "./_components/GoalRow";
 import { GoalsStatusFilter } from "./_components/GoalsStatusFilter";
@@ -82,7 +83,7 @@ export default async function GoalsPage({
   return (
     <div className="space-y-6">
       <header className="space-y-3">
-        <h1 className="text-2xl font-semibold">Goals</h1>
+        <PageHeader title="Goals" />
         <GoalQuickAdd defaultHorizon={horizon} />
         <GoalsStatusFilter />
       </header>
