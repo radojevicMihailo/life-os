@@ -151,8 +151,10 @@ export function NavTree() {
             <li key={s.href}>
               <Link
                 href={s.href}
-                className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm transition hover:bg-accent hover:text-foreground ${
-                  active ? "bg-accent text-foreground" : "text-foreground/80"
+                className={`relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
+                  active
+                    ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:h-4 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-primary"
+                    : "text-sidebar-foreground/80"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -168,7 +170,7 @@ export function NavTree() {
             <button
               type="button"
               onClick={() => toggle(s.id)}
-              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground/80 transition hover:bg-accent hover:text-foreground"
+              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs font-medium uppercase tracking-wide text-sidebar-foreground/60 transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               aria-expanded={open}
             >
               <Icon className="h-4 w-4" />
@@ -186,8 +188,10 @@ export function NavTree() {
                     <li key={c.href}>
                       <Link
                         href={c.href}
-                        className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition hover:bg-accent hover:text-foreground ${
-                          active ? "bg-accent text-foreground" : "text-foreground/70"
+                        className={`relative flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
+                          active
+                            ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:h-3.5 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-primary"
+                            : "text-sidebar-foreground/70"
                         }`}
                       >
                         <CIcon className="h-3.5 w-3.5" />
