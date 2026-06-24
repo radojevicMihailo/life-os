@@ -31,7 +31,13 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env.local
+.env
+
+# notify state + logs
+/scripts/.notif-state.json
+/scripts/.notif.log
+/scripts/.notif.err.log
 
 # vercel
 .vercel

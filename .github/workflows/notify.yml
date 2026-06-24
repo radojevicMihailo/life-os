@@ -1,0 +1,35 @@
+name: Task reminders
+
+# Fires task reminders to Telegram. Runs in the cloud so notifications arrive
+# even when your machine is off. The script dedupes via the Postgres
+# `notif_sent` table, so overlapping/late runs never double-send.
+on:
+  schedule:
+    # Every 5 minutes. GitHub cron is best-effort and can run a few minutes
+    # late under load — fine because NOTIFY_WINDOW_MINUTES (default 3) is wide
+    # enough that no lead is missed.
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {} # allow manual run from the Actions tab
+
+# A slow run must never overlap the next tick.
+concurrency:
+  group: task-reminders
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # The script only needs `pg` + node builtins — skip the full install.
+      - run: npm install --no-save pg@8
+      - run: node scripts/notify-upcoming.mjs
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          NOTIFY_DISABLE_MACOS: "1"
