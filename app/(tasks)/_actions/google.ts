@@ -64,7 +64,7 @@ const idsSchema = z.array(z.string().min(1)).max(100);
 
 export async function saveSelectedGoogleCalendarsAction(ids: string[]): Promise<void> {
   const parsed = idsSchema.parse(ids);
-  await setSelectedGoogleCalendars(parsed);
+  await setSelectedGoogleCalendars([...new Set(parsed)]);
   revalidatePath("/calendar");
 }
 
@@ -86,7 +86,7 @@ export async function fetchGoogleEventsAction(
   }
   if (selected.length === 0) return { items: [], error: null };
 
-  const targets = selected.map(parseCompositeId);
+  const targets = [...new Set(selected)].map(parseCompositeId);
   const results = await Promise.allSettled(
     targets.map((t) => listEvents(t.calendarId, startISO, endISO, t.accountIdx)),
   );
