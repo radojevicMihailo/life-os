@@ -67,7 +67,7 @@ export function activityPayloadSchema(
     subrows: z
       .array(
         z.object({
-          kind: z.enum(["exercise", "split"]).default("exercise"),
+          kind: z.enum(["exercise", "split", "sprint"]).default("exercise"),
           exerciseId: z.uuid().optional().nullable(),
           values: subrowValuesSchema,
           sortOrder: z.number().int().nonnegative(),
