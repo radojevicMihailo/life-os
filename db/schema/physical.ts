@@ -40,7 +40,7 @@ export const fieldKindLabel: Record<FieldKind, string> = {
   exercise_ref: "Exercise reference",
 };
 
-export type SetEntry = { weight: number; reps: number; bodyweight?: boolean; warmup?: boolean };
+export type SetEntry = { weight: number; reps: number; bodyweight?: boolean; warmup?: boolean; perSide?: boolean };
 
 export type FieldConfig = {
   min?: number;

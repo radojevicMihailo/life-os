@@ -6,6 +6,7 @@ export const setEntrySchema = z.object({
   reps: z.number().int().nonnegative(),
   bodyweight: z.boolean().optional(),
   warmup: z.boolean().optional(),
+  perSide: z.boolean().optional(),
 });
 
 function baseFragment(kind: PhysicalField["kind"]): ZodTypeAny {

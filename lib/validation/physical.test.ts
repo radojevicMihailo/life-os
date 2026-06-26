@@ -3,6 +3,7 @@ import {
   buildActivityValuesSchema,
   buildSubrowValuesSchema,
   activityPayloadSchema,
+  setEntrySchema,
 } from "./physical";
 import type { PhysicalField } from "@/db/schema/physical";
 
@@ -92,5 +93,17 @@ describe("activityPayloadSchema", () => {
       subrows: [{ exerciseId: null, values: {}, sortOrder: 0 }],
     });
     expect(result.success).toBe(true);
+  });
+});
+
+describe("setEntrySchema perSide", () => {
+  it("accepts perSide true", () => {
+    expect(setEntrySchema.safeParse({ weight: 10, reps: 10, perSide: true }).success).toBe(true);
+  });
+  it("accepts omitted perSide", () => {
+    expect(setEntrySchema.safeParse({ weight: 10, reps: 10 }).success).toBe(true);
+  });
+  it("rejects non-boolean perSide", () => {
+    expect(setEntrySchema.safeParse({ weight: 10, reps: 10, perSide: "yes" }).success).toBe(false);
   });
 });
