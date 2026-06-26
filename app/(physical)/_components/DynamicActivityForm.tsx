@@ -55,9 +55,11 @@ const NONE = "__none__";
 const EXERCISE_NONE = "__none__";
 const SPLIT_KEYS = ["distance", "duration", "pace"] as const;
 const EXERCISE_KEYS = ["sets"] as const;
+const SPRINT_KEYS = ["sprintDistance", "sprintReps"] as const;
 
 function fieldsForKind(fields: PhysicalField[], kind: SubrowKind): PhysicalField[] {
-  const keys = kind === "split" ? SPLIT_KEYS : EXERCISE_KEYS;
+  const keys =
+    kind === "split" ? SPLIT_KEYS : kind === "sprint" ? SPRINT_KEYS : EXERCISE_KEYS;
   return fields.filter((f) => (keys as readonly string[]).includes(f.key));
 }
 
@@ -422,6 +424,7 @@ export function DynamicActivityForm({
                       <SelectContent>
                         <SelectItem value="exercise">Exercise</SelectItem>
                         <SelectItem value="split">Split</SelectItem>
+                        <SelectItem value="sprint">Sprint</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -475,6 +478,9 @@ export function DynamicActivityForm({
             </Button>
             <Button size="sm" variant="outline" onClick={() => addSubrow("split")}>
               <Plus className="mr-2 h-4 w-4" /> Split
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => addSubrow("sprint")}>
+              <Plus className="mr-2 h-4 w-4" /> Sprint
             </Button>
           </div>
         </div>

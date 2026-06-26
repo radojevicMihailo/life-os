@@ -134,7 +134,7 @@ export const activity = pgTable(
   (t) => [index("activity_performed_at_idx").on(t.performedAt)],
 );
 
-export type SubrowKind = "exercise" | "split";
+export type SubrowKind = "exercise" | "split" | "sprint";
 
 export const activitySubrow = pgTable(
   "physical_activity_subrows",
