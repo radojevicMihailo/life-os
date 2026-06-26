@@ -12,9 +12,10 @@ export function setSummary(sets: SetEntry[]): SetSummary {
   let maxWeight = 0;
   let totalReps = 0;
   for (const s of sets) {
-    totalVolume += s.weight * s.reps;
+    const effReps = s.perSide === true ? s.reps * 2 : s.reps;
+    totalVolume += s.weight * effReps;
     if (s.weight > maxWeight) maxWeight = s.weight;
-    totalReps += s.reps;
+    totalReps += effReps;
   }
   return { totalVolume, maxWeight, totalReps, setCount: sets.length };
 }
