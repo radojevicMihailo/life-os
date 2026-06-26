@@ -15,6 +15,13 @@
       "when": 1780230163519,
       "tag": "0001_physical_seed",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782483241308,
+      "tag": "0002_living_warbound",
+      "breakpoints": true
     }
   ]
 }
