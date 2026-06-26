@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/sidebar";
+import { MobileNav } from "@/components/mobile-nav";
 import { Toaster } from "@/components/ui/sonner";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { PomodoroProvider } from "@/lib/pomodoro/context";
@@ -38,7 +39,10 @@ export default function RootLayout({
           <PomodoroProvider>
             <div className="flex min-h-screen">
               <Sidebar />
-              <main className="flex-1 p-6 md:p-8">{children}</main>
+              <div className="flex min-w-0 flex-1 flex-col">
+                <MobileNav />
+                <main className="flex-1 p-4 sm:p-6 md:p-8">{children}</main>
+              </div>
             </div>
             <Toaster richColors position="top-right" />
             <KeyboardShortcuts />
