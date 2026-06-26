@@ -40,7 +40,7 @@ export const fieldKindLabel: Record<FieldKind, string> = {
   exercise_ref: "Exercise reference",
 };
 
-export type SetEntry = { weight: number; reps: number; bodyweight?: boolean; warmup?: boolean };
+export type SetEntry = { weight: number; reps: number; bodyweight?: boolean; warmup?: boolean; perSide?: boolean };
 
 export type FieldConfig = {
   min?: number;
@@ -134,7 +134,7 @@ export const activity = pgTable(
   (t) => [index("activity_performed_at_idx").on(t.performedAt)],
 );
 
-export type SubrowKind = "exercise" | "split";
+export type SubrowKind = "exercise" | "split" | "sprint";
 
 export const activitySubrow = pgTable(
   "physical_activity_subrows",

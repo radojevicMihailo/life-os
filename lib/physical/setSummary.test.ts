@@ -23,4 +23,15 @@ describe("setSummary", () => {
       setCount: 3,
     });
   });
+  it("perSide doubles volume and reps", () => {
+    const sets: SetEntry[] = [{ weight: 10, reps: 10, perSide: true }];
+    expect(setSummary(sets)).toEqual({ totalVolume: 200, maxWeight: 10, totalReps: 20, setCount: 1 });
+  });
+  it("mixes perSide and normal", () => {
+    const sets: SetEntry[] = [
+      { weight: 10, reps: 10, perSide: true },
+      { weight: 20, reps: 5 },
+    ];
+    expect(setSummary(sets)).toEqual({ totalVolume: 200 + 100, maxWeight: 20, totalReps: 20 + 5, setCount: 2 });
+  });
 });
