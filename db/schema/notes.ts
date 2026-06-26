@@ -8,7 +8,6 @@ import {
   timestamp,
   index,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
 
 export const noteKindEnum = pgEnum("note_kind", ["free", "todo"]);
 
