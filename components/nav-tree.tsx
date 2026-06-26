@@ -11,6 +11,7 @@ import {
   Activity,
   Repeat,
   Target,
+  StickyNote,
   UtensilsCrossed,
   CheckSquare,
   ChevronRight,
@@ -127,6 +128,7 @@ export function NavTree() {
     },
     { kind: "leaf", href: "/habits", label: "Habits", icon: Repeat },
     { kind: "leaf", href: "/goals", label: "Goals", icon: Target },
+    { kind: "leaf", href: "/notes", label: "Notes", icon: StickyNote },
     {
       kind: "group",
       id: "meals",
