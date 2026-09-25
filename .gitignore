@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
 
 # next.js
 /.next/
@@ -38,6 +40,9 @@ yarn-error.log*
 /scripts/.notif-state.json
 /scripts/.notif.log
 /scripts/.notif.err.log
+
+# claude worktrees
+/.claude/worktrees/
 
 # vercel
 .vercel

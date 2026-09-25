@@ -1,0 +1,15 @@
+.git
+.next
+node_modules
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+coverage
+playwright-report
+test-results
+.agents
+.codex
+.DS_Store
+backups

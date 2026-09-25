@@ -131,3 +131,4 @@
     font-size: 20px;
   }
 }
+:root { --font-geist-sans: system-ui, sans-serif; --font-geist-mono: ui-monospace, monospace; }
