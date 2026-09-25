@@ -1,5 +1,5 @@
 # Pass --app YOUR_UNIQUE_NAME to every fly command (or add app = "..." here).
-primary_region = "fra"
+primary_region = "iad"
 kill_signal = "SIGTERM"
 kill_timeout = "30s"
 
@@ -19,7 +19,7 @@ kill_timeout = "30s"
   source = "life_os_data"
   destination = "/data"
   initial_size = "1gb"
-  snapshot_retention = 7
+  snapshot_retention = 5
 
 [http_service]
   internal_port = 3000

@@ -1,6 +1,6 @@
 # Single-Machine Fly.io deployment
 
-This configuration runs Next.js and PostgreSQL 16 together on **one shared-cpu-1x Machine with 256MB RAM and one 1GB volume** in Frankfurt. There is no managed database or separate database Machine. PostgreSQL listens only on loopback. The web app requires a single access password supplied as a Fly secret. Use a unique randomly generated password of at least 24 characters and save it in a password manager. The browser session lasts 30 days after the last authenticated page visit and renews automatically while the app is used; changing the password invalidates existing sessions.
+This configuration runs Next.js and PostgreSQL 16 together on **one shared-cpu-1x Machine with 256MB RAM and one 1GB volume** in Ashburn (`iad`), Fly.io's lowest-priced compute region. There is no managed database or separate database Machine. PostgreSQL listens only on loopback. The web app requires a single access password supplied as a Fly secret. Use a unique randomly generated password of at least 24 characters and save it in a password manager. The browser session lasts 30 days after the last authenticated page visit and renews automatically while the app is used; changing the password invalidates existing sessions.
 
 The 256MB budget is deliberately tight: Node's old-generation heap is capped at 128MB and PostgreSQL uses 16MB shared buffers, 12 connections and one autovacuum worker. This is a starting configuration for light personal use, not a proven capacity guarantee. Observe real memory usage and database size. A Machine failure or deployment causes downtime; there is no replica. Never scale this design above one Machine: each volume would contain an independent database.
 
@@ -13,7 +13,7 @@ The selective export has been prepared locally as the Git-ignored `backups/train
 ```sh
 fly ssh sftp shell --app "$LIFE_OS_APP"
 # In the SFTP shell: put backups/training-config-import.sql /tmp/training-config-import.sql
-# Then exit the SFTP shell.
+# Then press Ctrl+C to leave the SFTP shell; it does not accept an `exit` command.
 fly ssh console --app "$LIFE_OS_APP" -C 'chown postgres:postgres /tmp/training-config-import.sql'
 fly ssh console --app "$LIFE_OS_APP" -C 'gosu postgres psql -X -v ON_ERROR_STOP=1 -d life_os -f /tmp/training-config-import.sql'
 fly ssh console --app "$LIFE_OS_APP" -C 'rm /tmp/training-config-import.sql'
@@ -21,13 +21,14 @@ fly ssh console --app "$LIFE_OS_APP" -C 'rm /tmp/training-config-import.sql'
 
 Verify the configuration pages and counts before deleting the old local database. Local full backups of both databases were saved in `backups/` before the local transfer; keep these files private and off Git.
 
-Install `flyctl`, log in with `fly auth login`, then run these commands from the repository root. Choose a globally unique app name; none is committed in `fly.toml`.
+Install `flyctl`, log in with `fly auth login`, then run these commands from the repository root. The example generates a globally unique app name; replace the `life-os` prefix with your preferred name before running it. Check the printed name before creating the app. No app name is committed in `fly.toml`.
 
 ```sh
-export LIFE_OS_APP=your-unique-life-os-name
+export LIFE_OS_APP="life-os-$(openssl rand -hex 4)"
+printf 'Creating Fly app: %s\n' "$LIFE_OS_APP"
 fly apps create "$LIFE_OS_APP"
 fly config validate --strict --app "$LIFE_OS_APP"
-fly volumes create life_os_data --app "$LIFE_OS_APP" --region fra --size 1
+fly volumes create life_os_data --app "$LIFE_OS_APP" --region iad --size 1
 LIFE_OS_ACCESS_PASSWORD=$(openssl rand -base64 36)
 printf 'Save this password in your password manager: %s\n' "$LIFE_OS_ACCESS_PASSWORD"
 printf 'LIFE_OS_ACCESS_PASSWORD=%s\n' "$LIFE_OS_ACCESS_PASSWORD" | fly secrets import --stage --app "$LIFE_OS_APP"
@@ -79,11 +80,11 @@ fly ssh console --app RECOVERY_APP --command 'gosu postgres pg_restore --dbname=
 
 Verify restore output, restart the recovery Machine to re-run outstanding migrations/seed, and verify records before directing traffic to it. Restoring with `--clean` replaces destination objects: use the recovery app, never your only production database. Remove the uploaded dump afterward. For a strict no-writes restore window, restore locally into a disposable PostgreSQL 16 instance first, then plan recovery cutover separately.
 
-The configuration also keeps seven days of Fly volume snapshots. These are supplemental; Fly explicitly says snapshots should not be the primary backup method. Snapshot recovery restores the whole volume, including its password file:
+The configuration also keeps five days of Fly volume snapshots. These are supplemental; Fly explicitly says snapshots should not be the primary backup method. Snapshot recovery restores the whole volume, including its password file:
 
 ```sh
 fly volumes snapshots list VOLUME_ID --app "$LIFE_OS_APP"
-fly volumes create life_os_data --app RECOVERY_APP --region fra --size 1 --snapshot-id SNAPSHOT_ID
+fly volumes create life_os_data --app RECOVERY_APP --region iad --size 1 --snapshot-id SNAPSHOT_ID
 ```
 
 Create the recovery volume before deploying the recovery app and ensure only that volume is available for attachment. Keep the original volume until recovery has been verified.
