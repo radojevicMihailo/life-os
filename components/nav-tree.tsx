@@ -73,10 +73,13 @@ function isPhysicalRoute(pathname: string): boolean {
 }
 
 const financeChildren: LeafItem[] = [
-  { href: "/finance/overview", label: "Overview", icon: BarChart3 },
-  { href: "/finance/transactions", label: "Transactions", icon: ListTodo },
-  { href: "/finance/portfolio", label: "Portfolio", icon: Wallet },
-  { href: "/finance/configuration", label: "Configuration", icon: Settings2 },
+  { href: "/finance", label: "Pregled", icon: BarChart3 },
+  { href: "/finance/transactions", label: "Transakcije", icon: ListTodo },
+  { href: "/finance/accounts", label: "Računi", icon: Wallet },
+  { href: "/finance/budgets", label: "Budžeti", icon: Wallet },
+  { href: "/finance/goals", label: "Štednja", icon: Target },
+  { href: "/finance/investments", label: "Investicije", icon: Wallet },
+  { href: "/finance/settings", label: "Podešavanja", icon: Settings2 },
 ];
 
 function isFinanceRoute(pathname: string): boolean {
