@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { ACCESS_COOKIE_NAME, configuredAccessPassword, verifyAccessSession } from "@/lib/access";
+import { ACCESS_COOKIE_NAME, ACCESS_SESSION_SECONDS, configuredAccessPassword, issueAccessSession, verifyAccessSession } from "@/lib/access";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -13,6 +13,15 @@ export function proxy(request: NextRequest) {
   const password = configuredAccessPassword();
   if (password && verifyAccessSession(request.cookies.get(ACCESS_COOKIE_NAME)?.value, password)) {
     const response = NextResponse.next();
+    if (request.method === "GET" || request.method === "HEAD") {
+      response.cookies.set(ACCESS_COOKIE_NAME, issueAccessSession(password), {
+        httpOnly: true,
+        secure: new URL(process.env.APP_ORIGIN ?? request.url).protocol === "https:",
+        sameSite: "lax",
+        path: "/",
+        maxAge: ACCESS_SESSION_SECONDS,
+      });
+    }
     response.headers.set("Cache-Control", "private, no-store");
     return response;
   }

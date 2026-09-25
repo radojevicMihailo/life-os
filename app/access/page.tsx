@@ -8,7 +8,7 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
   return (
     <div className="mx-auto mt-12 max-w-sm rounded-2xl border bg-card p-6 shadow-sm">
       <h1 className="text-2xl font-semibold">Prijava u Life OS</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Unesi pristupnu lozinku. Prijava važi 30 dana na ovom uređaju.</p>
+      <p className="mt-2 text-sm text-muted-foreground">Unesi pristupnu lozinku. Prijava se automatski produžava dok koristiš aplikaciju.</p>
       {!configured ? <p className="mt-4 text-sm text-destructive">Pristupna lozinka nije podešena na serveru.</p> : null}
       {error ? <p className="mt-4 text-sm text-destructive" role="alert">Lozinka nije ispravna.</p> : null}
       <form action="/api/access/login" method="post" className="mt-6 space-y-4">
