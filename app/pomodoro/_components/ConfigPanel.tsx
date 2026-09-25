@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePomodoro } from "@/lib/pomodoro/context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,10 +22,6 @@ function NumberField({
   onChange: (n: number) => void;
 }) {
   const [raw, setRaw] = useState<string>(String(value));
-
-  useEffect(() => {
-    setRaw(String(value));
-  }, [value]);
 
   function commit() {
     const n = Number(raw);
@@ -84,6 +80,7 @@ export function ConfigPanel() {
       <h3 className="text-sm font-medium">Settings</h3>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <NumberField
+          key={cfg.workMin}
           id="work-min"
           label="Work (min)"
           value={cfg.workMin}
@@ -92,6 +89,7 @@ export function ConfigPanel() {
           onChange={(n) => setConfig({ workMin: n })}
         />
         <NumberField
+          key={cfg.shortMin}
           id="short-min"
           label="Short break (min)"
           value={cfg.shortMin}
@@ -100,6 +98,7 @@ export function ConfigPanel() {
           onChange={(n) => setConfig({ shortMin: n })}
         />
         <NumberField
+          key={cfg.longMin}
           id="long-min"
           label="Long break (min)"
           value={cfg.longMin}
@@ -108,6 +107,7 @@ export function ConfigPanel() {
           onChange={(n) => setConfig({ longMin: n })}
         />
         <NumberField
+          key={cfg.cyclesUntilLong}
           id="cycles"
           label="Cycles until long"
           value={cfg.cyclesUntilLong}

@@ -266,7 +266,12 @@ export function CalendarView({
         <WeekTimeline days={days} byDay={byDay} onCreate={openCreate} />
       )}
 
-      <CreateTaskDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={dialogInitial} />
+      <CreateTaskDialog
+        key={dialogOpen ? dialogInitial?.date.toISOString() ?? "open" : "closed"}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        initial={dialogInitial}
+      />
     </div>
   );
 }

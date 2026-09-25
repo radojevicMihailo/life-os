@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -32,17 +32,9 @@ export function CreateTaskDialog({
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [dueAt, setDueAt] = useState<Date | null>(null);
-  const [withTime, setWithTime] = useState(false);
+  const [dueAt, setDueAt] = useState<Date | null>(initial?.date ?? null);
+  const [withTime, setWithTime] = useState(initial?.withTime ?? false);
   const [pending, startTransition] = useTransition();
-
-  useEffect(() => {
-    if (open && initial) {
-      setTitle("");
-      setDueAt(initial.date);
-      setWithTime(initial.withTime);
-    }
-  }, [open, initial]);
 
   function submit() {
     const trimmed = title.trim();

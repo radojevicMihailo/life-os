@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dialog as DialogPrimitive } from "radix-ui";
@@ -11,12 +11,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 export function MobileNav() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-
-  // Close drawer whenever the route changes.
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  const [drawer, setDrawer] = useState({ pathname, open: false });
+  const open = drawer.pathname === pathname && drawer.open;
+  const setOpen = (nextOpen: boolean) => setDrawer({ pathname, open: nextOpen });
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-sidebar-border bg-sidebar px-4 text-sidebar-foreground md:hidden">
