@@ -6,7 +6,20 @@ The 256MB budget is deliberately tight: Node's old-generation heap is capped at 
 
 ## First deployment
 
-The existing local database is not migrated in place. Before discarding it, export the training configuration: activity tags and groups, custom fields, exercises and groups, workout plans, and splits with their days and links. Recorded activities and other modules' data can be omitted. The selective export/import workflow is separate from this deployment setup; keep the old database until that transfer is verified.
+The existing local database is not migrated in place. Only training configuration was copied to the new local database: activity tags and groups, custom fields, exercises and groups, workout plans, and splits with their days and links. Recorded activities and other modules' data were omitted. Keep the old database until the transfer to Fly is verified.
+
+The selective export has been prepared locally as the Git-ignored `backups/training-config-import.sql`. It contains only training configuration and refuses to run if the destination already has training records or unexpected fields. After the first Fly deployment, before creating training data there, upload and apply it:
+
+```sh
+fly ssh sftp shell --app "$LIFE_OS_APP"
+# In the SFTP shell: put backups/training-config-import.sql /tmp/training-config-import.sql
+# Then exit the SFTP shell.
+fly ssh console --app "$LIFE_OS_APP" -C 'chown postgres:postgres /tmp/training-config-import.sql'
+fly ssh console --app "$LIFE_OS_APP" -C 'gosu postgres psql -X -v ON_ERROR_STOP=1 -d life_os -f /tmp/training-config-import.sql'
+fly ssh console --app "$LIFE_OS_APP" -C 'rm /tmp/training-config-import.sql'
+```
+
+Verify the configuration pages and counts before deleting the old local database. Local full backups of both databases were saved in `backups/` before the local transfer; keep these files private and off Git.
 
 Install `flyctl`, log in with `fly auth login`, then run these commands from the repository root. Choose a globally unique app name; none is committed in `fly.toml`.
 
