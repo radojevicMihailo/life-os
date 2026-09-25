@@ -15,6 +15,8 @@ Personal life tracker. First module: task manager.
 
 ```bash
 pnpm install
+cp .env.example .env.local
+# Set LIFE_OS_ACCESS_PASSWORD in .env.local to a unique value of at least 24 characters.
 pnpm db:up         # starts Postgres in Docker on port 5433
 pnpm db:migrate    # applies migrations
 pnpm dev           # http://localhost:3000

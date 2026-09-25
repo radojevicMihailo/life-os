@@ -8,6 +8,7 @@ import { Menu, Sparkles, X } from "lucide-react";
 import { NavTree } from "@/components/nav-tree";
 import { PomodoroBadge } from "@/components/pomodoro-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LogoutButton } from "@/components/logout-button";
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -52,6 +53,7 @@ export function MobileNav() {
             <div className="flex items-center justify-between border-t border-sidebar-border px-3 py-2">
               <ThemeToggle />
               <PomodoroBadge />
+              <LogoutButton />
             </div>
           </DialogPrimitive.Content>
         </DialogPrimitive.Portal>

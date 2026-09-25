@@ -3,6 +3,7 @@
 # Creates and removes only its own disposable container and volume.
 set -Eeuo pipefail
 image=${1:-life-os-single}
+access_password=life-os-disposable-smoke-password-2026
 name="life-os-infra-${RANDOM}-$$"
 volume="$name-data"
 backup=$(mktemp)
@@ -17,7 +18,7 @@ cleanup() {
 }
 trap cleanup EXIT
 docker volume create "$volume" >/dev/null
-docker run -d --name "$name" --memory=256m --memory-swap=256m --cpus=1 -v "$volume:/data" "$image" >/dev/null
+docker run -d --name "$name" --memory=256m --memory-swap=256m --cpus=1 -e "LIFE_OS_ACCESS_PASSWORD=$access_password" -v "$volume:/data" "$image" >/dev/null
 healthy() {
   local attempt
   for ((attempt=0; attempt<90; attempt++)); do
@@ -28,6 +29,8 @@ healthy() {
   return 1
 }
 healthy
+docker exec "$name" node -e 'fetch("http://127.0.0.1:3000/tasks", {redirect:"manual"}).then(r=>process.exit(r.status===307?0:1))' >/dev/null
+docker exec "$name" node -e 'fetch("http://127.0.0.1:3000/api/finance/transactions", {method:"POST"}).then(r=>process.exit(r.status===401?0:1))' >/dev/null
 # Prove real SQL data persists through the production entrypoint's restart.
 docker exec "$name" gosu postgres psql -v ON_ERROR_STOP=1 -d life_os -c "CREATE TABLE infra_persistence_probe (value text); INSERT INTO infra_persistence_probe VALUES ('survives restart');" >/dev/null
 docker exec "$name" /usr/local/lib/life-os/backup.sh > "$backup"

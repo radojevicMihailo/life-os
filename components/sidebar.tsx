@@ -3,6 +3,7 @@ import { Sparkles } from "lucide-react";
 import { NavTree } from "@/components/nav-tree";
 import { PomodoroBadge } from "@/components/pomodoro-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LogoutButton } from "@/components/logout-button";
 
 export function Sidebar() {
   return (
@@ -21,6 +22,7 @@ export function Sidebar() {
       <div className="flex items-center justify-between border-t border-sidebar-border px-3 py-2">
         <ThemeToggle />
         <PomodoroBadge />
+        <LogoutButton />
       </div>
     </aside>
   );

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const baseURL = process.env.LIFE_OS_E2E_URL ?? "http://127.0.0.1:3210";
+const password = process.env.LIFE_OS_E2E_PASSWORD ?? "life-os-disposable-smoke-password-2026";
 
 test.use({
   baseURL,
@@ -9,10 +10,19 @@ test.use({
   viewport: { width: 390, height: 844 },
 });
 
+async function signIn(page: import("@playwright/test").Page) {
+  await page.goto("/finance/accounts");
+  await expect(page).toHaveURL(/\/access$/);
+  await page.getByLabel("Lozinka").fill(password);
+  await page.getByRole("button", { name: "Prijavi se" }).click();
+  await expect(page).toHaveURL("/");
+}
+
 test("creates an account, category and expense in the deployed image", async ({ page }) => {
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
+  await signIn(page);
   await page.goto("/finance/accounts");
   await page.getByLabel("Naziv računa").fill("Browser proba EUR");
   await page.getByLabel("Podvrsta računa").fill("cash");
@@ -44,6 +54,7 @@ test("creates an account, category and expense in the deployed image", async ({ 
 });
 
 test("finance pages fit common phone widths", async ({ page }) => {
+  await signIn(page);
   for (const width of [360, 390, 430]) {
     await page.setViewportSize({ width, height: 844 });
     for (const path of ["/finance", "/finance/accounts", "/finance/transactions"]) {

@@ -1,10 +1,12 @@
 # Single-Machine Fly.io deployment
 
-This configuration runs Next.js and PostgreSQL 16 together on **one shared-cpu-1x Machine with 256MB RAM and one 1GB volume** in Frankfurt. There is no managed database or separate database Machine. PostgreSQL listens only on loopback. The web app currently has no authentication: anyone who can reach its public URL can view and change its data.
+This configuration runs Next.js and PostgreSQL 16 together on **one shared-cpu-1x Machine with 256MB RAM and one 1GB volume** in Frankfurt. There is no managed database or separate database Machine. PostgreSQL listens only on loopback. The web app requires a single access password supplied as a Fly secret. Use a unique randomly generated password of at least 24 characters and save it in a password manager. The browser session lasts 30 days; changing the password invalidates existing sessions.
 
 The 256MB budget is deliberately tight: Node's old-generation heap is capped at 128MB and PostgreSQL uses 16MB shared buffers, 12 connections and one autovacuum worker. This is a starting configuration for light personal use, not a proven capacity guarantee. Observe real memory usage and database size. A Machine failure or deployment causes downtime; there is no replica. Never scale this design above one Machine: each volume would contain an independent database.
 
 ## First deployment
+
+The existing local database is not migrated in place. Before discarding it, export the training configuration: activity tags and groups, custom fields, exercises and groups, workout plans, and splits with their days and links. Recorded activities and other modules' data can be omitted. The selective export/import workflow is separate from this deployment setup; keep the old database until that transfer is verified.
 
 Install `flyctl`, log in with `fly auth login`, then run these commands from the repository root. Choose a globally unique app name; none is committed in `fly.toml`.
 
@@ -13,6 +15,10 @@ export LIFE_OS_APP=your-unique-life-os-name
 fly apps create "$LIFE_OS_APP"
 fly config validate --strict --app "$LIFE_OS_APP"
 fly volumes create life_os_data --app "$LIFE_OS_APP" --region fra --size 1
+LIFE_OS_ACCESS_PASSWORD=$(openssl rand -base64 36)
+printf 'Save this password in your password manager: %s\n' "$LIFE_OS_ACCESS_PASSWORD"
+printf 'LIFE_OS_ACCESS_PASSWORD=%s\n' "$LIFE_OS_ACCESS_PASSWORD" | fly secrets import --stage --app "$LIFE_OS_APP"
+unset LIFE_OS_ACCESS_PASSWORD
 fly deploy --app "$LIFE_OS_APP" --ha=false --strategy immediate
 fly machine list --app "$LIFE_OS_APP"
 fly volumes list --app "$LIFE_OS_APP"
@@ -20,6 +26,8 @@ fly checks list --app "$LIFE_OS_APP"
 ```
 
 Verify that the lists show exactly one Machine and one attached 1GB volume. Always include `--ha=false` on deploy: the CLI otherwise defaults to creating spare Machines. `immediate` updates this single Machine without a parallel replacement database. Do not use blue/green, canary, automatic volume extension, multiple regions, or horizontal scaling for this layout. If changing the region, change both the configuration and volume creation command before the first deployment.
+
+The access password is required at runtime. If absent or shorter than 24 characters, all private routes remain closed. Do not put the real password in `.env.example`, `fly.toml`, build arguments, or a Git commit. The login form works on desktop and mobile browsers over HTTPS. `/api/health` remains public so Fly can check the Machine. Change the secret to revoke every browser session.
 
 No database secret is needed at build time or in Fly secrets. The entrypoint generates a random app database password in `/data/app-db-password`, initializes `/data/postgres` only when empty, and reuses both on restart. PostgreSQL superuser access uses a local peer-authenticated Unix socket; TCP allows only the application's database role. The app runs as UID 10001, PostgreSQL as its own system user, and the supervisor initializes ownership as root.
 
@@ -72,7 +80,7 @@ Create the recovery volume before deploying the recovery app and ensure only tha
 ```sh
 docker build -t life-os-single .
 docker volume create life-os-smoke
-docker run --name life-os-smoke --memory=256m --cpus=1 -p 127.0.0.1:3000:3000 -v life-os-smoke:/data life-os-single
+docker run --name life-os-smoke --memory=256m --cpus=1 -e LIFE_OS_ACCESS_PASSWORD=life-os-disposable-smoke-password-2026 -p 127.0.0.1:3000:3000 -v life-os-smoke:/data life-os-single
 ```
 
 For an automated disposable test of health, backups, restart persistence and database-exit supervision, run `bash test/infra/smoke.sh life-os-single` after building the image. It creates and removes its own container and volume.

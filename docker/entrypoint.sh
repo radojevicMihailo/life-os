@@ -3,6 +3,12 @@ set -Eeuo pipefail
 umask 077
 export PGDATA="${PGDATA:-/data/postgres}"
 password_file=/data/app-db-password
+access_password=${LIFE_OS_ACCESS_PASSWORD:-}
+if [[ ${#access_password} -lt 24 ]]; then
+  echo 'LIFE_OS_ACCESS_PASSWORD must be set to at least 24 characters.' >&2
+  exit 1
+fi
+unset access_password
 pg_pid=
 app_pid=
 cleanup() {
