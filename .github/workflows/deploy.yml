@@ -1,0 +1,38 @@
+name: Deploy to Fly
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fly-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      FLY_APP_NAME: ${{ vars.FLY_APP_NAME }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Fly configuration
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "::error::Set the FLY_API_TOKEN repository secret"
+            exit 1
+          fi
+          if [ -z "$FLY_APP_NAME" ]; then
+            echo "::error::Set the FLY_APP_NAME repository variable"
+            exit 1
+          fi
+      - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1
+        with:
+          version: "0.4.108"
+      - name: Deploy single Machine
+        run: flyctl deploy --remote-only --app "$FLY_APP_NAME" --ha=false --strategy immediate

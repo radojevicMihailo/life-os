@@ -51,6 +51,15 @@ Startup waits for PostgreSQL, runs `node scripts/migrate.mjs`, then `node script
 
 ## Subsequent deployments and inspection
 
+To deploy automatically after each push to `main`, configure the GitHub Actions workflow in `.github/workflows/deploy.yml` once:
+
+```sh
+gh variable set FLY_APP_NAME --repo radojevicMihailo/life-os --body "$LIFE_OS_APP"
+fly tokens create deploy --app "$LIFE_OS_APP" --expiry 8760h --name github-actions-life-os | gh secret set FLY_API_TOKEN --repo radojevicMihailo/life-os
+```
+
+Run these commands while signed in to Fly and GitHub. The token is scoped to this Fly app, lasts one year, and is stored only as a GitHub Actions secret. Rotate it before expiry. The workflow builds remotely, keeps the single-Machine deployment flags below, and can also be started manually from GitHub Actions. A push to `main` that adds the workflow triggers its first deployment. Inspect the run in GitHub Actions and verify the Fly health checks afterward.
+
 ```sh
 fly deploy --app "$LIFE_OS_APP" --ha=false --strategy immediate
 fly logs --app "$LIFE_OS_APP"
