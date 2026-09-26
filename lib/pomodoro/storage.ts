@@ -1,7 +1,7 @@
 import type { PomodoroConfig, PomodoroState } from "./types";
 
-const STATE_KEY = "pomodoro:state:v1";
-const CONFIG_KEY = "pomodoro:config:v1";
+const STATE_KEY = "pomodoro:state:v2";
+const CONFIG_KEY = "pomodoro:config:v2";
 const NOTIFY_KEY = "pomodoro:notify:v1";
 
 function getStorage(): Storage | null {
@@ -36,7 +36,8 @@ function writeJSON(key: string, value: unknown): void {
 }
 
 export function loadState(): PomodoroState | null {
-  return readJSON<PomodoroState>(STATE_KEY);
+  const state = readJSON<PomodoroState>(STATE_KEY);
+  return state ? { ...state, taskId: state.taskId ?? null } : null;
 }
 
 export function saveState(state: PomodoroState): void {

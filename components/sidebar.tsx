@@ -19,7 +19,7 @@ export function Sidebar() {
       <nav className="flex flex-1 flex-col gap-4 px-3 pb-4">
         <NavTree />
       </nav>
-      <div className="flex items-center justify-between border-t border-sidebar-border px-3 py-2">
+      <div className="flex min-w-0 items-center gap-2 border-t border-sidebar-border px-3 py-2">
         <ThemeToggle />
         <PomodoroBadge />
         <LogoutButton />

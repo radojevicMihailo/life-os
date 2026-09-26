@@ -8,22 +8,17 @@ export function PomodoroBadge() {
   const { state, remainingLabel } = usePomodoro();
   if (state.status === "idle") return null;
 
-  const statusText =
-    state.status === "ended"
-      ? "Ended"
-      : state.status === "paused"
-        ? "Paused"
-        : remainingLabel;
+  const statusText = state.status === "paused" ? "Paused" : remainingLabel;
 
   return (
     <Link
       href="/pomodoro"
-      className="mx-3 mb-2 flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm text-foreground/80 transition hover:bg-accent hover:text-foreground"
-      aria-label="Pomodoro timer"
+      className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md border bg-card px-1.5 py-1 text-xs text-foreground/80 transition hover:bg-accent hover:text-foreground"
+      aria-label={`${phaseLabel(state.phase)} timer ${statusText}`}
+      title={`${phaseLabel(state.phase)} · ${statusText}`}
     >
-      <Timer className="h-4 w-4" />
-      <span className="flex-1 truncate">{phaseLabel(state.phase)}</span>
-      <span className="font-mono text-xs">{statusText}</span>
+      <Timer className="size-3.5" />
+      <span className="font-mono tabular-nums">{statusText}</span>
     </Link>
   );
 }

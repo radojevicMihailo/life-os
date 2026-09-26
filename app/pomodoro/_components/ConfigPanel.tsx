@@ -11,14 +11,14 @@ function NumberField({
   label,
   value,
   min,
-  max,
+  disabled,
   onChange,
 }: {
   id: string;
   label: string;
   value: number;
   min: number;
-  max: number;
+  disabled: boolean;
   onChange: (n: number) => void;
 }) {
   const [raw, setRaw] = useState<string>(String(value));
@@ -29,7 +29,7 @@ function NumberField({
       setRaw(String(value));
       return;
     }
-    const clamped = Math.max(min, Math.min(max, Math.floor(n)));
+    const clamped = Math.max(min, Math.floor(n));
     setRaw(String(clamped));
     if (clamped !== value) onChange(clamped);
   }
@@ -42,7 +42,7 @@ function NumberField({
         type="number"
         inputMode="numeric"
         min={min}
-        max={max}
+        disabled={disabled}
         value={raw}
         onChange={(e) => setRaw(e.target.value)}
         onBlur={commit}
@@ -60,15 +60,14 @@ function NumberField({
 export function ConfigPanel() {
   const {
     state,
-    pendingConfig,
     setConfig,
     notifyEnabled,
     setNotify,
     requestNotificationPermission,
   } = usePomodoro();
 
-  const cfg = pendingConfig ?? state.config;
-  const hasPending = pendingConfig !== null;
+  const cfg = state.config;
+  const disabled = state.status !== "idle";
 
   const canEnableNotifications =
     typeof window !== "undefined" &&
@@ -78,49 +77,26 @@ export function ConfigPanel() {
   return (
     <div className="mt-6 grid gap-4 rounded-lg border bg-card p-4">
       <h3 className="text-sm font-medium">Settings</h3>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4">
         <NumberField
           key={cfg.workMin}
           id="work-min"
           label="Work (min)"
           value={cfg.workMin}
           min={1}
-          max={180}
+          disabled={disabled}
           onChange={(n) => setConfig({ workMin: n })}
         />
         <NumberField
-          key={cfg.shortMin}
-          id="short-min"
-          label="Short break (min)"
-          value={cfg.shortMin}
+          key={cfg.breakMin}
+          id="break-min"
+          label="Break (min)"
+          value={cfg.breakMin}
           min={1}
-          max={60}
-          onChange={(n) => setConfig({ shortMin: n })}
-        />
-        <NumberField
-          key={cfg.longMin}
-          id="long-min"
-          label="Long break (min)"
-          value={cfg.longMin}
-          min={1}
-          max={60}
-          onChange={(n) => setConfig({ longMin: n })}
-        />
-        <NumberField
-          key={cfg.cyclesUntilLong}
-          id="cycles"
-          label="Cycles until long"
-          value={cfg.cyclesUntilLong}
-          min={2}
-          max={12}
-          onChange={(n) => setConfig({ cyclesUntilLong: n })}
+          disabled={disabled}
+          onChange={(n) => setConfig({ breakMin: n })}
         />
       </div>
-      {hasPending && (
-        <p className="text-xs text-muted-foreground">
-          Changes apply to the next phase.
-        </p>
-      )}
       <div className="flex items-center gap-3">
         {canEnableNotifications && !notifyEnabled && (
           <Button

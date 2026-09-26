@@ -10,11 +10,10 @@ import {
   useRef,
   useState,
 } from "react";
-import type { Phase, PomodoroConfig, PomodoroState, Status } from "./types";
+import type { Phase, PomodoroConfig, PomodoroState } from "./types";
 import {
+  advancePhase,
   defaultState,
-  nextPhase as computeNextPhase,
-  phaseDurationMs,
   remainingMs,
   formatRemaining,
 } from "./timer";
@@ -26,12 +25,20 @@ import {
   saveNotify,
   saveState,
 } from "./storage";
-import { playPhaseEndCue } from "./sound";
+import { playPhaseEndCue, preparePhaseEndCue } from "./sound";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const PHASE_LABEL: Record<Phase, string> = {
   work: "Work",
-  short_break: "Short break",
-  long_break: "Long break",
+  break: "Break",
 };
 
 type Actions = {
@@ -39,8 +46,8 @@ type Actions = {
   pause: () => void;
   resume: () => void;
   reset: () => void;
-  skip: () => void;
-  startNextPhase: () => void;
+  finishPhase: () => void;
+  setTaskId: (taskId: string | null) => void;
   setLabel: (label: string) => void;
   setConfig: (patch: Partial<PomodoroConfig>) => void;
   setNotify: (value: boolean) => void;
@@ -52,7 +59,6 @@ type Ctx = {
   remaining: number;
   remainingLabel: string;
   notifyEnabled: boolean;
-  pendingConfig: PomodoroConfig | null;
 } & Actions;
 
 const PomodoroContext = createContext<Ctx | null>(null);
@@ -60,8 +66,8 @@ const PomodoroContext = createContext<Ctx | null>(null);
 export function PomodoroProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<PomodoroState>(() => defaultState());
   const [notifyEnabled, setNotifyEnabledState] = useState<boolean>(false);
-  const [pendingConfig, setPendingConfig] = useState<PomodoroConfig | null>(null);
   const [nowTick, setNowTick] = useState<number>(() => Date.now());
+  const [finishedPhase, setFinishedPhase] = useState<Phase | null>(null);
   const endedFiredFor = useRef<string>("");
   const hydrated = useRef(false);
 
@@ -106,15 +112,11 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
           endedFiredFor.current = key;
           playPhaseEndCue();
           maybeNotify(state.phase, notifyEnabled);
+          setFinishedPhase(state.phase);
         }
         setState((s) =>
           s.status === "running"
-            ? {
-                ...s,
-                status: "ended",
-                elapsedBeforeStart: phaseDurationMs(s.phase, s.config),
-                startedAt: null,
-              }
+            ? advancePhase(s)
             : s,
         );
       } else {
@@ -128,21 +130,22 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof document === "undefined") return;
     const r = remainingMs(state, nowTick);
-    if (state.status === "running" || state.status === "paused") {
+    if (finishedPhase) {
+      document.title = `${PHASE_LABEL[finishedPhase]} session finished — Life OS`;
+    } else if (state.status === "running" || state.status === "paused") {
       document.title = `${formatRemaining(r)} · ${PHASE_LABEL[state.phase]} — Life OS`;
-    } else if (state.status === "ended") {
-      document.title = `Phase ended — Life OS`;
     } else {
       document.title = "Life OS";
     }
     return () => {
       document.title = "Life OS";
     };
-  }, [state, nowTick]);
+  }, [state, nowTick, finishedPhase]);
 
   const start = useCallback(() => {
+    preparePhaseEndCue();
     setState((s) => {
-      if (s.status === "running") return s;
+      if (s.status !== "idle") return s;
       return {
         ...s,
         status: "running",
@@ -166,6 +169,7 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const resume = useCallback(() => {
+    preparePhaseEndCue();
     setState((s) => {
       if (s.status !== "paused") return s;
       return { ...s, status: "running", startedAt: Date.now() };
@@ -182,68 +186,24 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
     endedFiredFor.current = "";
   }, []);
 
-  const advance = useCallback(
-    (s: PomodoroState, naturalCompletion: boolean): PomodoroState => {
-      const next = computeNextPhase(s);
-      const completedWork = naturalCompletion && s.phase === "work";
-      const completedLong = naturalCompletion && s.phase === "long_break";
-      const cycleCount = completedLong
-        ? 0
-        : completedWork
-          ? s.cycleCount + 1
-          : s.cycleCount;
-      const config = pendingConfig ?? s.config;
-      return {
-        ...s,
-        phase: next,
-        status: "idle",
-        startedAt: null,
-        elapsedBeforeStart: 0,
-        cycleCount,
-        config,
-      };
-    },
-    [pendingConfig],
-  );
-
-  const skip = useCallback(() => {
-    setState((s) => advance(s, false));
-    setPendingConfig(null);
+  const finishPhase = useCallback(() => {
+    setState((s) => s.status === "idle" ? s : advancePhase(s));
     endedFiredFor.current = "";
-  }, [advance]);
-
-  const startNextPhase = useCallback(() => {
-    setState((s) => {
-      const advanced = advance(s, true);
-      return {
-        ...advanced,
-        status: "running",
-        startedAt: Date.now(),
-        elapsedBeforeStart: 0,
-      };
-    });
-    setPendingConfig(null);
-    endedFiredFor.current = "";
-  }, [advance]);
+  }, []);
 
   const setLabel = useCallback((label: string) => {
     setState((s) => ({ ...s, label }));
   }, []);
 
-  const setConfig = useCallback(
-    (patch: Partial<PomodoroConfig>) => {
-      setState((s) => {
-        const merged: PomodoroConfig = { ...s.config, ...patch };
-        if (s.status === "running" || s.status === "paused") {
-          setPendingConfig(merged);
-          return s;
-        }
-        setPendingConfig(null);
-        return { ...s, config: merged };
-      });
-    },
-    [],
-  );
+  const setTaskId = useCallback((taskId: string | null) => {
+    setState((s) => ({ ...s, taskId }));
+  }, []);
+
+  const setConfig = useCallback((patch: Partial<PomodoroConfig>) => {
+    setState((s) => s.status === "idle"
+      ? { ...s, config: { ...s.config, ...patch } }
+      : s);
+  }, []);
 
   const setNotify = useCallback((value: boolean) => {
     setNotifyEnabledState(value);
@@ -267,13 +227,12 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
       remaining,
       remainingLabel,
       notifyEnabled,
-      pendingConfig,
       start,
       pause,
       resume,
       reset,
-      skip,
-      startNextPhase,
+      finishPhase,
+      setTaskId,
       setLabel,
       setConfig,
       setNotify,
@@ -284,13 +243,12 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
       remaining,
       remainingLabel,
       notifyEnabled,
-      pendingConfig,
       start,
       pause,
       resume,
       reset,
-      skip,
-      startNextPhase,
+      finishPhase,
+      setTaskId,
       setLabel,
       setConfig,
       setNotify,
@@ -298,7 +256,28 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
     ],
   );
 
-  return <PomodoroContext.Provider value={value}>{children}</PomodoroContext.Provider>;
+  return (
+    <PomodoroContext.Provider value={value}>
+      {children}
+      <Dialog open={finishedPhase !== null}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>
+              {finishedPhase === "work" ? "Work session finished" : "Break finished"}
+            </DialogTitle>
+            <DialogDescription>
+              {finishedPhase === "work"
+                ? "Your break timer is ready. Set the break length and start it when you are ready."
+                : "Your work timer is ready. Start it when you are ready to continue."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setFinishedPhase(null)}>Got it</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </PomodoroContext.Provider>
+  );
 }
 
 export function usePomodoro(): Ctx {
@@ -310,12 +289,6 @@ export function usePomodoro(): Ctx {
 export function phaseLabel(phase: Phase): string {
   return PHASE_LABEL[phase];
 }
-
-export function phaseLabelByStatus(state: PomodoroState): string {
-  return PHASE_LABEL[state.phase];
-}
-
-export type { Status };
 
 function maybeNotify(phase: Phase, enabled: boolean): void {
   if (!enabled) return;

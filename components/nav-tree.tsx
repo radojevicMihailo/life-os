@@ -1,212 +1,37 @@
 "use client";
 
-import { useState, type ComponentType } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ListTodo,
-  FolderKanban,
-  CalendarDays,
-  Wallet,
-  Activity,
-  Repeat,
-  Target,
-  StickyNote,
-  UtensilsCrossed,
-  CheckSquare,
-  ChevronRight,
-  Settings2,
-  Dumbbell,
-  ClipboardList,
-  Plane,
-  BarChart3,
-  Timer,
-} from "lucide-react";
-
-type IconType = ComponentType<{ className?: string }>;
-type LeafItem = { href: string; label: string; icon: IconType };
-
-type Section =
-  | { kind: "leaf"; href: string; label: string; icon: IconType }
-  | {
-      kind: "group";
-      id: string;
-      label: string;
-      icon: IconType;
-      children: LeafItem[];
-    };
-
-const taskChildren: LeafItem[] = [
-  { href: "/projects", label: "Projects", icon: FolderKanban },
-  { href: "/tasks", label: "Tasks", icon: ListTodo },
-  { href: "/pomodoro", label: "Pomodoro", icon: Timer },
-  { href: "/calendar", label: "Calendar", icon: CalendarDays },
-];
-
-const taskPaths = new Set(["/tasks", "/projects", "/calendar", "/pomodoro"]);
-
-function isTaskRoute(pathname: string): boolean {
-  if (taskPaths.has(pathname)) return true;
-  return (
-    pathname.startsWith("/tasks/") ||
-    pathname.startsWith("/projects/") ||
-    pathname.startsWith("/calendar/") ||
-    pathname.startsWith("/pomodoro/")
-  );
-}
-
-const physicalChildren: LeafItem[] = [
-  { href: "/configuration", label: "Configuration", icon: Settings2 },
-  { href: "/activities", label: "Activities", icon: Dumbbell },
-  { href: "/plans", label: "Plans", icon: ClipboardList },
-];
-
-const physicalPaths = new Set(["/configuration", "/activities", "/plans"]);
-
-function isPhysicalRoute(pathname: string): boolean {
-  if (physicalPaths.has(pathname)) return true;
-  return (
-    pathname.startsWith("/configuration/") ||
-    pathname.startsWith("/activities/") ||
-    pathname.startsWith("/plans/")
-  );
-}
-
-const financeChildren: LeafItem[] = [
-  { href: "/finance", label: "Pregled", icon: BarChart3 },
-  { href: "/finance/transactions", label: "Transakcije", icon: ListTodo },
-  { href: "/finance/accounts", label: "Računi", icon: Wallet },
-  { href: "/finance/budgets", label: "Budžeti", icon: Wallet },
-  { href: "/finance/goals", label: "Štednja", icon: Target },
-  { href: "/finance/investments", label: "Investicije", icon: Wallet },
-  { href: "/finance/settings", label: "Podešavanja", icon: Settings2 },
-];
-
-function isFinanceRoute(pathname: string): boolean {
-  return pathname === "/finance" || pathname.startsWith("/finance/");
-}
-
-const mealsChildren: LeafItem[] = [
-  { href: "/meals", label: "Day", icon: CalendarDays },
-  { href: "/meals/calendar", label: "Calendar", icon: CalendarDays },
-  { href: "/meals/library", label: "Library", icon: ClipboardList },
-  { href: "/meals/templates", label: "Templates", icon: ListTodo },
-  { href: "/meals/targets", label: "Targets", icon: Target },
-];
-
-function isMealsRoute(pathname: string): boolean {
-  return pathname === "/meals" || pathname.startsWith("/meals/");
-}
+import { mainSections } from "@/components/main-sections";
 
 export function NavTree() {
   const pathname = usePathname() ?? "/";
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    tasks: isTaskRoute(pathname),
-    physical: isPhysicalRoute(pathname),
-    finance: isFinanceRoute(pathname),
-    meals: isMealsRoute(pathname),
-  });
-
-  const sections: Section[] = [
-    {
-      kind: "group",
-      id: "tasks",
-      label: "Task Manager",
-      icon: CheckSquare,
-      children: taskChildren,
-    },
-    {
-      kind: "group",
-      id: "finance",
-      label: "Finance",
-      icon: Wallet,
-      children: financeChildren,
-    },
-    {
-      kind: "group",
-      id: "physical",
-      label: "Physical Activities",
-      icon: Activity,
-      children: physicalChildren,
-    },
-    { kind: "leaf", href: "/habits", label: "Habits", icon: Repeat },
-    { kind: "leaf", href: "/goals", label: "Goals", icon: Target },
-    { kind: "leaf", href: "/notes", label: "Notes", icon: StickyNote },
-    {
-      kind: "group",
-      id: "meals",
-      label: "Meals Diary",
-      icon: UtensilsCrossed,
-      children: mealsChildren,
-    },
-    { kind: "leaf", href: "/travels", label: "Travels", icon: Plane },
-  ];
-
-  function toggle(id: string) {
-    setOpenGroups((s) => ({ ...s, [id]: !s[id] }));
-  }
 
   return (
     <ul className="space-y-0.5">
-      {sections.map((s) => {
-        if (s.kind === "leaf") {
-          const Icon = s.icon;
-          const active = pathname === s.href;
-          return (
-            <li key={s.href}>
-              <Link
-                href={s.href}
-                className={`relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
-                  active
-                    ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:h-4 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-primary"
-                    : "text-sidebar-foreground/80"
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{s.label}</span>
-              </Link>
-            </li>
+      {mainSections.map((section) => {
+        const Icon = section.icon;
+        const active =
+          pathname === section.href ||
+          pathname.startsWith(`${section.href}/`) ||
+          section.links.some(
+            (link) => pathname === link.href || pathname.startsWith(`${link.href}/`),
           );
-        }
-        const Icon = s.icon;
-        const open = openGroups[s.id] ?? false;
+
         return (
-          <li key={s.id}>
-            <button
-              type="button"
-              onClick={() => toggle(s.id)}
-              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs font-medium uppercase tracking-wide text-sidebar-foreground/60 transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              aria-expanded={open}
+          <li key={section.href}>
+            <Link
+              href={section.href}
+              aria-current={active ? "page" : undefined}
+              className={`relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
+                active
+                  ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:h-4 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-primary"
+                  : "text-sidebar-foreground/80"
+              }`}
             >
-              <Icon className="h-4 w-4" />
-              <span className="flex-1 text-left">{s.label}</span>
-              <ChevronRight
-                className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-90" : ""}`}
-              />
-            </button>
-            {open && (
-              <ul className="mt-1 space-y-0.5 pl-4">
-                {s.children.map((c) => {
-                  const CIcon = c.icon;
-                  const active = pathname === c.href;
-                  return (
-                    <li key={c.href}>
-                      <Link
-                        href={c.href}
-                        className={`relative flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
-                          active
-                            ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:h-3.5 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-primary"
-                            : "text-sidebar-foreground/70"
-                        }`}
-                      >
-                        <CIcon className="h-3.5 w-3.5" />
-                        <span>{c.label}</span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+              <Icon className="size-4 shrink-0" />
+              <span>{section.label}</span>
+            </Link>
           </li>
         );
       })}

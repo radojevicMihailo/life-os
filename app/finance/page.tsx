@@ -5,6 +5,8 @@ import { SourceBadge } from "@/modules/finance/ui/components/source-badge";
 import { TransactionAmounts } from "@/modules/finance/ui/components/transaction-amounts";
 import { getDashboard } from "@/modules/finance/read-models/dashboard";
 import { loadReadModelRuntime } from "@/modules/finance/read-models/runtime";
+import { sections } from "@/components/main-sections";
+import { SectionLinks } from "@/components/section-links";
 
 function MetricCard({
   label,
@@ -43,6 +45,10 @@ export default async function DashboardPage() {
         Sve zbirne vrednosti su izražene u EUR i zadržavaju vidljiv izvor,
         datum i status konverzije.
       </PageHeader>
+
+      <div className="mb-8">
+        <SectionLinks section={sections.finance} dark />
+      </div>
 
       <section aria-label="Ključni pokazatelji" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard

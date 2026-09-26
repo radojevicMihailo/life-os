@@ -28,14 +28,26 @@ describe("state storage", () => {
   });
 
   it("roundtrips state", () => {
-    const s = { ...defaultState(), label: "writing spec" };
+    const s = { ...defaultState(), taskId: "task-123", label: "writing spec" };
     saveState(s);
     expect(loadState()).toEqual(s);
   });
 
+  it("keeps a saved timer from before task selection was added", () => {
+    globalThis.localStorage.setItem("pomodoro:state:v2", JSON.stringify({ ...defaultState(), taskId: undefined, label: "writing spec" }));
+    expect(loadState()).toMatchObject({ taskId: null, label: "writing spec", phase: "work" });
+  });
+
   it("returns null on corrupt JSON", () => {
-    globalThis.localStorage.setItem("pomodoro:state:v1", "{not json");
+    globalThis.localStorage.setItem("pomodoro:state:v2", "{not json");
     expect(loadState()).toBeNull();
+  });
+
+  it("does not restore a timer with the old cycle-based settings", () => {
+    globalThis.localStorage.setItem("pomodoro:state:v1", JSON.stringify({ ...defaultState(), phase: "long_break" }));
+    globalThis.localStorage.setItem("pomodoro:config:v1", JSON.stringify({ workMin: 25, shortMin: 5, longMin: 15, cyclesUntilLong: 4 }));
+    expect(loadState()).toBeNull();
+    expect(loadConfig()).toBeNull();
   });
 });
 

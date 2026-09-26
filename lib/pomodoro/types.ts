@@ -1,12 +1,10 @@
-export type Phase = "work" | "short_break" | "long_break";
+export type Phase = "work" | "break";
 
-export type Status = "idle" | "running" | "paused" | "ended";
+export type Status = "idle" | "running" | "paused";
 
 export type PomodoroConfig = {
   workMin: number;
-  shortMin: number;
-  longMin: number;
-  cyclesUntilLong: number;
+  breakMin: number;
 };
 
 export type PomodoroState = {
@@ -14,7 +12,7 @@ export type PomodoroState = {
   status: Status;
   startedAt: number | null;
   elapsedBeforeStart: number;
-  cycleCount: number;
+  taskId: string | null;
   label: string;
   config: PomodoroConfig;
 };
