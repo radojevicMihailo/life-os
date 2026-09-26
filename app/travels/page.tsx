@@ -16,7 +16,7 @@ export default async function TravelsPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-3">
-        <PageHeader title="Travels" />
+        <PageHeader title="Putovanja" description="Planovi i mesta koja želiš da posetiš." />
         <TravelQuickAdd />
       </header>
       <TravelsTable travels={rows} />

@@ -48,7 +48,7 @@ export function PomodoroView({ tasks, taskLoadError = false }: { tasks: TaskOpti
         <h1 className="text-2xl font-semibold tracking-tight">Pomodoro</h1>
       </header>
 
-      <div className="flex flex-col items-center gap-6 rounded-lg border bg-card p-8">
+      <div className="flex flex-col items-center gap-6 rounded-2xl border border-border bg-card shadow-sm p-8">
         <div className="text-sm uppercase tracking-wide text-muted-foreground">
           {phaseLabel(state.phase)}
         </div>

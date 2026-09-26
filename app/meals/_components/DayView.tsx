@@ -46,7 +46,7 @@ export async function DayView({ date }: { date: string }) {
             <Link href={`/meals/${prev}`}>‹</Link>
           </Button>
           <h1 className="text-xl font-semibold">
-            {format(day, "EEE, MMM d, yyyy")}
+            {new Intl.DateTimeFormat("sr-Latn-RS", { weekday: "short", day: "numeric", month: "short", year: "numeric" }).format(day)}
           </h1>
           <Button asChild variant="outline" size="sm">
             <Link href={`/meals/${next}`}>›</Link>
@@ -57,8 +57,8 @@ export async function DayView({ date }: { date: string }) {
       <TargetsBar totals={totals} targets={targets} />
       <div className="space-y-3">
         {meals.length === 0 && (
-          <div className="text-sm text-muted-foreground border rounded p-4">
-            No meals logged. Click &ldquo;Add meal&rdquo; to start.
+          <div className="rounded-2xl border border-border p-4 text-sm text-muted-foreground">
+            Još nema zabeleženih obroka za ovaj dan.
           </div>
         )}
         {meals.map((m) => (

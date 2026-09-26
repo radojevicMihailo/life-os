@@ -62,7 +62,7 @@ export function GoalRow({ goal }: { goal: GoalWithProgress }) {
   }
 
   return (
-    <div className="group flex flex-col gap-2 rounded-md border bg-card px-3 py-2">
+    <div className="group flex flex-col gap-2 rounded-2xl border border-border bg-card shadow-sm px-3 py-2">
       <div className="flex flex-wrap items-center gap-3">
         <Link
           href={`/goals/${goal.id}`}

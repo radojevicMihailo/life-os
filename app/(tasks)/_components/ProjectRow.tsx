@@ -58,7 +58,7 @@ export function ProjectRow({
   }
 
   return (
-    <div className="group flex items-center justify-between rounded-md border bg-card px-3 py-2">
+    <div className="group flex items-center justify-between rounded-2xl border border-border bg-card shadow-sm px-3 py-2">
       {editing ? (
         <Input
           value={editName}

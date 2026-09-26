@@ -6,7 +6,7 @@ export function ActionMessage({ state, success = "Sačuvano." }: { state: Action
   if (!state) return null;
   const fields = state.ok ? [] : Object.entries(state.fields ?? {});
   return (
-    <div aria-live="polite" className={`mt-3 text-sm ${state.ok ? "text-teal-200" : "text-rose-200"}`}>
+    <div aria-live="polite" className={`mt-3 text-sm ${state.ok ? "text-blue-200" : "text-rose-200"}`}>
       <p>{state.ok ? success : state.message}</p>
       {fields.length > 0 ? <ul className="mt-2 list-disc space-y-1 pl-5">{fields.map(([field, message]) => <li id={`field-error-${field}`} key={field}>{message}</li>)}</ul> : null}
     </div>

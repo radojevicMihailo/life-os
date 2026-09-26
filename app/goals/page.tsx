@@ -83,7 +83,7 @@ export default async function GoalsPage({
   return (
     <div className="space-y-6">
       <header className="space-y-3">
-        <PageHeader title="Goals" />
+        <PageHeader title="Ciljevi" />
         <GoalQuickAdd defaultHorizon={horizon} />
         <GoalsStatusFilter />
       </header>

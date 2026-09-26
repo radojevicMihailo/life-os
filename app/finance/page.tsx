@@ -103,7 +103,7 @@ export default async function DashboardPage() {
                     <span className="font-medium">{goal.percentage}%</span>
                   </div>
                   <div aria-label={`${goal.name}: ${goal.percentage}%`} className="mt-2 h-2 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuenow={Number(goal.percentage)}>
-                    <div className="h-full rounded-full bg-teal-300" style={{ width: `${Math.min(100, Math.max(0, Number(goal.percentage)))}%` }} />
+                    <div className="h-full rounded-full bg-blue-400" style={{ width: `${Math.min(100, Math.max(0, Number(goal.percentage)))}%` }} />
                   </div>
                 </li>
               ))}

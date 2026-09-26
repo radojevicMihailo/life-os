@@ -63,18 +63,18 @@ export default async function HabitsPage() {
   return (
     <div className="space-y-8">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Habits</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Navike</h1>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm" className="gap-1">
             <Link href="/habits/manage">
               <Settings className="h-4 w-4" />
-              Manage
+              Upravljaj
             </Link>
           </Button>
           <Button asChild size="sm" className="gap-1">
             <Link href="/habits/new">
               <Plus className="h-4 w-4" />
-              New habit
+              Nova navika
             </Link>
           </Button>
         </div>
@@ -82,9 +82,9 @@ export default async function HabitsPage() {
 
       {habits.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No habits yet.{" "}
+          Još nema navika.{" "}
           <Link href="/habits/new" className="underline">
-            Create one
+            Dodaj prvu
           </Link>
           .
         </p>
@@ -92,10 +92,10 @@ export default async function HabitsPage() {
         <>
           <section className="space-y-2">
             <h2 className="text-sm font-semibold text-muted-foreground">
-              Today · {scheduledToday.length}
+              Danas · {scheduledToday.length}
             </h2>
             {scheduledToday.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nothing scheduled today.</p>
+              <p className="text-sm text-muted-foreground">Danas nema planiranih navika.</p>
             ) : (
               scheduledToday.map((h) => {
                 const map = buildLogMap(wideByHabit.get(h.id) ?? []);
@@ -113,8 +113,8 @@ export default async function HabitsPage() {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground">Last 7 days</h2>
-            <div className="space-y-1.5 rounded-md border bg-card p-3">
+            <h2 className="text-sm font-semibold text-muted-foreground">Poslednjih 7 dana</h2>
+            <div className="space-y-1.5 rounded-2xl border border-border bg-card shadow-sm p-3">
               {habits.map((h) => (
                 <HabitWeekGrid
                   key={h.id}
@@ -127,7 +127,7 @@ export default async function HabitsPage() {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground">Stats</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground">Statistika</h2>
             <div className="space-y-1.5">
               {habits.map((h) => {
                 const map = buildLogMap(wideByHabit.get(h.id) ?? []);

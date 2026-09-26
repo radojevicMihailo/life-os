@@ -4,7 +4,7 @@ export default function Loading() {
       <div className="h-8 w-32 animate-pulse rounded-md bg-muted" />
       <div className="space-y-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-10 animate-pulse rounded-md border bg-card" />
+          <div key={i} className="h-10 animate-pulse rounded-2xl border border-border bg-card shadow-sm" />
         ))}
       </div>
     </div>

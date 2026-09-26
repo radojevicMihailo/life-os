@@ -21,18 +21,18 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="sr-Latn"
       suppressHydrationWarning
       className="h-full antialiased"
     >
       <body className="min-h-full">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           <PomodoroProvider>
             <div className="flex min-h-screen">
               <Sidebar />
               <div className="flex min-w-0 flex-1 flex-col">
                 <MobileNav />
-                <main className="flex-1 p-4 sm:p-6 md:p-8">{children}</main>
+                <main className="mx-auto w-full max-w-[1660px] flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
               </div>
             </div>
             <Toaster richColors position="top-right" />

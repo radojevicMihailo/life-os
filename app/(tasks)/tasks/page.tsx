@@ -82,8 +82,8 @@ export default async function TasksPage({
     <div className="space-y-6">
       <header className="flex items-start justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Tasks</h1>
-          <p className="text-sm text-muted-foreground">{tasks.length} shown</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Zadaci</h1>
+          <p className="text-sm text-muted-foreground">{tasks.length} prikazano</p>
         </div>
         <TaskForm projects={projects} priorities={priorities} contexts={contexts} />
       </header>

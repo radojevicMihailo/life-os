@@ -46,7 +46,7 @@ export function ContextRow({
 
   if (editing) {
     return (
-      <div className="space-y-2 rounded-md border bg-card px-3 py-2">
+      <div className="space-y-2 rounded-2xl border border-border bg-card shadow-sm px-3 py-2">
         <div className="flex items-center gap-2">
           <Input
             value={editName}
@@ -75,7 +75,7 @@ export function ContextRow({
   }
 
   return (
-    <div className="group flex items-center justify-between rounded-md border bg-card px-3 py-2">
+    <div className="group flex items-center justify-between rounded-2xl border border-border bg-card shadow-sm px-3 py-2">
       <Link href={`/tasks?context=${id}`} className="flex flex-1 items-center gap-2">
         <Badge
           variant="secondary"

@@ -158,7 +158,7 @@ export function CalendarView({
           <span className="ml-2 text-sm font-medium">{title}</span>
           {toolbarExtras}
         </div>
-        <div className="inline-flex rounded-md border bg-card p-0.5 text-sm">
+        <div className="inline-flex rounded-2xl border border-border bg-card shadow-sm p-0.5 text-sm">
           <button
             type="button"
             onClick={() => setView("week")}
@@ -299,7 +299,7 @@ function WeekTimeline({
   const nowTop = minutesToPx(today.getHours() * 60 + today.getMinutes());
 
   return (
-    <div className="overflow-hidden rounded-md border bg-card">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
       <div
         className="grid border-b bg-muted/40"
         style={{ gridTemplateColumns: `60px repeat(7, minmax(0, 1fr))` }}

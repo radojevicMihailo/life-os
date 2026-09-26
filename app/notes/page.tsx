@@ -20,7 +20,7 @@ export default async function NotesPage() {
 
   return (
     <div>
-      <PageHeader title="Notes" description="Free-form notes and todo lists" />
+      <PageHeader title="Beleške" description="Ideje, zapisi i liste na jednom mestu." />
       <NotesListClient notes={notes} />
     </div>
   );

@@ -66,7 +66,7 @@ export default async function ProjectDetailPage({
         dueAt={proj.dueAt}
       />
 
-      <section className="space-y-2 rounded-md border bg-card p-4">
+      <section className="space-y-2 rounded-2xl border border-border bg-card shadow-sm p-4">
         <div className="flex items-center justify-between text-sm">
           <span className="font-medium">Progress</span>
           <span className="text-muted-foreground">

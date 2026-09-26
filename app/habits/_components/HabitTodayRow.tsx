@@ -39,7 +39,7 @@ export function HabitTodayRow({
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-3 rounded-md border bg-card px-3 py-2 ${
+      className={`flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card shadow-sm px-3 py-2 ${
         done ? "opacity-90" : ""
       }`}
     >

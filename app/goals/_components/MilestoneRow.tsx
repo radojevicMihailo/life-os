@@ -62,7 +62,7 @@ export function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
   }
 
   return (
-    <div className="group flex flex-wrap items-center gap-3 rounded-md border bg-card px-3 py-2">
+    <div className="group flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card shadow-sm px-3 py-2">
       <Checkbox checked={done} onCheckedChange={toggle} disabled={pending} />
       {editing ? (
         <Input

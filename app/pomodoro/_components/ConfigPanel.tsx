@@ -75,7 +75,7 @@ export function ConfigPanel() {
     Notification.permission !== "denied";
 
   return (
-    <div className="mt-6 grid gap-4 rounded-lg border bg-card p-4">
+    <div className="mt-6 grid gap-4 rounded-2xl border border-border bg-card shadow-sm p-4">
       <h3 className="text-sm font-medium">Settings</h3>
       <div className="grid grid-cols-2 gap-4">
         <NumberField

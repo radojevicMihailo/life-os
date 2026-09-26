@@ -2,13 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { House } from "lucide-react";
 import { mainSections } from "@/components/main-sections";
 
 export function NavTree() {
   const pathname = usePathname() ?? "/";
 
   return (
-    <ul className="space-y-0.5">
+    <div className="space-y-5">
+      <Link
+        href="/"
+        aria-current={pathname === "/" ? "page" : undefined}
+        className={`flex min-h-11 items-center gap-3 rounded-xl border px-3 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${pathname === "/" ? "border-primary/60 bg-primary/20 text-foreground shadow-[inset_0_0_20px_rgba(35,123,255,0.12)]" : "border-transparent text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}
+      >
+        <House className="size-4 shrink-0" />
+        <span>Danas</span>
+      </Link>
+      <div>
+        <p className="px-3 pb-2 text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Oblasti</p>
+        <ul className="space-y-1">
       {mainSections.map((section) => {
         const Icon = section.icon;
         const active =
@@ -23,10 +35,10 @@ export function NavTree() {
             <Link
               href={section.href}
               aria-current={active ? "page" : undefined}
-              className={`relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
+              className={`flex min-h-10 items-center gap-3 rounded-xl border px-3 py-2 text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
                 active
-                  ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:h-4 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-primary"
-                  : "text-sidebar-foreground/80"
+                  ? "border-primary/50 bg-sidebar-accent font-medium text-sidebar-accent-foreground"
+                  : "border-transparent text-sidebar-foreground/75"
               }`}
             >
               <Icon className="size-4 shrink-0" />
@@ -35,6 +47,8 @@ export function NavTree() {
           </li>
         );
       })}
-    </ul>
+        </ul>
+      </div>
+    </div>
   );
 }

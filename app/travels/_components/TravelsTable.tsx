@@ -62,7 +62,7 @@ export function TravelsTable({ travels }: { travels: Travel[] }) {
     return <p className="text-sm text-muted-foreground">No travels yet.</p>;
   }
   return (
-    <div className="overflow-x-auto rounded-md border bg-card">
+    <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b text-left text-xs text-muted-foreground">

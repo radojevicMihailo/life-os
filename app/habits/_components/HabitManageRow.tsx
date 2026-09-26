@@ -33,7 +33,7 @@ export function HabitManageRow({ habit }: { habit: Habit }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-md border bg-card px-3 py-2">
+    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card shadow-sm px-3 py-2">
       <div className="min-w-0 flex-1">
         <div className={`text-sm font-medium ${archived ? "text-muted-foreground line-through" : ""}`}>
           {habit.title}

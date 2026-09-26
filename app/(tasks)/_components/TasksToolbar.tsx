@@ -60,7 +60,7 @@ export function TasksToolbar({
           aria-label="Search tasks"
         />
       </div>
-      <div className="inline-flex rounded-md border bg-card p-0.5 text-sm">
+      <div className="inline-flex rounded-2xl border border-border bg-card shadow-sm p-0.5 text-sm">
         <button
           type="button"
           onClick={() => setParam("view", "grouped")}

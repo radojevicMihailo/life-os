@@ -63,7 +63,7 @@ export function TravelQuickAdd() {
         e.preventDefault();
         submit();
       }}
-      className="flex w-full flex-wrap items-center gap-2 rounded-md border bg-card p-3"
+      className="flex w-full flex-wrap items-center gap-2 rounded-2xl border border-border bg-card shadow-sm p-3"
     >
       <Input
         value={name}

@@ -13,7 +13,7 @@ export function PomodoroBadge() {
   return (
     <Link
       href="/pomodoro"
-      className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md border bg-card px-1.5 py-1 text-xs text-foreground/80 transition hover:bg-accent hover:text-foreground"
+      className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-2xl border border-border bg-card shadow-sm px-1.5 py-1 text-xs text-foreground/80 transition hover:bg-accent hover:text-foreground"
       aria-label={`${phaseLabel(state.phase)} timer ${statusText}`}
       title={`${phaseLabel(state.phase)} · ${statusText}`}
     >

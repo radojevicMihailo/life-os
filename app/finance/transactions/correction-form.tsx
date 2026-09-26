@@ -52,7 +52,7 @@ export function CorrectionForm({ transaction }: { transaction: CorrectableTransa
   const { correctionDraft: draft } = transaction;
   return (
     <details className="mt-3 text-left">
-      <summary className="cursor-pointer text-xs font-medium text-teal-200">Ispravi {transaction.description ?? transaction.type}</summary>
+      <summary className="cursor-pointer text-xs font-medium text-blue-200">Ispravi {transaction.description ?? transaction.type}</summary>
       <form action={action} className="mt-3 grid gap-2 rounded-xl bg-slate-950/70 p-3">
         <input name="originalId" type="hidden" value={transaction.id} />
         <input name="operation" type="hidden" value={draft.operation} />
@@ -63,7 +63,7 @@ export function CorrectionForm({ transaction }: { transaction: CorrectableTransa
           : null}
         <label className="text-xs text-slate-400">Novi opis transakcije<input className={control} defaultValue={transaction.description ?? ""} name="replacementDescription" /></label>
         <label className="text-xs text-slate-400">Razlog / opis storna<input className={control} name="correctionDescription" /></label>
-        <button className="min-h-11 rounded-xl border border-teal-300/30 px-3 text-sm text-teal-100" disabled={pending}>Sačuvaj ispravku</button>
+        <button className="min-h-11 rounded-xl border border-blue-400/30 px-3 text-sm text-blue-100" disabled={pending}>Sačuvaj ispravku</button>
         <ActionMessage state={state} success="Ispravka je sačuvana." />
       </form>
     </details>
