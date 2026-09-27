@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { sections } from "@/components/main-sections";
 
-export function SectionNav({ area, hideOnOverview = false }: { area: "tasks" | "physical" | "meals"; hideOnOverview?: boolean }) {
+export function SectionNav({ area, hideOnOverview = false }: { area: "tasks" | "physical" | "meals" | "notes"; hideOnOverview?: boolean }) {
   const section = sections[area];
   const pathname = usePathname();
   if (hideOnOverview && pathname === section.href) return null;

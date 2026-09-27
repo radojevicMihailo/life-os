@@ -12,6 +12,7 @@ export const updateNoteSchema = z.object({
   title: z.string().trim().min(1, "Title required").max(500).optional(),
   body: z.string().max(100_000).optional(),
   kind: noteKindSchema.optional(),
+  categoryId: z.uuid().nullable().optional(),
 });
 
 export const deleteNoteSchema = z.object({ id: z.uuid() });

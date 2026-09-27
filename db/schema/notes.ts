@@ -14,9 +14,15 @@ export const noteKindEnum = pgEnum("note_kind", ["free", "todo"]);
 export type NoteKind = (typeof noteKindEnum.enumValues)[number];
 
 export const noteKindLabel: Record<NoteKind, string> = {
-  free: "Free note",
-  todo: "Todo list",
+  free: "Slobodna beleška",
+  todo: "Lista zadataka",
 };
+
+export const noteCategory = pgTable("note_categories", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 export const note = pgTable(
   "notes",
@@ -25,10 +31,11 @@ export const note = pgTable(
     title: text("title").notNull(),
     kind: noteKindEnum("kind").notNull().default("free"),
     body: text("body").notNull().default(""),
+    categoryId: uuid("category_id").references(() => noteCategory.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("notes_updated_at_idx").on(t.updatedAt)],
+  (t) => [index("notes_updated_at_idx").on(t.updatedAt), index("notes_category_idx").on(t.categoryId)],
 );
 
 export const noteItem = pgTable(

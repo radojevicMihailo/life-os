@@ -86,7 +86,9 @@ export const sections = {
     label: "Beleške",
     icon: StickyNote,
     description: "Ideje, beleške i liste.",
-    links: [],
+    links: [
+      { href: "/notes/settings", label: "Podešavanja", icon: Settings2, description: "Kategorije beležaka." },
+    ],
   },
   meals: {
     href: "/meals",

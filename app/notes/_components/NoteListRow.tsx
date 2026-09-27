@@ -7,12 +7,19 @@ export type NoteListItem = {
   title: string;
   kind: NoteKind;
   body: string;
+  categoryId: string | null;
+  categoryName: string | null;
   updatedAt: Date;
 };
 
 export function NoteListRow({ note }: { note: NoteListItem }) {
   const Icon = note.kind === "todo" ? ListChecks : StickyNote;
-  const snippet = note.body.replace(/\s+/g, " ").trim().slice(0, 120);
+  const snippet = note.body
+    .replace(/(?:^|\n)#{1,6}\s+/g, " ")
+    .replace(/(?:^|\n)\s*(?:[-*]|\d+\.)\s+/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/[*_`]/g, "")
+    .replace(/\s+/g, " ").trim().slice(0, 120);
   return (
     <Link
       href={`/notes/${note.id}`}
@@ -25,6 +32,7 @@ export function NoteListRow({ note }: { note: NoteListItem }) {
           <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
             {noteKindLabel[note.kind]}
           </span>
+          {note.categoryName ? <span className="shrink-0 rounded bg-violet-500/15 px-2 py-1 text-xs text-violet-100">{note.categoryName}</span> : null}
         </div>
         {snippet ? <p className="truncate text-sm text-muted-foreground">{snippet}</p> : null}
       </div>
