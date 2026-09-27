@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { and, gte, inArray, isNull } from "drizzle-orm";
-import { Plus, Settings } from "lucide-react";
+import { Plus } from "lucide-react";
 import { db } from "@/db";
 import { habit, habitLog, type Habit, type HabitLog } from "@/db/schema/habits";
 import { Button } from "@/components/ui/button";
@@ -62,22 +62,14 @@ export default async function HabitsPage() {
 
   return (
     <div className="space-y-8">
-      <header className="flex flex-wrap items-center justify-between gap-3">
+      <header className="space-y-4">
         <h1 className="text-3xl font-semibold tracking-tight">Navike</h1>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="gap-1">
-            <Link href="/habits/manage">
-              <Settings className="h-4 w-4" />
-              Upravljaj
-            </Link>
-          </Button>
-          <Button asChild size="sm" className="gap-1">
-            <Link href="/habits/new">
-              <Plus className="h-4 w-4" />
-              Nova navika
-            </Link>
-          </Button>
-        </div>
+        <Button asChild size="sm" className="gap-1">
+          <Link href="/habits/new">
+            <Plus className="h-4 w-4" />
+            Nova navika
+          </Link>
+        </Button>
       </header>
 
       {habits.length === 0 ? (

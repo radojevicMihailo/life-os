@@ -79,7 +79,7 @@ export default async function TasksPage({
 
   return (
     <div className="space-y-6">
-      <header className="flex items-start justify-between gap-4">
+      <header className="space-y-4">
         <div className="space-y-1">
           <h1 className="text-3xl font-semibold tracking-tight">Zadaci</h1>
           <p className="text-sm text-muted-foreground">{tasks.length} prikazano</p>
