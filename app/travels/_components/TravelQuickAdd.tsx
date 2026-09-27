@@ -68,12 +68,13 @@ export function TravelQuickAdd() {
       <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Destination"
+        placeholder="Destinacija"
+        aria-label="Naziv putovanja"
         disabled={pending}
         className="min-w-40 flex-1"
       />
       <Select value={region} onValueChange={(v) => setRegion(v as TravelRegion)}>
-        <SelectTrigger className="w-40">
+        <SelectTrigger className="w-40" aria-label="Region">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -85,7 +86,7 @@ export function TravelQuickAdd() {
         </SelectContent>
       </Select>
       <Select value={status} onValueChange={(v) => setStatus(v as TravelStatus)}>
-        <SelectTrigger className="w-32">
+        <SelectTrigger className="w-32" aria-label="Status">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -98,6 +99,7 @@ export function TravelQuickAdd() {
       </Select>
       <Input
         type="date"
+        aria-label="Datum početka"
         value={startDate}
         onChange={(e) => setStartDate(e.target.value)}
         disabled={pending}
@@ -105,21 +107,24 @@ export function TravelQuickAdd() {
       />
       <Input
         type="date"
+        aria-label="Datum završetka"
         value={endDate}
         onChange={(e) => setEndDate(e.target.value)}
+        min={startDate || undefined}
         disabled={pending}
         className="w-40"
       />
       <Input
         value={people}
         onChange={(e) => setPeople(e.target.value)}
-        placeholder="People"
+        placeholder="Ljudi"
+        aria-label="Ljudi"
         disabled={pending}
         className="w-40"
       />
       <Button type="submit" size="sm" disabled={pending || !name.trim()} className="gap-1">
         <Plus className="h-4 w-4" />
-        Add
+        Dodaj
       </Button>
     </form>
   );

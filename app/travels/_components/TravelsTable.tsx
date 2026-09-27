@@ -22,6 +22,7 @@ import {
   setTravelRegion,
   setTravelStatus,
 } from "../_actions/travels";
+import { TravelEditDialog } from "./TravelEditDialog";
 
 const REGIONS: TravelRegion[] = ["srbija", "okolne_drzave", "evropa", "svet"];
 const STATUSES: TravelStatus[] = ["idea", "planning", "booked", "done"];
@@ -44,7 +45,7 @@ function fmt(d: string | null): string {
   if (!d) return "";
   const [y, m, day] = d.split("-");
   const date = new Date(Number(y), Number(m) - 1, Number(day));
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString("sr-Latn-RS", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -57,20 +58,20 @@ function dateRange(t: Travel): string {
   return fmt(t.startDate ?? t.endDate);
 }
 
-export function TravelsTable({ travels }: { travels: Travel[] }) {
+export function TravelsTable({ travels, emptyMessage = "Još nema putovanja." }: { travels: Travel[]; emptyMessage?: string }) {
   if (travels.length === 0) {
-    return <p className="text-sm text-muted-foreground">No travels yet.</p>;
+    return <p className="rounded-2xl border border-dashed border-border p-6 text-sm text-muted-foreground">{emptyMessage}</p>;
   }
   return (
     <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b text-left text-xs text-muted-foreground">
-            <th className="px-3 py-2 font-medium">Name</th>
+            <th className="px-3 py-2 font-medium">Naziv</th>
             <th className="px-3 py-2 font-medium">Region</th>
             <th className="px-3 py-2 font-medium">Status</th>
-            <th className="px-3 py-2 font-medium">Date</th>
-            <th className="px-3 py-2 font-medium">People</th>
+            <th className="px-3 py-2 font-medium">Datum</th>
+            <th className="px-3 py-2 font-medium">Ljudi</th>
             <th className="px-3 py-2" />
           </tr>
         </thead>
@@ -152,16 +153,16 @@ function TravelRow({ travel: t }: { travel: Travel }) {
       <td className="px-3 py-2 text-muted-foreground">{dateRange(t)}</td>
       <td className="px-3 py-2 text-muted-foreground">{t.people ?? ""}</td>
       <td className="px-3 py-2 text-right">
-        <Button
+        <div className="flex justify-end gap-1"><TravelEditDialog travel={t} compact /><Button
           size="icon"
           variant="ghost"
           onClick={remove}
           disabled={pending}
-          className="opacity-0 transition group-hover:opacity-100"
-          aria-label="Delete"
+          className="opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+          aria-label={`Obriši ${t.name}`}
         >
           <Trash2 className="h-4 w-4" />
-        </Button>
+        </Button></div>
       </td>
     </tr>
   );

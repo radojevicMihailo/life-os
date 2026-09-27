@@ -2,8 +2,9 @@ import { desc, asc } from "drizzle-orm";
 import { db } from "@/db";
 import { travel, type Travel } from "@/db/schema/travels";
 import { PageHeader } from "@/components/page-header";
+import { belgradeDayKey } from "@/app/_lib/dashboard-model";
 import { TravelQuickAdd } from "./_components/TravelQuickAdd";
-import { TravelsTable } from "./_components/TravelsTable";
+import { TravelsWorkspace } from "./_components/TravelsWorkspace";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default async function TravelsPage() {
         <PageHeader title="Putovanja" description="Planovi i mesta koja želiš da posetiš." />
         <TravelQuickAdd />
       </header>
-      <TravelsTable travels={rows} />
+      <TravelsWorkspace travels={rows} todayKey={belgradeDayKey(new Date())} />
     </div>
   );
 }

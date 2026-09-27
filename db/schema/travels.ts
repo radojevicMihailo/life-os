@@ -35,10 +35,10 @@ export const travelRegionLabel: Record<TravelRegion, string> = {
 };
 
 export const travelStatusLabel: Record<TravelStatus, string> = {
-  idea: "Idea",
-  planning: "Planning",
-  booked: "Booked",
-  done: "Done",
+  idea: "Ideja",
+  planning: "U planu",
+  booked: "Rezervisano",
+  done: "Završeno",
 };
 
 export const travel = pgTable(

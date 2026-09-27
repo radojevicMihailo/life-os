@@ -24,6 +24,9 @@ export async function createTravel(
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = createTravelSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (parsed.data.startDate && parsed.data.endDate && parsed.data.endDate < parsed.data.startDate) {
+    return fail("Datum završetka mora biti posle početka.");
+  }
 
   const [row] = await db
     .insert(travel)
@@ -46,6 +49,9 @@ export async function updateTravel(input: UpdateTravelInput): Promise<ActionResu
   const parsed = updateTravelSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
   const { id, ...patch } = parsed.data;
+  if (patch.startDate && patch.endDate && patch.endDate < patch.startDate) {
+    return fail("Datum završetka mora biti posle početka.");
+  }
 
   await db
     .update(travel)
