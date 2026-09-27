@@ -18,6 +18,7 @@ import { taskStatusLabel } from "@/db/schema/tasks";
 import { deleteTask, updateTask, setTaskStatus } from "../_actions/tasks";
 import { formatTaskDate, formatDateRange } from "@/lib/format";
 import { isBefore, startOfDay } from "date-fns";
+import { taskStatusColors } from "@/lib/status-colors";
 
 export type TaskWithMeta = Task & {
   projectName?: string | null;
@@ -27,14 +28,6 @@ export type TaskWithMeta = Task & {
 };
 
 const statusOrder: TaskStatus[] = ["backlog", "in_progress", "waiting_for", "done", "canceled"];
-
-const statusBadgeStyle: Record<TaskStatus, string> = {
-  backlog: "bg-slate-100 text-slate-700 border-slate-300",
-  in_progress: "bg-blue-100 text-blue-700 border-blue-300",
-  waiting_for: "bg-amber-100 text-amber-800 border-amber-300",
-  canceled: "bg-zinc-100 text-zinc-500 border-zinc-300 line-through",
-  done: "bg-green-100 text-green-700 border-green-300",
-};
 
 export function TaskRow({ task }: { task: TaskWithMeta }) {
   const [editing, setEditing] = useState(false);
@@ -130,7 +123,7 @@ export function TaskRow({ task }: { task: TaskWithMeta }) {
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className={`rounded border px-2 py-0.5 text-xs ${statusBadgeStyle[task.status]}`}
+            className={`rounded-xl border px-3 py-1.5 text-sm font-semibold ${taskStatusColors[task.status]}`}
             disabled={pending}
           >
             {taskStatusLabel[task.status]}

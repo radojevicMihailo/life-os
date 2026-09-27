@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { travelRegionLabel, travelStatusLabel, type Travel } from "@/db/schema/travels";
 import { monthGrid, travelsOnDate } from "@/lib/travels/view";
 import { TravelEditDialog } from "./TravelEditDialog";
+import { travelRegionColors, travelStatusColors } from "@/lib/status-colors";
 
 const weekdays = ["Pon", "Uto", "Sre", "Čet", "Pet", "Sub", "Ned"];
 
@@ -51,7 +52,7 @@ export function TravelCalendar({ travels, todayKey }: { travels: Travel[]; today
     </div>
     <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
       <h3 className="font-semibold">{readableDate(selectedDay)}</h3>
-      {selectedTrips.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">Nema putovanja za izabrani dan.</p> : <ul className="mt-3 space-y-3">{selectedTrips.map((item) => <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background/30 p-3"><div className="min-w-0"><p className="font-medium">{item.name}</p><p className="mt-1 text-xs text-muted-foreground">{travelRegionLabel[item.region]} · {travelStatusLabel[item.status]}{item.people ? ` · ${item.people}` : ""}</p></div><TravelEditDialog travel={item} /></li>)}</ul>}
+      {selectedTrips.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">Nema putovanja za izabrani dan.</p> : <ul className="mt-3 space-y-3">{selectedTrips.map((item) => <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background/30 p-3"><div className="min-w-0"><p className="font-medium">{item.name}</p><div className="mt-2 flex flex-wrap items-center gap-2"><span className={`rounded-lg border px-2.5 py-1 text-sm ${travelRegionColors[item.region]}`}>{travelRegionLabel[item.region]}</span><span className={`rounded-lg border px-2.5 py-1 text-sm ${travelStatusColors[item.status]}`}>{travelStatusLabel[item.status]}</span>{item.people ? <span className="text-sm text-muted-foreground">{item.people}</span> : null}</div></div><TravelEditDialog travel={item} /></li>)}</ul>}
     </div>
     {travels.some((item) => !item.startDate && !item.endDate) ? <p className="text-xs text-muted-foreground">Putovanja bez datuma dostupna su u prikazu liste.</p> : null}
   </section>;

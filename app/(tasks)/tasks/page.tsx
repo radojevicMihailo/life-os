@@ -1,7 +1,6 @@
 import { asc, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { context, priority, project } from "@/db/schema/tasks";
-import { QuickAdd } from "../_components/QuickAdd";
 import { TasksTriageShell } from "../_components/TasksTriageShell";
 import { TaskForm } from "../_components/TaskForm";
 import { ContextFilter } from "../_components/ContextFilter";
@@ -87,7 +86,6 @@ export default async function TasksPage({
         </div>
         <TaskForm projects={projects} priorities={priorities} contexts={contexts} />
       </header>
-      <QuickAdd />
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <StatusFilter />
         <PriorityFilter priorities={priorities} />

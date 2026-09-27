@@ -20,16 +20,9 @@ import type { TaskStatus } from "@/db/schema/tasks";
 import { taskStatusLabel } from "@/db/schema/tasks";
 import { setTaskStatus, updateTask } from "../_actions/tasks";
 import { DateField } from "./DateField";
+import { taskStatusColors } from "@/lib/status-colors";
 
 const statusOrder: TaskStatus[] = ["backlog", "in_progress", "waiting_for", "done", "canceled"];
-
-const statusBadgeStyle: Record<TaskStatus, string> = {
-  backlog: "bg-slate-100 text-slate-700 border-slate-300",
-  in_progress: "bg-blue-100 text-blue-700 border-blue-300",
-  waiting_for: "bg-amber-100 text-amber-800 border-amber-300",
-  canceled: "bg-zinc-100 text-zinc-500 border-zinc-300",
-  done: "bg-green-100 text-green-700 border-green-300",
-};
 
 function hasTimeComponent(d: Date | null): boolean {
   if (!d) return false;
@@ -109,7 +102,7 @@ export function TaskDetailEditor({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className={`w-full rounded border px-3 py-2 text-sm text-left ${statusBadgeStyle[status]}`}
+              className={`w-full rounded-xl border px-4 py-2.5 text-base font-semibold text-left ${taskStatusColors[status]}`}
               disabled={pending}
             >
               {taskStatusLabel[status]}

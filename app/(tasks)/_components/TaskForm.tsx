@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Plus, X } from "lucide-react";
 import {
@@ -245,18 +246,17 @@ export function TaskForm({
               </SelectContent>
             </Select>
           </div>
-          {contexts.length > 0 && (
             <div className="space-y-1.5">
-              <Label>Context</Label>
+              <Label>Kontekst</Label>
               <Select
                 value={contextId ?? "none"}
                 onValueChange={(v) => setContextId(v === "none" ? undefined : v)}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="None" />
+                  <SelectValue placeholder="Bez konteksta" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="none">Bez konteksta</SelectItem>
                   {contexts.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
@@ -264,8 +264,8 @@ export function TaskForm({
                   ))}
                 </SelectContent>
               </Select>
+              {contexts.length === 0 ? <Link href="/context" className="text-sm text-primary hover:underline">Dodaj prvi kontekst</Link> : null}
             </div>
-          )}
           <div className="sm:col-span-2">
             <RecurrenceEditor value={recurrence} onChange={setRecurrence} dueAt={dueAt} />
           </div>

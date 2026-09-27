@@ -23,23 +23,10 @@ import {
   setTravelStatus,
 } from "../_actions/travels";
 import { TravelEditDialog } from "./TravelEditDialog";
+import { travelRegionColors, travelStatusColors } from "@/lib/status-colors";
 
 const REGIONS: TravelRegion[] = ["srbija", "okolne_drzave", "evropa", "svet"];
 const STATUSES: TravelStatus[] = ["idea", "planning", "booked", "done"];
-
-const regionBadge: Record<TravelRegion, string> = {
-  srbija: "bg-rose-100 text-rose-700 border-rose-300",
-  okolne_drzave: "bg-orange-100 text-orange-700 border-orange-300",
-  evropa: "bg-sky-100 text-sky-700 border-sky-300",
-  svet: "bg-violet-100 text-violet-700 border-violet-300",
-};
-
-const statusBadge: Record<TravelStatus, string> = {
-  idea: "bg-zinc-100 text-zinc-700 border-zinc-300",
-  planning: "bg-amber-100 text-amber-800 border-amber-300",
-  booked: "bg-blue-100 text-blue-700 border-blue-300",
-  done: "bg-green-100 text-green-700 border-green-300",
-};
 
 function fmt(d: string | null): string {
   if (!d) return "";
@@ -64,7 +51,7 @@ export function TravelsTable({ travels, emptyMessage = "Još nema putovanja." }:
   }
   return (
     <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
-      <table className="w-full text-sm">
+      <table className="w-full text-base">
         <thead>
           <tr className="border-b text-left text-xs text-muted-foreground">
             <th className="px-3 py-2 font-medium">Naziv</th>
@@ -115,7 +102,7 @@ function TravelRow({ travel: t }: { travel: Travel }) {
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className={`rounded border px-2 py-0.5 text-xs ${regionBadge[t.region]}`}
+              className={`rounded-xl border px-3 py-1.5 text-sm font-semibold ${travelRegionColors[t.region]}`}
               disabled={pending}
             >
               {travelRegionLabel[t.region]}
@@ -135,7 +122,7 @@ function TravelRow({ travel: t }: { travel: Travel }) {
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className={`rounded border px-2 py-0.5 text-xs ${statusBadge[t.status]}`}
+              className={`rounded-xl border px-3 py-1.5 text-sm font-semibold ${travelStatusColors[t.status]}`}
               disabled={pending}
             >
               {travelStatusLabel[t.status]}

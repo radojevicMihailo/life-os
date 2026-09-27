@@ -21,6 +21,7 @@ export type GoogleCalendarItem = {
   status: null;
   kind: "gcal";
   source: "google";
+  accountIdx: number;
   dateISO: string;
   endISO?: string;
   hasTime: boolean;
@@ -94,7 +95,7 @@ export async function fetchGoogleEventsAction(
   let anyAuth = false;
   let anyFail = false;
   const items: GoogleCalendarItem[] = [];
-  for (const r of results) {
+  for (const [index, r] of results.entries()) {
     if (r.status === "fulfilled") {
       for (const e of r.value) {
         items.push({
@@ -104,6 +105,7 @@ export async function fetchGoogleEventsAction(
           status: null,
           kind: "gcal",
           source: "google",
+          accountIdx: targets[index].accountIdx,
           dateISO: e.startISO,
           endISO: e.endISO,
           hasTime: e.hasTime,

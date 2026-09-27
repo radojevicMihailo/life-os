@@ -7,6 +7,10 @@ import {
   startOfWeek,
 } from "date-fns";
 import { fetchTasks } from "@/lib/tasks-query";
+import { db } from "@/db";
+import { context } from "@/db/schema/tasks";
+import { asc } from "drizzle-orm";
+import { taskDateHasTime } from "@/lib/calendar-date";
 import { CalendarView, type CalendarItem } from "../_components/CalendarView";
 import { GoogleCalendarButton } from "../_components/GoogleCalendarButton";
 import {
@@ -26,10 +30,11 @@ export default async function CalendarPage() {
   const rangeStart = monthStart < weekStart ? monthStart : weekStart;
   const rangeEnd = monthEnd > weekEnd ? monthEnd : weekEnd;
 
-  const [tasks, gcal, gcalMeta] = await Promise.all([
+  const [tasks, gcal, gcalMeta, contexts] = await Promise.all([
     fetchTasks({ status: "all" }),
     fetchGoogleEventsAction(rangeStart.toISOString(), rangeEnd.toISOString()),
     listGoogleCalendarsAction(),
+    db.select({ id: context.id, name: context.name, color: context.color }).from(context).orderBy(asc(context.name)),
   ]);
 
   const items: CalendarItem[] = [];
@@ -44,8 +49,9 @@ export default async function CalendarPage() {
         status: t.status,
         kind: "due",
         source: "task",
+        contextColor: t.contexts?.[0]?.color ?? null,
         dateISO: due.toISOString(),
-        hasTime: due.getHours() !== 0 || due.getMinutes() !== 0,
+        hasTime: taskDateHasTime(due),
       });
     }
     if (action) {
@@ -57,9 +63,10 @@ export default async function CalendarPage() {
         status: t.status,
         kind: "action",
         source: "task",
+        contextColor: t.contexts?.[0]?.color ?? null,
         dateISO: action.toISOString(),
         endISO: actionEnd ? actionEnd.toISOString() : undefined,
-        hasTime: action.getHours() !== 0 || action.getMinutes() !== 0,
+        hasTime: taskDateHasTime(action),
       });
     }
   }
@@ -72,6 +79,7 @@ export default async function CalendarPage() {
       </header>
       <CalendarView
         items={items}
+        contexts={contexts}
         toolbarExtras={<GoogleCalendarButton initialConnected={gcalMeta.connected} />}
       />
     </div>

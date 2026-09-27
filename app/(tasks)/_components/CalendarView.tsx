@@ -26,6 +26,8 @@ export type CalendarItem = {
   status: TaskStatus | null;
   kind: "due" | "action" | "gcal";
   source?: "task" | "google";
+  accountIdx?: number;
+  contextColor?: string | null;
   dateISO: string;
   endISO?: string;
   hasTime: boolean;
@@ -33,6 +35,21 @@ export type CalendarItem = {
 
 function isGcal(it: CalendarItem) {
   return it.source === "google" || it.kind === "gcal";
+}
+
+const googleColors = ["#4f75f5", "#b26bef", "#ee8d4b", "#37b9a9", "#e66f9d"];
+
+function eventStyle(it: CalendarItem): React.CSSProperties {
+  const chosen = isGcal(it)
+    ? googleColors[(it.accountIdx ?? 0) % googleColors.length]
+    : it.contextColor;
+  const color = chosen && /^#[0-9a-fA-F]{6}$/.test(chosen) ? chosen : "#5b83ed";
+  return {
+    borderColor: color,
+    borderLeftWidth: 4,
+    backgroundColor: `color-mix(in srgb, ${color} 25%, #0b1931)`,
+    color: "#ffffff",
+  };
 }
 
 const ACTIVE_START_HOUR = 7;
@@ -84,9 +101,11 @@ const statusDot: Record<TaskStatus, string> = {
 
 export function CalendarView({
   items,
+  contexts,
   toolbarExtras,
 }: {
   items: CalendarItem[];
+  contexts: { id: string; name: string; color: string | null }[];
   toolbarExtras?: React.ReactNode;
 }) {
   const [view, setView] = useState<ViewMode>("week");
@@ -185,7 +204,7 @@ export function CalendarView({
           {weekdayLabels.map((d) => (
             <div
               key={d}
-              className="bg-muted/40 px-2 py-1 text-xs font-medium text-muted-foreground"
+              className="bg-muted/40 px-2 py-1 text-sm font-medium text-muted-foreground"
             >
               {d}
             </div>
@@ -199,13 +218,13 @@ export function CalendarView({
               <div
                 key={key}
                 onClick={() => openCreate(day, false)}
-                className={`min-h-[110px] cursor-pointer bg-card p-1.5 hover:bg-accent/40 ${
+                className={`min-h-[130px] cursor-pointer bg-card p-1.5 hover:bg-accent/40 ${
                   muted ? "opacity-50" : ""
                 }`}
               >
                 <div className="mb-1 flex items-center justify-between">
                   <span
-                    className={`text-xs ${
+                    className={`text-sm ${
                       today
                         ? "rounded bg-blue-600 px-1.5 py-0.5 font-semibold text-white"
                         : "text-muted-foreground"
@@ -214,7 +233,7 @@ export function CalendarView({
                     {format(day, "d")}
                   </span>
                   {dayItems.length > 0 && (
-                    <span className="text-[10px] text-muted-foreground">{dayItems.length}</span>
+                    <span className="text-xs text-muted-foreground">{dayItems.length}</span>
                   )}
                 </div>
                 <ul className="space-y-0.5">
@@ -223,11 +242,12 @@ export function CalendarView({
                       <li key={it.id} onClick={(e) => e.stopPropagation()}>
                         <div
                           title={it.title}
-                          className="flex items-center gap-1 truncate rounded bg-slate-200 px-1 py-0.5 text-xs text-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
+                          className="flex items-center gap-1 truncate rounded border px-1.5 py-1 text-sm font-medium"
+                          style={eventStyle(it)}
                         >
                           {it.hasTime && (
-                            <span className="text-[10px] tabular-nums">
-                              {format(new Date(it.dateISO), "HHmm")}
+                            <span className="text-xs tabular-nums">
+                              {format(new Date(it.dateISO), "HH:mm")}
                             </span>
                           )}
                           <span className="truncate">{it.title}</span>
@@ -238,18 +258,19 @@ export function CalendarView({
                         <Link
                           href={`/tasks/${it.taskId!}`}
                           title={`${it.title} (${it.kind})`}
-                          className={`flex items-center gap-1 truncate rounded px-1 py-0.5 text-xs hover:bg-accent ${
+                          className={`flex items-center gap-1 truncate rounded border px-1.5 py-1 text-sm ${
                             it.status === "done" || it.status === "canceled"
                               ? "text-muted-foreground line-through"
                               : ""
                           }`}
+                          style={eventStyle(it)}
                         >
                           <span
                             className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[it.status!]}`}
                           />
                           {it.hasTime && (
-                            <span className="text-[10px] tabular-nums text-muted-foreground">
-                              {format(new Date(it.dateISO), "HHmm")}
+                            <span className="text-xs tabular-nums text-muted-foreground">
+                              {format(new Date(it.dateISO), "HH:mm")}
                             </span>
                           )}
                           <span className="truncate">{it.title}</span>
@@ -271,6 +292,7 @@ export function CalendarView({
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         initial={dialogInitial}
+        contexts={contexts}
       />
     </div>
   );
@@ -302,15 +324,15 @@ function WeekTimeline({
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
       <div
         className="grid border-b bg-muted/40"
-        style={{ gridTemplateColumns: `60px repeat(7, minmax(0, 1fr))` }}
+        style={{ gridTemplateColumns: `70px repeat(7, minmax(0, 1fr))` }}
       >
-        <div className="px-2 py-1 text-[10px] text-muted-foreground">All-day</div>
+        <div className="px-2 py-1 text-xs text-muted-foreground">All-day</div>
         {days.map((day) => {
           const isToday = isSameDay(day, today);
           return (
             <div
               key={`h-${format(day, "yyyy-MM-dd")}`}
-              className="border-l px-2 py-1 text-xs font-medium"
+              className="border-l px-2 py-1 text-sm font-medium"
             >
               <div className="text-muted-foreground">{format(day, "EEE")}</div>
               <div
@@ -329,7 +351,7 @@ function WeekTimeline({
 
       <div
         className="grid border-b"
-        style={{ gridTemplateColumns: `60px repeat(7, minmax(0, 1fr))` }}
+        style={{ gridTemplateColumns: `70px repeat(7, minmax(0, 1fr))` }}
       >
         <div className="bg-muted/20" />
         {days.map((day) => {
@@ -348,7 +370,8 @@ function WeekTimeline({
                     <li key={it.id} onClick={(e) => e.stopPropagation()}>
                       <div
                         title={it.title}
-                        className="truncate rounded bg-slate-200 px-1 py-0.5 text-xs text-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
+                        className="truncate rounded border px-1.5 py-1 text-sm font-medium"
+                        style={eventStyle(it)}
                       >
                         {it.title}
                       </div>
@@ -358,11 +381,12 @@ function WeekTimeline({
                       <Link
                         href={`/tasks/${it.taskId!}`}
                         title={`${it.title} (${it.kind})`}
-                        className={`flex items-center gap-1 truncate rounded px-1 py-0.5 text-xs hover:bg-accent ${
+                        className={`flex items-center gap-1 truncate rounded border px-1.5 py-1 text-sm ${
                           it.status === "done" || it.status === "canceled"
                             ? "text-muted-foreground line-through"
                             : ""
                         }`}
+                        style={eventStyle(it)}
                       >
                         <span
                           className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[it.status!]}`}
@@ -380,18 +404,18 @@ function WeekTimeline({
 
       <div
         className="relative grid"
-        style={{ gridTemplateColumns: `60px repeat(7, minmax(0, 1fr))`, height: DAY_PX }}
+        style={{ gridTemplateColumns: `70px repeat(7, minmax(0, 1fr))`, height: DAY_PX }}
       >
         <div className="relative">
           {[...hours, ACTIVE_END_HOUR].map((h) => {
-            const label = `${h.toString().padStart(2, "0")}00`;
+            const label = `${h.toString().padStart(2, "0")}:00`;
             const isFirst = h === ACTIVE_START_HOUR;
             const isLast = h === ACTIVE_END_HOUR;
             const top = isFirst ? 0 : isLast ? DAY_PX : HOUR_TOPS[h];
             return (
               <div
                 key={h}
-                className="absolute right-1 text-[10px] tabular-nums text-muted-foreground"
+                className="absolute right-1 text-xs tabular-nums text-muted-foreground"
                 style={{
                   top,
                   transform: isFirst ? undefined : isLast ? "translateY(-100%)" : "translateY(-50%)",
@@ -457,10 +481,10 @@ function WeekTimeline({
                       key={it.id}
                       onClick={(e) => e.stopPropagation()}
                       title={`${format(start, "HH:mm")} ${it.title}`}
-                      className="absolute left-1 right-1 flex items-start gap-1 overflow-hidden rounded border border-slate-300 bg-slate-200 px-1 py-0.5 text-[11px] leading-tight text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
-                      style={{ top, height: Math.max(20, height) }}
+                      className="absolute left-1 right-1 flex items-start gap-1 overflow-hidden rounded border px-1.5 py-1 text-sm leading-tight"
+                      style={{ ...eventStyle(it), top, height: Math.max(44, height) }}
                     >
-                      <span className="shrink-0 text-[10px] tabular-nums opacity-70">
+                      <span className="shrink-0 text-xs tabular-nums opacity-70">
                         {format(start, "HH:mm")}
                       </span>
                       <span className="truncate font-medium">{it.title}</span>
@@ -474,17 +498,17 @@ function WeekTimeline({
                     onClick={(e) => e.stopPropagation()}
                     href={`/tasks/${it.taskId!}`}
                     title={`${it.title} (${it.kind})`}
-                    className={`absolute left-1 right-1 overflow-hidden rounded border bg-card px-1 py-0.5 text-[11px] leading-tight hover:bg-accent ${
+                    className={`absolute left-1 right-1 overflow-hidden rounded border px-1.5 py-1 text-sm leading-tight ${
                       muted ? "text-muted-foreground line-through" : ""
                     }`}
-                    style={{ top, height }}
+                    style={{ ...eventStyle(it), top, height: Math.max(44, height) }}
                   >
                     <span className="flex items-center gap-1">
                       <span
                         className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[it.status!]}`}
                       />
-                      <span className="text-[10px] tabular-nums text-muted-foreground">
-                        {format(start, "HHmm")}
+                      <span className="text-xs tabular-nums text-muted-foreground">
+                        {format(start, "HH:mm")}
                       </span>
                     </span>
                     <span className="block truncate">{it.title}</span>

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { createTask } from "../_actions/tasks";
 import { DateField } from "./DateField";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export type CreateTaskDialogInitial = {
   date: Date;
@@ -25,22 +27,25 @@ export function CreateTaskDialog({
   open,
   onOpenChange,
   initial,
+  contexts,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initial: CreateTaskDialogInitial | null;
+  contexts: { id: string; name: string; color: string | null }[];
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [dueAt, setDueAt] = useState<Date | null>(initial?.date ?? null);
   const [withTime, setWithTime] = useState(initial?.withTime ?? false);
+  const [contextId, setContextId] = useState("none");
   const [pending, startTransition] = useTransition();
 
   function submit() {
     const trimmed = title.trim();
     if (!trimmed) return;
     startTransition(async () => {
-      const result = await createTask({ title: trimmed, dueAt: dueAt ?? undefined });
+      const result = await createTask({ title: trimmed, dueAt: dueAt ?? undefined, contextIds: contextId === "none" ? undefined : [contextId] });
       if (!result.ok) {
         toast.error(result.error);
         return;
@@ -83,6 +88,14 @@ export function CreateTaskDialog({
               withTime={withTime}
               onToggleTime={setWithTime}
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="calendar-task-context">Kontekst</Label>
+            <Select value={contextId} onValueChange={setContextId}>
+              <SelectTrigger id="calendar-task-context" className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent><SelectItem value="none">Bez konteksta</SelectItem>{contexts.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}</SelectContent>
+            </Select>
+            {contexts.length === 0 ? <Link href="/context" className="text-sm text-primary hover:underline">Dodaj prvi kontekst</Link> : null}
           </div>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={pending}>

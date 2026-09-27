@@ -17,6 +17,7 @@ import { goalStatusLabel } from "@/db/schema/goals";
 import { deleteGoal, setGoalStatus } from "../_actions/goals";
 import { formatTaskDate } from "@/lib/format";
 import { isBefore, startOfDay } from "date-fns";
+import { goalStatusColors } from "@/lib/status-colors";
 
 export type GoalWithProgress = Goal & {
   milestonesTotal: number;
@@ -24,13 +25,6 @@ export type GoalWithProgress = Goal & {
 };
 
 const statusOrder: GoalStatus[] = ["active", "done", "paused", "canceled"];
-
-const statusBadgeStyle: Record<GoalStatus, string> = {
-  active: "bg-blue-100 text-blue-700 border-blue-300",
-  done: "bg-green-100 text-green-700 border-green-300",
-  paused: "bg-amber-100 text-amber-800 border-amber-300",
-  canceled: "bg-zinc-100 text-zinc-500 border-zinc-300 line-through",
-};
 
 export function GoalRow({ goal }: { goal: GoalWithProgress }) {
   const [pending, startTransition] = useTransition();
@@ -76,7 +70,7 @@ export function GoalRow({ goal }: { goal: GoalWithProgress }) {
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className={`rounded border px-2 py-0.5 text-xs ${statusBadgeStyle[goal.status]}`}
+              className={`rounded-xl border px-3 py-1.5 text-sm font-semibold ${goalStatusColors[goal.status]}`}
               disabled={pending}
             >
               {goalStatusLabel[goal.status]}
