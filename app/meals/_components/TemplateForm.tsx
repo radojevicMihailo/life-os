@@ -72,7 +72,7 @@ export function TemplateForm({
   }
 
   return (
-    <div className="space-y-3 max-w-md">
+    <div className="max-w-3xl space-y-6 rounded-3xl border border-border bg-card p-5 sm:p-7">
       <div className="space-y-1">
         <Label>Name</Label>
         <Input value={name} onChange={(e) => setName(e.target.value)} />

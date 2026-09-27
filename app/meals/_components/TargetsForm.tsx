@@ -57,12 +57,12 @@ export function TargetsForm({ initial }: { initial: Targets }) {
         e.preventDefault();
         submit();
       }}
-      className="space-y-3 max-w-sm"
+      className="max-w-3xl space-y-6 rounded-3xl border border-border bg-card p-5 sm:p-7"
     >
       <p className="text-sm text-muted-foreground">
         Leave blank to disable a target.
       </p>
-      {FIELDS.map((f) => (
+      <div className="grid gap-5 sm:grid-cols-2">{FIELDS.map((f) => (
         <div key={f.key} className="space-y-1">
           <Label>
             {f.label} ({f.unit})
@@ -75,7 +75,7 @@ export function TargetsForm({ initial }: { initial: Targets }) {
             onChange={(e) => setV({ ...v, [f.key]: e.target.value })}
           />
         </div>
-      ))}
+      ))}</div>
       {error && <div className="text-sm text-red-600">{error}</div>}
       <Button type="submit" disabled={pending}>
         {pending ? "Saving…" : "Save"}

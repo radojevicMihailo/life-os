@@ -62,7 +62,7 @@ export function FoodForm({
         e.preventDefault();
         submit();
       }}
-      className="space-y-3 max-w-md"
+      className="max-w-3xl space-y-6 rounded-3xl border border-border bg-card p-5 sm:p-7"
     >
       <div className="space-y-1">
         <Label>Name</Label>
@@ -72,7 +72,7 @@ export function FoodForm({
         <Label>Brand (optional)</Label>
         <Input value={v.brand} onChange={(e) => setV({ ...v, brand: e.target.value })} />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { k: "kcalPer100g", label: "kcal / 100g" },
           { k: "proteinPer100g", label: "Protein g / 100g" },

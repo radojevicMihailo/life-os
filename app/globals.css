@@ -130,9 +130,12 @@
 
   html {
     @apply font-sans;
-    font-size: 16px;
+    font-size: 17px;
   }
 }
+
+.finance-area .text-xs { font-size: 0.875rem; line-height: 1.25rem; }
+.finance-area .text-sm { font-size: 1rem; line-height: 1.5rem; }
 :root { --font-geist-sans: system-ui, sans-serif; --font-geist-mono: ui-monospace, monospace; }
 
 @layer components {

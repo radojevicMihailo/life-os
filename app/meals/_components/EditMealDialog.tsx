@@ -91,12 +91,12 @@ export function EditMealDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit meal</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
               <Label>Name</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} />

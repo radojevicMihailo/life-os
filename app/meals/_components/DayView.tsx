@@ -39,8 +39,8 @@ export async function DayView({ date }: { date: string }) {
   const next = format(addDays(day, 1), "yyyy-MM-dd");
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-3">
+    <div className="w-full max-w-5xl py-6">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
             <Link href={`/meals/${prev}`}>‹</Link>

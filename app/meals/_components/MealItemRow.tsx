@@ -25,10 +25,10 @@ export function MealItemRow({
 }) {
   const factor = item.grams / 100;
   return (
-    <div className="flex items-center gap-2 border rounded p-2">
-      <div className="flex-1">
-        <div className="font-medium text-sm">{item.name}</div>
-        <div className="text-xs text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3">
+      <div className="min-w-40 flex-1">
+        <div className="font-medium text-base">{item.name}</div>
+        <div className="text-sm text-muted-foreground">
           {Math.round(item.kcalPer100g * factor)} kcal · P
           {(item.proteinPer100g * factor).toFixed(1)} · C
           {(item.carbsPer100g * factor).toFixed(1)} · F
@@ -39,13 +39,14 @@ export function MealItemRow({
         type="number"
         step="1"
         min="0"
-        className="w-24"
+        aria-label={`Grami za ${item.name}`}
+        className="w-28"
         value={item.grams}
         onChange={(e) =>
           onChange({ ...item, grams: Number(e.target.value) || 0 })
         }
       />
-      <span className="text-xs">g</span>
+      <span className="text-sm">g</span>
       <Button type="button" size="sm" variant="ghost" onClick={onRemove}>
         ✕
       </Button>

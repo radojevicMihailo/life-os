@@ -88,12 +88,12 @@ export function AddMealDialog({ date }: { date: string }) {
       <DialogTrigger asChild>
         <Button>Add meal</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Add meal</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
               <Label>Name</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} />
@@ -107,7 +107,7 @@ export function AddMealDialog({ date }: { date: string }) {
               />
             </div>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3 rounded-2xl border border-border bg-background/30 p-4">
             {items.map((it, idx) => (
               <MealItemRow
                 key={idx}
@@ -121,7 +121,7 @@ export function AddMealDialog({ date }: { date: string }) {
               />
             ))}
           </div>
-          <FoodPicker onPick={addPick} />
+          <div className="space-y-2"><Label>Dodaj namirnicu</Label><FoodPicker onPick={addPick} /></div>
           <div className="text-sm text-muted-foreground">
             Total: {Math.round(totals.kcal)} kcal · P{totals.protein.toFixed(1)}
             · C{totals.carbs.toFixed(1)} · F{totals.fat.toFixed(1)}
