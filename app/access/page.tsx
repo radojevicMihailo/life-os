@@ -14,7 +14,7 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
       <form action="/api/access/login" method="post" className="mt-6 space-y-4">
         <label className="block text-sm font-medium" htmlFor="access-password">Lozinka</label>
         <input autoComplete="current-password" autoFocus className="w-full rounded-md border bg-background px-3 py-2" id="access-password" name="password" required type="password" />
-        <button className="w-full rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground disabled:opacity-50" disabled={!configured} type="submit">Prijavi se</button>
+        <button className="action-button w-full rounded-md px-4 py-2 font-medium" disabled={!configured} type="submit">Prijavi se</button>
       </form>
     </div>
   );

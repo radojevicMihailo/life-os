@@ -69,7 +69,7 @@ export function ProjectForm() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button size="sm">
           <Plus className="mr-1 h-4 w-4" /> New project
         </Button>
       </DialogTrigger>

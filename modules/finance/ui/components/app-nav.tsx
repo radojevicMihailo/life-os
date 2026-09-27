@@ -27,7 +27,7 @@ export function AppNav() {
           <li key={destination.href} className="shrink-0 md:flex-1">
             <Link
               aria-current={active ? "page" : undefined}
-              className={`flex min-h-10 items-center justify-center rounded-xl px-1 text-center text-[0.65rem] font-medium transition hover:bg-blue-400/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 sm:text-xs md:px-3 md:text-sm ${active ? "bg-blue-500/20 text-white shadow-[inset_0_0_0_1px_rgba(96,165,250,0.35)]" : "text-slate-300"}`}
+              className={`flex min-h-10 items-center justify-center rounded-xl px-1 text-center text-[0.65rem] font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 sm:text-xs md:px-3 md:text-sm ${active ? "active-section-tab" : "text-slate-300 hover:bg-blue-400/15 hover:text-white"}`}
               href={destination.href}
             >
               <span className="md:hidden">{destination.shortLabel}</span>

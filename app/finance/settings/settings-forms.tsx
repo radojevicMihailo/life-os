@@ -10,7 +10,7 @@ const control = "mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate
 
 export function CategoryForm() {
   const [state, action, pending] = useActionState(createCategoryAction, undefined);
-  return <form action={action}><div className="grid gap-3 sm:grid-cols-2"><label className="text-xs text-slate-400">Naziv kategorije<input className={control} name="name" required /></label><label className="text-xs text-slate-400">Vrsta kategorije<select className={control} name="classification"><option value="expense">Trošak</option><option value="income">Prihod</option></select></label></div><button className="mt-3 min-h-11 rounded-xl bg-blue-400 px-4 text-sm font-semibold text-slate-950" disabled={pending}>Kreiraj kategoriju</button><ActionMessage state={state} success="Kategorija je kreirana." /></form>;
+  return <form action={action}><div className="grid gap-3 sm:grid-cols-2"><label className="text-xs text-slate-400">Naziv kategorije<input className={control} name="name" required /></label><label className="text-xs text-slate-400">Vrsta kategorije<select className={control} name="classification"><option value="expense">Trošak</option><option value="income">Prihod</option></select></label></div><button className="mt-3 min-h-11 action-button rounded-xl px-4 text-sm font-semibold text-white" disabled={pending}>Kreiraj kategoriju</button><ActionMessage state={state} success="Kategorija je kreirana." /></form>;
 }
 export function ArchiveCategoryForm({ id, name }: { id: string; name: string }) {
   const [state, action, pending] = useActionState(archiveCategoryAction, undefined);

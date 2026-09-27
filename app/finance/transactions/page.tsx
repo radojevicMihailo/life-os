@@ -44,7 +44,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
         <label className="text-xs text-slate-400">Izvor<select className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.source ?? ""} name="source"><option value="">Svi izvori</option>{SOURCES.map((source) => <option key={source} value={source}>{source}</option>)}</select></label>
         <label className="text-xs text-slate-400">ID računa<input className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.accountId} name="accountId" /></label>
         <label className="text-xs text-slate-400">ID kategorije<input className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.categoryId} name="categoryId" /></label>
-        <button className="min-h-11 rounded-xl bg-blue-400 px-4 text-sm font-semibold text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:col-span-2 lg:col-span-6" type="submit">Primeni filtere</button>
+        <button className="min-h-11 action-button rounded-xl px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:col-span-2 lg:col-span-6" type="submit">Primeni filtere</button>
       </form>
       {transactions.items.length === 0 ? (
         <div className="mt-6"><EmptyState title="Nema transakcija za izabrane filtere" /></div>

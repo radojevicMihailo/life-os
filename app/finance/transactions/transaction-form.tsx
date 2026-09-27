@@ -52,7 +52,7 @@ export function TransactionForm({ accounts, categories }: { accounts: Option[]; 
         <label className="text-xs text-slate-400">Datum i vreme<input className={input} name="occurredAt" type="datetime-local" /></label>
         <label className="text-xs text-slate-400 sm:col-span-2">Opis<input className={input} name="description" /></label>
       </div>
-      <button className="mt-4 min-h-11 rounded-xl bg-blue-400 px-5 text-sm font-semibold text-slate-950 disabled:opacity-50" disabled={pending} type="submit">Sačuvaj transakciju</button>
+      <button className="mt-4 min-h-11 action-button rounded-xl px-5 text-sm font-semibold text-white disabled:opacity-50" disabled={pending} type="submit">Sačuvaj transakciju</button>
       <ActionMessage state={state} success="Transakcija je sačuvana." />
     </form>
   );

@@ -26,7 +26,7 @@ export function SectionNav({ area, hideOnOverview = false }: { area: "tasks" | "
             <Link
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`flex min-h-10 items-center justify-center rounded-xl px-3 text-center text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${active ? "bg-primary/15 text-primary shadow-[inset_0_0_0_1px_var(--primary)]" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}
+              className={`flex min-h-10 items-center justify-center rounded-xl px-3 text-center text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${active ? "active-section-tab" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}
             >{label}</Link>
           </li>;
         })}
