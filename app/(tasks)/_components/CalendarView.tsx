@@ -31,6 +31,7 @@ export type CalendarItem = {
   dateISO: string;
   endISO?: string;
   hasTime: boolean;
+  meetUrl?: string;
 };
 
 function isGcal(it: CalendarItem) {
@@ -50,6 +51,34 @@ function eventStyle(it: CalendarItem): React.CSSProperties {
     backgroundColor: `color-mix(in srgb, ${color} 25%, #0b1931)`,
     color: "#ffffff",
   };
+}
+
+function GoogleEvent({
+  item,
+  className,
+  style,
+  title,
+  children,
+}: {
+  item: CalendarItem;
+  className: string;
+  style: React.CSSProperties;
+  title: string;
+  children: React.ReactNode;
+}) {
+  const props = {
+    className,
+    style,
+    title,
+    onClick: (event: React.MouseEvent) => event.stopPropagation(),
+  };
+  return item.meetUrl ? (
+    <a {...props} href={item.meetUrl} target="_blank" rel="noopener noreferrer" aria-label={`Otvori Google Meet: ${item.title}`}>
+      {children}
+    </a>
+  ) : (
+    <div {...props}>{children}</div>
+  );
 }
 
 const ACTIVE_START_HOUR = 7;
@@ -240,7 +269,8 @@ export function CalendarView({
                   {dayItems.map((it) =>
                     isGcal(it) ? (
                       <li key={it.id} onClick={(e) => e.stopPropagation()}>
-                        <div
+                        <GoogleEvent
+                          item={it}
                           title={it.title}
                           className="flex items-center gap-1 truncate rounded border px-1.5 py-1 text-sm font-medium"
                           style={eventStyle(it)}
@@ -251,7 +281,7 @@ export function CalendarView({
                             </span>
                           )}
                           <span className="truncate">{it.title}</span>
-                        </div>
+                        </GoogleEvent>
                       </li>
                     ) : (
                       <li key={it.id} onClick={(e) => e.stopPropagation()}>
@@ -368,13 +398,14 @@ function WeekTimeline({
                 {allDay.map((it) =>
                   isGcal(it) ? (
                     <li key={it.id} onClick={(e) => e.stopPropagation()}>
-                      <div
+                      <GoogleEvent
+                        item={it}
                         title={it.title}
                         className="truncate rounded border px-1.5 py-1 text-sm font-medium"
                         style={eventStyle(it)}
                       >
                         {it.title}
-                      </div>
+                      </GoogleEvent>
                     </li>
                   ) : (
                     <li key={it.id} onClick={(e) => e.stopPropagation()}>
@@ -477,9 +508,9 @@ function WeekTimeline({
                 const height = Math.max(16, minutesToPx(endMin) - top);
                 if (isGcal(it)) {
                   return (
-                    <div
+                    <GoogleEvent
+                      item={it}
                       key={it.id}
-                      onClick={(e) => e.stopPropagation()}
                       title={`${format(start, "HH:mm")} ${it.title}`}
                       className="absolute left-1 right-1 flex items-start gap-1 overflow-hidden rounded border px-1.5 py-1 text-sm leading-tight"
                       style={{ ...eventStyle(it), top, height: Math.max(44, height) }}
@@ -488,7 +519,7 @@ function WeekTimeline({
                         {format(start, "HH:mm")}
                       </span>
                       <span className="truncate font-medium">{it.title}</span>
-                    </div>
+                    </GoogleEvent>
                   );
                 }
                 const muted = it.status === "done" || it.status === "canceled";

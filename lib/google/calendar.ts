@@ -22,7 +22,18 @@ export type GoogleEvent = {
   startISO: string;
   endISO?: string;
   hasTime: boolean;
+  meetUrl?: string;
 };
+
+function meetUrl(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === "meet.google.com" ? url.href : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 type TokenCache = { token: string; expiresAt: number };
 const cached: Map<number, TokenCache> = new Map();
@@ -139,6 +150,8 @@ export async function listEvents(
   type RawEvent = {
     id: string;
     summary?: string;
+    hangoutLink?: string;
+    conferenceData?: { entryPoints?: { entryPointType?: string; uri?: string }[] };
     start?: { dateTime?: string; date?: string };
     end?: { dateTime?: string; date?: string };
   };
@@ -169,6 +182,10 @@ export async function listEvents(
       startISO,
       endISO,
       hasTime,
+      meetUrl: meetUrl(e.hangoutLink) ?? e.conferenceData?.entryPoints
+        ?.filter((entry) => entry.entryPointType === "video")
+        .map((entry) => meetUrl(entry.uri))
+        .find(Boolean),
     };
   });
 }

@@ -80,4 +80,24 @@ describe("google calendar client", () => {
     expect(url).toContain("orderBy=startTime");
     expect(url).toContain(encodeURIComponent("2026-06-01T00:00:00.000Z"));
   });
+
+  it("listEvents includes a Google Meet video link and ignores other conference links", async () => {
+    mockFetchOnce({ access_token: "AT", expires_in: 3600 });
+    mockFetchOnce({ items: [
+      { id: "meet", start: { dateTime: "2026-06-01T10:00:00Z" }, conferenceData: { entryPoints: [{ entryPointType: "video", uri: "https://meet.google.com/abc-defg-hij" }] } },
+      { id: "other", start: { dateTime: "2026-06-01T11:00:00Z" }, conferenceData: { entryPoints: [{ entryPointType: "video", uri: "https://example.com/call" }] } },
+    ] });
+    const { listEvents } = await import("./calendar");
+    const events = await listEvents("cal1", "2026-06-01T00:00:00Z", "2026-06-02T00:00:00Z");
+    expect(events[0].meetUrl).toBe("https://meet.google.com/abc-defg-hij");
+    expect(events[1].meetUrl).toBeUndefined();
+  });
+
+  it("listEvents accepts a Meet hangoutLink", async () => {
+    mockFetchOnce({ access_token: "AT", expires_in: 3600 });
+    mockFetchOnce({ items: [{ id: "meet", start: { dateTime: "2026-06-01T10:00:00Z" }, hangoutLink: "https://meet.google.com/abc-defg-hij" }] });
+    const { listEvents } = await import("./calendar");
+    const events = await listEvents("cal1", "2026-06-01T00:00:00Z", "2026-06-02T00:00:00Z");
+    expect(events[0].meetUrl).toBe("https://meet.google.com/abc-defg-hij");
+  });
 });
