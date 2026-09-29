@@ -28,6 +28,7 @@ export function NoteEditor({
   const [title, setTitle] = useState(initialTitle);
   const [kind, setKind] = useState<NoteKind>(initialKind);
   const [body, setBody] = useState(initialBody);
+  const [preview, setPreview] = useState(Boolean(initialBody.trim()));
   const [categoryId, setCategoryId] = useState(initialCategoryId ?? "none");
   const [pending, startTransition] = useTransition();
 
@@ -37,7 +38,8 @@ export function NoteEditor({
     startTransition(async () => {
       const result = await updateNote({ id, title: trimmed, kind, body, categoryId: categoryId === "none" ? null : categoryId });
       if (!result.ok) { toast.error(result.error); return; }
-      router.push("/notes");
+      setPreview(true);
+      toast.success("Beleška je sačuvana.");
       router.refresh();
     });
   }
@@ -62,11 +64,11 @@ export function NoteEditor({
       <Button type="button" variant={kind === "todo" ? "default" : "outline"} aria-pressed={kind === "todo"} onClick={() => setKind("todo")}><ListChecks className="size-4" />{noteKindLabel.todo}</Button>
     </div></div>
 
-    {kind === "free" ? <div className="space-y-2"><Label>Sadržaj</Label><RichNoteBody initialBody={initialBody} onChange={setBody} /></div> : <TodoItems noteId={id} items={items} />}
+    {kind === "free" ? <div className="space-y-2"><Label>Sadržaj</Label><RichNoteBody body={body} onChange={setBody} preview={preview} onPreviewChange={setPreview} /></div> : <TodoItems noteId={id} items={items} />}
 
     <div className="flex flex-wrap items-center gap-3 border-t border-border pt-5">
-      <Button type="button" onClick={save} disabled={pending || !title.trim()}>Sačuvaj i vrati se</Button>
-      <Button type="button" variant="outline" asChild><Link href="/notes">Otkaži</Link></Button>
+      <Button type="button" onClick={save} disabled={pending || !title.trim()}>Sačuvaj i prikaži</Button>
+      <Button type="button" variant="outline" asChild><Link href="/notes">Nazad na beleške</Link></Button>
       <Button type="button" variant="destructive" className="ml-auto" onClick={remove} disabled={pending} aria-label="Obriši belešku"><Trash2 className="size-4" /> Obriši</Button>
     </div>
   </div>;
