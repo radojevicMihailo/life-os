@@ -32,6 +32,7 @@ export type CalendarItem = {
   endISO?: string;
   hasTime: boolean;
   meetUrl?: string;
+  accountEmail?: string;
 };
 
 function isGcal(it: CalendarItem) {
@@ -66,14 +67,25 @@ function GoogleEvent({
   title: string;
   children: React.ReactNode;
 }) {
+  const meetHref = (() => {
+    if (!item.meetUrl) return null;
+    try {
+      const url = new URL(item.meetUrl);
+      if (url.protocol !== "https:" || url.hostname !== "meet.google.com") return null;
+      if (item.accountEmail) url.searchParams.set("authuser", item.accountEmail);
+      return url.toString();
+    } catch {
+      return null;
+    }
+  })();
   const props = {
     className,
     style,
     title,
     onClick: (event: React.MouseEvent) => event.stopPropagation(),
   };
-  return item.meetUrl ? (
-    <a {...props} href={item.meetUrl} target="_blank" rel="noopener noreferrer" aria-label={`Otvori Google Meet: ${item.title}`}>
+  return meetHref ? (
+    <a {...props} href={meetHref} target="_blank" rel="noopener noreferrer" aria-label={`Otvori Google Meet: ${item.title}`}>
       {children}
     </a>
   ) : (

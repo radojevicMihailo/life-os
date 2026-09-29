@@ -26,6 +26,7 @@ export type GoogleCalendarItem = {
   endISO?: string;
   hasTime: boolean;
   meetUrl?: string;
+  attendeeEmail?: string;
 };
 
 export type ListCalendarsResult = {
@@ -111,6 +112,7 @@ export async function fetchGoogleEventsAction(
           endISO: e.endISO,
           hasTime: e.hasTime,
           meetUrl: e.meetUrl,
+          attendeeEmail: e.attendeeEmail,
         });
       }
     } else {

@@ -23,6 +23,7 @@ export type GoogleEvent = {
   endISO?: string;
   hasTime: boolean;
   meetUrl?: string;
+  attendeeEmail?: string;
 };
 
 function meetUrl(value: string | undefined): string | undefined {
@@ -151,6 +152,7 @@ export async function listEvents(
     id: string;
     summary?: string;
     hangoutLink?: string;
+    attendees?: { email?: string; self?: boolean }[];
     conferenceData?: { entryPoints?: { entryPointType?: string; uri?: string }[] };
     start?: { dateTime?: string; date?: string };
     end?: { dateTime?: string; date?: string };
@@ -186,6 +188,7 @@ export async function listEvents(
         ?.filter((entry) => entry.entryPointType === "video")
         .map((entry) => meetUrl(entry.uri))
         .find(Boolean),
+      attendeeEmail: e.attendees?.find((attendee) => attendee.self)?.email,
     };
   });
 }

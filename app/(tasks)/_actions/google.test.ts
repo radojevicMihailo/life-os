@@ -72,6 +72,7 @@ describe("google server actions", () => {
         startISO: "2026-06-02T10:00:00.000Z",
         endISO: "2026-06-02T11:00:00.000Z",
         hasTime: true,
+        attendeeEmail: "work@example.com",
       },
     ]);
     const mod = await import("./google");
@@ -83,6 +84,7 @@ describe("google server actions", () => {
     expect(res.items).toHaveLength(2);
     expect(res.items[0].source).toBe("google");
     expect(res.items[0].kind).toBe("gcal");
+    expect(res.items[0].attendeeEmail).toBe("work@example.com");
   });
 
   it("fetchGoogleEventsAction tolerates partial calendar failure", async () => {

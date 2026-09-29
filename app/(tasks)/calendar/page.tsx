@@ -70,7 +70,15 @@ export default async function CalendarPage() {
       });
     }
   }
-  for (const e of gcal.items) items.push(e);
+  const accountEmails = new Map(
+    gcalMeta.calendars
+      .filter((calendar) => calendar.primary)
+      .map((calendar) => [calendar.accountIdx, calendar.id]),
+  );
+  for (const e of gcal.items) items.push({
+    ...e,
+    accountEmail: e.attendeeEmail ?? accountEmails.get(e.accountIdx),
+  });
 
   return (
     <div className="space-y-6">

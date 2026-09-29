@@ -100,4 +100,19 @@ describe("google calendar client", () => {
     const events = await listEvents("cal1", "2026-06-01T00:00:00Z", "2026-06-02T00:00:00Z");
     expect(events[0].meetUrl).toBe("https://meet.google.com/abc-defg-hij");
   });
+
+  it("listEvents identifies the account invited to a Meet", async () => {
+    mockFetchOnce({ access_token: "AT", expires_in: 3600 });
+    mockFetchOnce({ items: [{
+      id: "meeting",
+      start: { dateTime: "2026-06-01T10:00:00Z" },
+      attendees: [
+        { email: "other@example.com" },
+        { email: "work@example.com", self: true },
+      ],
+    }] });
+    const { listEvents } = await import("./calendar");
+    const events = await listEvents("cal1", "2026-06-01T00:00:00Z", "2026-06-02T00:00:00Z");
+    expect(events[0].attendeeEmail).toBe("work@example.com");
+  });
 });

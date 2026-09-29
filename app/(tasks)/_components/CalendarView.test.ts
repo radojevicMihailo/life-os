@@ -33,6 +33,14 @@ describe("CalendarView Google events", () => {
     expect(html).toContain('rel="noopener noreferrer"');
   });
 
+  it("opens Meet with the account that received the event", () => {
+    const html = renderToStaticMarkup(createElement(CalendarView, {
+      items: [{ ...googleItem("https://meet.google.com/abc-defg-hij?foo=bar"), accountEmail: "work@example.com" }],
+      contexts: [],
+    }));
+    expect(html).toContain('href="https://meet.google.com/abc-defg-hij?foo=bar&amp;authuser=work%40example.com"');
+  });
+
   it("leaves events without a Meet URL unlinked", () => {
     const html = renderToStaticMarkup(createElement(CalendarView, {
       items: [googleItem()],
