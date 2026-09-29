@@ -1,9 +1,9 @@
-import { asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, ne } from "drizzle-orm";
 
 import type { AccountClassification } from "../../domain/ledger";
 import { applicationError, type AccountSummary } from "../../application/ports";
 import type { DbTx } from "../client";
-import { accounts, currencies } from "../schema";
+import { accounts, currencies, goals, investmentAccounts, journalPostings } from "../schema";
 
 export interface AccountRecord extends AccountSummary {
   classification: AccountClassification;
@@ -218,6 +218,51 @@ export class AccountsRepository {
       applicationError("currency_not_found");
     }
 
+    return toAccountRecord(account, currency.minorUnit);
+  }
+
+  async hasLinkedRecords(id: string): Promise<boolean> {
+    for (const [table, column] of [
+      [journalPostings, journalPostings.accountId],
+      [goals, goals.accountId],
+      [investmentAccounts, investmentAccounts.cashAccountId],
+    ] as const) {
+      const rows = await this.tx.select({ id: table.id }).from(table).where(eq(column, id)).limit(1);
+      if (rows.length) return true;
+    }
+    return false;
+  }
+
+  async activeNameExists(name: string, excludedId: string): Promise<boolean> {
+    const rows = await this.tx.select({ id: accounts.id }).from(accounts)
+      .where(and(eq(accounts.name, name), eq(accounts.isActive, true), ne(accounts.id, excludedId)))
+      .limit(1);
+    return rows.length > 0;
+  }
+
+  async update(input: {
+    id: string; name: string; classification: "asset" | "liability" | "receivable";
+    subtype: string; currencyCode: string; now: Date;
+  }): Promise<AccountRecord> {
+    const [account] = await this.tx.update(accounts).set({
+      name: input.name, classification: input.classification, subtype: input.subtype,
+      currencyCode: input.currencyCode, updatedAt: input.now,
+    }).where(eq(accounts.id, input.id)).returning();
+    if (!account) applicationError("account_not_found");
+    const [currency] = await this.tx.select({ minorUnit: currencies.minorUnit })
+      .from(currencies).where(eq(currencies.code, account.currencyCode));
+    if (!currency) applicationError("currency_not_found");
+    return toAccountRecord(account, currency.minorUnit);
+  }
+
+  async restore(id: string, now: Date): Promise<AccountRecord> {
+    const [account] = await this.tx.update(accounts).set({
+      isActive: true, archivedAt: null, updatedAt: now,
+    }).where(eq(accounts.id, id)).returning();
+    if (!account) applicationError("account_not_found");
+    const [currency] = await this.tx.select({ minorUnit: currencies.minorUnit })
+      .from(currencies).where(eq(currencies.code, account.currencyCode));
+    if (!currency) applicationError("currency_not_found");
     return toAccountRecord(account, currency.minorUnit);
   }
 

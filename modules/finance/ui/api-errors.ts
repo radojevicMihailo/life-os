@@ -25,10 +25,13 @@ export interface ApiErrorBody {
 
 const messages: Record<ApiErrorCode, string> = {
   account_classification_unsupported: "Vrsta računa nije podržana.",
+  account_details_in_use: "Vrsta i valuta računa ne mogu da se promene kada postoje transakcije, ciljevi ili investicioni račun. Naziv i podvrstu i dalje možete izmeniti.",
   account_has_active_goals: "Račun se ne može arhivirati dok ima aktivne ciljeve.",
   account_inactive: "Izabrani račun nije aktivan.",
   account_not_found: "Izabrani račun ne postoji.",
+  account_name_taken: "Već postoji aktivan račun sa tim nazivom.",
   account_system_archive_forbidden: "Sistemski račun se ne može arhivirati.",
+  account_system_edit_forbidden: "Sistemski račun se ne može menjati.",
   budget_currency_mismatch: "Valuta budžeta se ne može promeniti.",
   budget_month_invalid: "Mesec budžeta nije ispravan.",
   category_classification_mismatch: "Kategorija nije odgovarajuće vrste.",

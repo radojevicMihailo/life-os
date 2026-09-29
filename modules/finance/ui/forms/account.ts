@@ -15,6 +15,13 @@ export function parseArchiveAccountForm(input: FormData | Record<string, unknown
   return z.object({ id: identifier }).parse(formRecord(input));
 }
 
+export function parseUpdateAccountForm(input: FormData | Record<string, unknown>) {
+  return z.object({ id: identifier, name: requiredText,
+    classification: z.enum(["asset", "liability", "receivable"]),
+    subtype: requiredText, currencyCode,
+  }).parse(formRecord(input));
+}
+
 export function parseActivateCurrencyForm(input: FormData | Record<string, unknown>) {
   return z.object({ currencyCode }).parse(formRecord(input));
 }

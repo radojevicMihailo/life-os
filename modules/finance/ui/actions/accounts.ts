@@ -1,8 +1,8 @@
 "use server";
 
-import { activateCurrency, archiveAccount, createAccount } from "../../application/accounts";
+import { activateCurrency, archiveAccount, createAccount, restoreAccount, updateAccount } from "../../application/accounts";
 import type { ActionResult } from "../forms/action-result";
-import { parseAccountForm, parseActivateCurrencyForm, parseArchiveAccountForm } from "../forms/account";
+import { parseAccountForm, parseActivateCurrencyForm, parseArchiveAccountForm, parseUpdateAccountForm } from "../forms/account";
 import { executeAction } from "./result";
 import { mutationDependencies } from "./runtime";
 
@@ -16,6 +16,20 @@ export async function createAccountAction(_previous: ActionResult<{ id: string }
 export async function archiveAccountAction(_previous: ActionResult<{ id: string }> | undefined, formData: FormData) {
   return executeAction(async () => {
     const result = await archiveAccount(mutationDependencies(), parseArchiveAccountForm(formData));
+    return { id: result.id };
+  }, { revalidate: ["/finance/accounts", "/finance/transactions", "/finance/goals", "/finance/investments", "/finance"] });
+}
+
+export async function updateAccountAction(_previous: ActionResult<{ id: string }> | undefined, formData: FormData) {
+  return executeAction(async () => {
+    const result = await updateAccount(mutationDependencies(), parseUpdateAccountForm(formData));
+    return { id: result.id };
+  }, { revalidate: ["/finance/accounts", "/finance/transactions", "/finance/goals", "/finance/investments", "/finance"] });
+}
+
+export async function restoreAccountAction(_previous: ActionResult<{ id: string }> | undefined, formData: FormData) {
+  return executeAction(async () => {
+    const result = await restoreAccount(mutationDependencies(), parseArchiveAccountForm(formData));
     return { id: result.id };
   }, { revalidate: ["/finance/accounts", "/finance/transactions", "/finance/goals", "/finance/investments", "/finance"] });
 }

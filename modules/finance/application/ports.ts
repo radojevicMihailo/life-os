@@ -40,10 +40,13 @@ export interface ApplicationDependencies {
 
 export type ApplicationErrorCode =
   | "account_classification_unsupported"
+  | "account_details_in_use"
   | "account_has_active_goals"
   | "account_inactive"
   | "account_not_found"
+  | "account_name_taken"
   | "account_system_archive_forbidden"
+  | "account_system_edit_forbidden"
   | "budget_currency_mismatch"
   | "budget_month_invalid"
   | "category_classification_mismatch"
