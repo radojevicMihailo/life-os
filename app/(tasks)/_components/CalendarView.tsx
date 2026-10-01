@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import {
   addDays,
@@ -128,7 +128,20 @@ function pxToMinutes(y: number) {
   return h * 60 + within;
 }
 
-type ViewMode = "week" | "month";
+type ViewMode = "day" | "week" | "month";
+
+const phoneQuery = "(max-width: 767px)";
+function subscribeToViewport(callback: () => void) {
+  const query = window.matchMedia(phoneQuery);
+  query.addEventListener("change", callback);
+  return () => query.removeEventListener("change", callback);
+}
+function isPhoneViewport() {
+  return window.matchMedia(phoneQuery).matches;
+}
+function serverViewport() {
+  return false;
+}
 
 const weekStartsOn = 1;
 
@@ -149,7 +162,9 @@ export function CalendarView({
   contexts: { id: string; name: string; color: string | null }[];
   toolbarExtras?: React.ReactNode;
 }) {
-  const [view, setView] = useState<ViewMode>("week");
+  const isPhone = useSyncExternalStore(subscribeToViewport, isPhoneViewport, serverViewport);
+  const [chosenView, setView] = useState<ViewMode | null>(null);
+  const view = chosenView ?? (isPhone ? "day" : "week");
   const [cursor, setCursor] = useState<Date>(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogInitial, setDialogInitial] = useState<CreateTaskDialogInitial | null>(null);
@@ -160,6 +175,7 @@ export function CalendarView({
   }
 
   const days = useMemo(() => {
+    if (view === "day") return [cursor];
     if (view === "week") {
       const start = startOfWeek(cursor, { weekStartsOn });
       return Array.from({ length: 7 }, (_, i) => addDays(start, i));
@@ -190,22 +206,26 @@ export function CalendarView({
   }, [items]);
 
   function shift(dir: -1 | 1) {
-    setCursor((c) => (view === "week" ? addWeeks(c, dir) : addMonths(c, dir)));
+    setCursor((c) => (
+      view === "day" ? addDays(c, dir) : view === "week" ? addWeeks(c, dir) : addMonths(c, dir)
+    ));
   }
 
   const title =
-    view === "week"
-      ? `${format(days[0], "MMM d")} – ${format(days[6], "MMM d, yyyy")}`
-      : format(cursor, "MMMM yyyy");
+    view === "day"
+      ? format(cursor, "EEE, MMM d, yyyy")
+      : view === "week"
+        ? `${format(days[0], "MMM d")} – ${format(days[6], "MMM d, yyyy")}`
+        : format(cursor, "MMMM yyyy");
 
   const weekdayLabels = Array.from({ length: 7 }, (_, i) =>
     format(addDays(startOfWeek(new Date(), { weekStartsOn }), i), "EEE"),
   );
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Button variant="outline" size="icon" onClick={() => shift(-1)} aria-label="Previous">
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -215,14 +235,23 @@ export function CalendarView({
           <Button variant="outline" size="icon" onClick={() => shift(1)} aria-label="Next">
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <span className="ml-2 text-sm font-medium">{title}</span>
+          <span data-testid="calendar-period" className="text-sm font-medium sm:ml-2">{title}</span>
           {toolbarExtras}
         </div>
-        <div className="inline-flex rounded-2xl border border-border bg-card shadow-sm p-0.5 text-sm">
+        <div role="group" aria-label="Calendar view" className="inline-flex rounded-2xl border border-border bg-card shadow-sm p-0.5 text-sm">
+          <button
+            type="button"
+            onClick={() => setView("day")}
+            aria-pressed={view === "day"}
+            className={`min-h-11 rounded px-3 py-1 ${view === "day" ? "bg-accent text-foreground" : "text-foreground/70"}`}
+          >
+            Day
+          </button>
           <button
             type="button"
             onClick={() => setView("week")}
-            className={`rounded px-3 py-1 ${
+            aria-pressed={view === "week"}
+            className={`min-h-11 rounded px-3 py-1 ${
               view === "week" ? "bg-accent text-foreground" : "text-foreground/70"
             }`}
           >
@@ -231,7 +260,8 @@ export function CalendarView({
           <button
             type="button"
             onClick={() => setView("month")}
-            className={`rounded px-3 py-1 ${
+            aria-pressed={view === "month"}
+            className={`min-h-11 rounded px-3 py-1 ${
               view === "month" ? "bg-accent text-foreground" : "text-foreground/70"
             }`}
           >
@@ -240,94 +270,96 @@ export function CalendarView({
         </div>
       </div>
 
-      {view === "month" ? (
-        <div className="grid grid-cols-7 gap-px overflow-hidden rounded-md border bg-border text-sm">
-          {weekdayLabels.map((d) => (
-            <div
-              key={d}
-              className="bg-muted/40 px-2 py-1 text-sm font-medium text-muted-foreground"
-            >
-              {d}
-            </div>
-          ))}
-          {days.map((day) => {
-            const key = format(day, "yyyy-MM-dd");
-            const dayItems = byDay.get(key) ?? [];
-            const muted = !isSameMonth(day, cursor);
-            const today = isSameDay(day, new Date());
-            return (
+      <div className="overflow-x-auto rounded-md" role="region" aria-label="Calendar dates" tabIndex={0}>
+        {view === "month" ? (
+          <div className="grid min-w-[700px] grid-cols-7 gap-px overflow-hidden rounded-md border bg-border text-sm md:min-w-0">
+            {weekdayLabels.map((d) => (
               <div
-                key={key}
-                onClick={() => openCreate(day, false)}
-                className={`min-h-[130px] cursor-pointer bg-card p-1.5 hover:bg-accent/40 ${
-                  muted ? "opacity-50" : ""
-                }`}
+                key={d}
+                className="bg-muted/40 px-2 py-1 text-sm font-medium text-muted-foreground"
               >
-                <div className="mb-1 flex items-center justify-between">
-                  <span
-                    className={`text-sm ${
-                      today
-                        ? "rounded bg-blue-600 px-1.5 py-0.5 font-semibold text-white"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {format(day, "d")}
-                  </span>
-                  {dayItems.length > 0 && (
-                    <span className="text-xs text-muted-foreground">{dayItems.length}</span>
-                  )}
-                </div>
-                <ul className="space-y-0.5">
-                  {dayItems.map((it) =>
-                    isGcal(it) ? (
-                      <li key={it.id} onClick={(e) => e.stopPropagation()}>
-                        <GoogleEvent
-                          item={it}
-                          title={it.title}
-                          className="flex items-center gap-1 truncate rounded border px-1.5 py-1 text-sm font-medium"
-                          style={eventStyle(it)}
-                        >
-                          {it.hasTime && (
-                            <span className="text-xs tabular-nums">
-                              {format(new Date(it.dateISO), "HH:mm")}
-                            </span>
-                          )}
-                          <span className="truncate">{it.title}</span>
-                        </GoogleEvent>
-                      </li>
-                    ) : (
-                      <li key={it.id} onClick={(e) => e.stopPropagation()}>
-                        <Link
-                          href={`/tasks/${it.taskId!}`}
-                          title={`${it.title} (${it.kind})`}
-                          className={`flex items-center gap-1 truncate rounded border px-1.5 py-1 text-sm ${
-                            it.status === "done" || it.status === "canceled"
-                              ? "text-muted-foreground line-through"
-                              : ""
-                          }`}
-                          style={eventStyle(it)}
-                        >
-                          <span
-                            className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[it.status!]}`}
-                          />
-                          {it.hasTime && (
-                            <span className="text-xs tabular-nums text-muted-foreground">
-                              {format(new Date(it.dateISO), "HH:mm")}
-                            </span>
-                          )}
-                          <span className="truncate">{it.title}</span>
-                        </Link>
-                      </li>
-                    ),
-                  )}
-                </ul>
+                {d}
               </div>
-            );
-          })}
-        </div>
-      ) : (
-        <WeekTimeline days={days} byDay={byDay} onCreate={openCreate} />
-      )}
+            ))}
+            {days.map((day) => {
+              const key = format(day, "yyyy-MM-dd");
+              const dayItems = byDay.get(key) ?? [];
+              const muted = !isSameMonth(day, cursor);
+              const today = isSameDay(day, new Date());
+              return (
+                <div
+                  key={key}
+                  onClick={() => openCreate(day, false)}
+                  className={`min-h-[130px] cursor-pointer bg-card p-1.5 hover:bg-accent/40 ${
+                    muted ? "opacity-50" : ""
+                  }`}
+                >
+                  <div className="mb-1 flex items-center justify-between">
+                    <span
+                      className={`text-sm ${
+                        today
+                          ? "rounded bg-blue-600 px-1.5 py-0.5 font-semibold text-white"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {format(day, "d")}
+                    </span>
+                    {dayItems.length > 0 && (
+                      <span className="text-xs text-muted-foreground">{dayItems.length}</span>
+                    )}
+                  </div>
+                  <ul className="space-y-0.5">
+                    {dayItems.map((it) =>
+                      isGcal(it) ? (
+                        <li key={it.id} onClick={(e) => e.stopPropagation()}>
+                          <GoogleEvent
+                            item={it}
+                            title={it.title}
+                            className="flex items-center gap-1 truncate rounded border px-1.5 py-1 text-sm font-medium"
+                            style={eventStyle(it)}
+                          >
+                            {it.hasTime && (
+                              <span className="text-xs tabular-nums">
+                                {format(new Date(it.dateISO), "HH:mm")}
+                              </span>
+                            )}
+                            <span className="truncate">{it.title}</span>
+                          </GoogleEvent>
+                        </li>
+                      ) : (
+                        <li key={it.id} onClick={(e) => e.stopPropagation()}>
+                          <Link
+                            href={`/tasks/${it.taskId!}`}
+                            title={`${it.title} (${it.kind})`}
+                            className={`flex items-center gap-1 truncate rounded border px-1.5 py-1 text-sm ${
+                              it.status === "done" || it.status === "canceled"
+                                ? "text-muted-foreground line-through"
+                                : ""
+                            }`}
+                            style={eventStyle(it)}
+                          >
+                            <span
+                              className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[it.status!]}`}
+                            />
+                            {it.hasTime && (
+                              <span className="text-xs tabular-nums text-muted-foreground">
+                                {format(new Date(it.dateISO), "HH:mm")}
+                              </span>
+                            )}
+                            <span className="truncate">{it.title}</span>
+                          </Link>
+                        </li>
+                      ),
+                    )}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <Timeline days={days} byDay={byDay} onCreate={openCreate} />
+        )}
+      </div>
 
       <CreateTaskDialog
         key={dialogOpen ? dialogInitial?.date.toISOString() ?? "open" : "closed"}
@@ -340,7 +372,7 @@ export function CalendarView({
   );
 }
 
-function WeekTimeline({
+function Timeline({
   days,
   byDay,
   onCreate,
@@ -363,10 +395,10 @@ function WeekTimeline({
   const nowTop = minutesToPx(today.getHours() * 60 + today.getMinutes());
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+    <div className={`${days.length > 1 ? "min-w-[840px] md:min-w-0" : ""} overflow-hidden rounded-2xl border border-border bg-card shadow-sm`}>
       <div
         className="grid border-b bg-muted/40"
-        style={{ gridTemplateColumns: `70px repeat(7, minmax(0, 1fr))` }}
+        style={{ gridTemplateColumns: `56px repeat(${days.length}, minmax(0, 1fr))` }}
       >
         <div className="px-2 py-1 text-xs text-muted-foreground">All-day</div>
         {days.map((day) => {
@@ -393,7 +425,7 @@ function WeekTimeline({
 
       <div
         className="grid border-b"
-        style={{ gridTemplateColumns: `70px repeat(7, minmax(0, 1fr))` }}
+        style={{ gridTemplateColumns: `56px repeat(${days.length}, minmax(0, 1fr))` }}
       >
         <div className="bg-muted/20" />
         {days.map((day) => {
@@ -447,7 +479,7 @@ function WeekTimeline({
 
       <div
         className="relative grid"
-        style={{ gridTemplateColumns: `70px repeat(7, minmax(0, 1fr))`, height: DAY_PX }}
+        style={{ gridTemplateColumns: `56px repeat(${days.length}, minmax(0, 1fr))`, height: DAY_PX }}
       >
         <div className="relative">
           {[...hours, ACTIVE_END_HOUR].map((h) => {
