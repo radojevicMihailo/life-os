@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Remind about timed tasks and events from selected Google calendars.
-// The existing notif_sent table deduplicates reminders across local and CI runs.
+// Local macOS reminders for timed tasks and selected Google calendar events.
+// The notif_sent table deduplicates reminders across local runs.
 
 import { readFileSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -48,25 +48,6 @@ function macosNotify(title, body) {
     console.error("macOS notify failed:", error.message);
     return false;
   }
-}
-
-async function telegramNotify(text) {
-  if (process.env.NOTIFY_DISABLE_TELEGRAM === "1") return false;
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return false;
-  try {
-    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text }),
-    });
-    if (response.ok) return true;
-    console.error("Telegram failed:", response.status, await response.text());
-  } catch (error) {
-    console.error("Telegram error:", error.message);
-  }
-  return false;
 }
 
 async function claim(pool, key, startsAt, lead) {
@@ -196,8 +177,7 @@ export async function main() {
         const label = item.type === "google" ? "Događaj" : item.type === "due" ? "Rok zadatka" : "Zadatak";
         const message = `${item.title} — ${formatTime(item.startsAt)} (za ${lead} min)`;
         const macSent = macosNotify(`${label} za ${lead} min`, message);
-        const telegramSent = await telegramNotify(`${label}: ${message}`);
-        if (!macSent && !telegramSent) {
+        if (!macSent) {
           await pool.query("DELETE FROM notif_sent WHERE task_id = $1 AND action_at = $2 AND lead = $3", [
             item.key, item.startsAt.toISOString(), String(lead),
           ]);

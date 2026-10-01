@@ -2,8 +2,7 @@ import { pgTable, text, timestamp, primaryKey } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 // Dedupe ledger for task reminders. One row per (task, action_at, lead) fired.
-// Replaces the old scripts/.notif-state.json so notifications can run from CI
-// (GitHub Actions) where local file state does not persist between runs.
+// Persists delivery history across local reminder runs.
 export const notifSent = pgTable(
   "notif_sent",
   {
