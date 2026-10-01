@@ -12,6 +12,8 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Life OS",
   description: "Personal life tracker",
+  appleWebApp: { capable: true, title: "Life OS", statusBarStyle: "default" },
+  icons: { apple: "/icon-192.png" },
 };
 
 export default function RootLayout({

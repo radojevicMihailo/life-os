@@ -30,3 +30,12 @@ it("renews a valid session so it survives its original expiry", () => {
   expect(verifyAccessSession(oldToken, password, new Date("2026-10-02T10:00:00Z"))).toBe(false);
   expect(verifyAccessSession(renewedToken, password, new Date("2026-10-02T10:00:00Z"))).toBe(true);
 });
+
+
+it("serves the push worker and app icons without an access session", () => {
+  for (const path of ["/sw.js", "/icon-192.png", "/icon-512.png"]) {
+    const response = proxy(new NextRequest(`https://life-os.example${path}`));
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+  }
+});

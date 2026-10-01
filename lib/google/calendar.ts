@@ -82,6 +82,7 @@ export async function getAccessToken(accountIdx = 0): Promise<string> {
     grant_type: "refresh_token",
   });
   const res = await fetch(TOKEN_URL, {
+    signal: AbortSignal.timeout(10000),
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body,
@@ -101,6 +102,7 @@ export async function getAccessToken(accountIdx = 0): Promise<string> {
 async function apiGet<T>(path: string, accountIdx = 0): Promise<T> {
   const token = await getAccessToken(accountIdx);
   const res = await fetch(`${API}${path}`, {
+    signal: AbortSignal.timeout(10000),
     headers: { authorization: `Bearer ${token}` },
   });
   if (res.status === 401 || res.status === 403) {
@@ -150,6 +152,7 @@ export async function listEvents(
 ): Promise<GoogleEvent[]> {
   type RawEvent = {
     id: string;
+    status?: string;
     summary?: string;
     hangoutLink?: string;
     attendees?: { email?: string; self?: boolean }[];
@@ -157,7 +160,7 @@ export async function listEvents(
     start?: { dateTime?: string; date?: string };
     end?: { dateTime?: string; date?: string };
   };
-  type Resp = { items?: RawEvent[] };
+  type Resp = { items?: RawEvent[]; nextPageToken?: string };
   const qs = new URLSearchParams({
     singleEvents: "true",
     orderBy: "startTime",
@@ -165,11 +168,15 @@ export async function listEvents(
     timeMin: timeMinISO,
     timeMax: timeMaxISO,
   });
-  const json = await apiGet<Resp>(
-    `/calendars/${encodeURIComponent(calendarId)}/events?${qs.toString()}`,
-    accountIdx,
-  );
-  return (json.items ?? []).map((e) => {
+  const items: RawEvent[] = [];
+  let pageToken: string | undefined;
+  do {
+    if (pageToken) qs.set("pageToken", pageToken);
+    const page = await apiGet<Resp>(`/calendars/${encodeURIComponent(calendarId)}/events?${qs}`, accountIdx);
+    items.push(...(page.items ?? []));
+    pageToken = page.nextPageToken;
+  } while (pageToken);
+  return items.filter((event) => event.status !== "cancelled").map((e) => {
     const startDateTime = e.start?.dateTime;
     const startDate = e.start?.date;
     const endDateTime = e.end?.dateTime;

@@ -115,4 +115,13 @@ describe("google calendar client", () => {
     const events = await listEvents("cal1", "2026-06-01T00:00:00Z", "2026-06-02T00:00:00Z");
     expect(events[0].attendeeEmail).toBe("work@example.com");
   });
+  it("reads every event page and skips canceled events", async () => {
+    mockFetchOnce({ access_token: "AT", expires_in: 3600 });
+    mockFetchOnce({ items: [{ id: "canceled", status: "cancelled", start: { dateTime: "2026-06-01T10:00:00Z" } }], nextPageToken: "second" });
+    mockFetchOnce({ items: [{ id: "active", start: { dateTime: "2026-06-01T11:00:00Z" } }] });
+    const { listEvents } = await import("./calendar");
+    const events = await listEvents("cal1", "2026-06-01T00:00:00Z", "2026-06-02T00:00:00Z");
+    expect(events.map((event) => event.id)).toEqual(["0:cal1:active"]);
+  });
+
 });
