@@ -24,8 +24,11 @@ export interface ApiErrorBody {
 }
 
 const messages: Record<ApiErrorCode, string> = {
+  account_purpose_target_invalid: "Izabrani cilj ili budžet nije dostupan.",
+  account_purpose_currency_mismatch: "Valuta namene mora odgovarati valuti računa.",
+  account_purpose_insufficient_balance: "Nema dovoljno slobodnog novca na računu za ovu namenu.",
   account_classification_unsupported: "Vrsta računa nije podržana.",
-  account_details_in_use: "Vrsta i valuta računa ne mogu da se promene kada postoje transakcije, ciljevi ili investicioni račun. Naziv i podvrstu i dalje možete izmeniti.",
+  account_details_in_use: "Vrsta i valuta računa ne mogu da se promene kada postoje transakcije, rezervisane namene, ciljevi ili investicioni račun. Naziv i podvrstu i dalje možete izmeniti.",
   account_has_active_goals: "Račun se ne može arhivirati dok ima aktivne ciljeve.",
   account_inactive: "Izabrani račun nije aktivan.",
   account_not_found: "Izabrani račun ne postoji.",

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createFoodSchema,
   createMealSchema,
+  updateMealSchema,
   mealTargetsSchema,
 } from "./meals";
 
@@ -95,5 +96,22 @@ describe("mealTargetsSchema", () => {
         fat: null,
       }).success,
     ).toBe(false);
+  });
+});
+
+
+describe("updateMealSchema history references", () => {
+  const mealId = "11111111-1111-4111-8111-111111111111";
+  const itemId = "22222222-2222-4222-8222-222222222222";
+  const foodId = "33333333-3333-4333-8333-333333333333";
+  it("accepts deleted foods only when tied to an existing historical item", () => {
+    const base = { id: mealId, date: "2026-10-02", name: "Lunch" };
+    expect(updateMealSchema.safeParse({ ...base, items: [{ mealItemId: itemId, foodId: null, grams: 100 }] }).success).toBe(true);
+    expect(updateMealSchema.safeParse({ ...base, items: [{ foodId: null, grams: 100 }] }).success).toBe(false);
+    expect(createMealSchema.safeParse({ ...base, items: [{ mealItemId: itemId, foodId: null, grams: 100 }] }).success).toBe(false);
+  });
+  it("retains valid identity references and strips client-supplied nutrient snapshots", () => {
+    const parsed = updateMealSchema.parse({ id: mealId, date: "2026-10-02", name: "Lunch", items: [{ mealItemId: itemId, foodId, grams: 100, kcalPer100gSnapshot: "0", foodNameSnapshot: "Fake" }] });
+    expect(parsed.items).toEqual([{ mealItemId: itemId, foodId, grams: 100 }]);
   });
 });

@@ -24,7 +24,8 @@
     "test:finance": "vitest run tests/finance/unit",
     "test:integration": "vitest run tests/finance/integration --maxWorkers=2",
     "test:unit": "vitest run --exclude \"tests/finance/integration/**\"",
-    "notify:setup": "node scripts/web-push-setup.mjs"
+    "notify:setup": "node scripts/web-push-setup.mjs",
+    "db:seed:foods": "node --env-file-if-exists=.env.local scripts/seed-foods.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

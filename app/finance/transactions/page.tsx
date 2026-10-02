@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/modules/finance/ui/components/empty-state";
 import { PageHeader } from "@/modules/finance/ui/components/page-header";
 import { TransactionAmounts } from "@/modules/finance/ui/components/transaction-amounts";
@@ -38,8 +39,8 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
       <PageHeader eyebrow="Promet" title="Transakcije">Hronološki pregled knjiženja sa filterima i jasnim izvornim iznosima.</PageHeader>
       <TransactionForm accounts={options.accounts} categories={options.categories} />
       <form className="grid gap-3 rounded-3xl border border-white/10 bg-white/[0.03] p-4 sm:grid-cols-2 lg:grid-cols-6" method="get">
-        <label className="text-xs text-slate-400">Od<input className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.dateFrom} name="dateFrom" type="date" /></label>
-        <label className="text-xs text-slate-400">Do<input className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.dateTo} name="dateTo" type="date" /></label>
+        <label className="text-xs text-slate-400">Od<Input className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.dateFrom} name="dateFrom" type="date" /></label>
+        <label className="text-xs text-slate-400">Do<Input className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.dateTo} name="dateTo" type="date" /></label>
         <label className="text-xs text-slate-400">Tip<select className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.type ?? ""} name="type"><option value="">Svi tipovi</option>{TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label>
         <label className="text-xs text-slate-400">Izvor<select className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.source ?? ""} name="source"><option value="">Svi izvori</option>{SOURCES.map((source) => <option key={source} value={source}>{source}</option>)}</select></label>
         <label className="text-xs text-slate-400">ID računa<input className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.accountId} name="accountId" /></label>

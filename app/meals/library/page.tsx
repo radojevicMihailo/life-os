@@ -3,6 +3,7 @@ import { desc, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { foodItem } from "@/db/schema/meals";
 import { Button } from "@/components/ui/button";
+import { getCatalogSource } from "@/lib/foods/catalog";
 
 export default async function FoodLibraryPage() {
   const rows = await db
@@ -20,13 +21,20 @@ export default async function FoodLibraryPage() {
           <Link href="/meals/library/new">New food</Link>
         </Button>
       </div>
+      <p className="mb-4 text-sm text-muted-foreground">
+        Values are per 100g of the edible portion in the stated raw, cooked or
+        drained condition. USDA entries are general food averages; check the
+        packaging for your specific product.
+      </p>
       <ul className="divide-y border rounded">
         {rows.length === 0 && (
           <li className="p-4 text-sm text-muted-foreground">
             No foods yet. Add one or import from OpenFoodFacts.
           </li>
         )}
-        {rows.map((f) => (
+        {rows.map((f) => {
+          const catalogSource = getCatalogSource(f);
+          return (
           <li key={f.id} className="p-3 flex items-center justify-between">
             <Link href={`/meals/library/${f.id}`} className="flex-1">
               <div className="font-medium">{f.name}</div>
@@ -37,8 +45,20 @@ export default async function FoodLibraryPage() {
                 {f.source === "off" ? " · OFF" : ""}
               </div>
             </Link>
+            {catalogSource && (
+              <a
+                href={catalogSource.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={catalogSource.sourceDescription}
+                className="ml-3 shrink-0 text-xs text-muted-foreground underline"
+              >
+                USDA source
+              </a>
+            )}
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );

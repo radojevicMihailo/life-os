@@ -1,6 +1,4 @@
-import { sections } from "@/components/main-sections";
-import { SectionOverview } from "@/components/section-overview";
-
+import { redirect } from "next/navigation";
 export default function TaskManagerPage() {
-  return <SectionOverview section={sections.tasks} />;
+  redirect("/calendar");
 }

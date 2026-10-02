@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { mealTimeToIso } from "@/lib/meals/time";
 import { createMeal } from "../_actions/meals";
 import { FoodPicker, type PickedFood } from "./FoodPicker";
 import { MealItemRow, type DraftItem } from "./MealItemRow";
@@ -52,16 +53,13 @@ export function AddMealDialog({ date }: { date: string }) {
   function submit() {
     setError(null);
     start(async () => {
-      const eatenAt =
-        time && /^\d{2}:\d{2}$/.test(time)
-          ? new Date(`${date}T${time}:00`).toISOString()
-          : null;
+      const eatenAt = mealTimeToIso(date, time);
       const res = await createMeal({
         date,
         name: name.trim(),
         eatenAt,
         notes: null,
-        items: items.map((i) => ({ foodId: i.foodId, grams: i.grams })),
+        items: items.map((i) => ({ foodId: i.foodId!, grams: i.grams })),
       });
       if (!res.ok) {
         setError(res.error);

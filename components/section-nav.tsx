@@ -10,7 +10,7 @@ export function SectionNav({ area, hideOnOverview = false }: { area: "tasks" | "
   if (hideOnOverview && pathname === section.href) return null;
 
   const destinations = [
-    { href: section.href, label: "Pregled" },
+    ...(area === "tasks" ? [] : [{ href: section.href, label: "Pregled" }]),
     ...section.links.map(({ href, label }) => ({ href, label })),
   ];
   const activeHref = destinations

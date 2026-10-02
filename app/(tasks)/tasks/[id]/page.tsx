@@ -62,6 +62,7 @@ export default async function TaskDetailPage({
       </header>
 
       <TaskDetailEditor
+        key={`${t.id}:${t.updatedAt.toISOString()}`}
         taskId={t.id}
         status={t.status}
         actionAt={t.actionAt}
@@ -69,6 +70,7 @@ export default async function TaskDetailPage({
         dueAt={t.dueAt}
         projectId={t.projectId}
         projects={allProjects}
+        priorityId={t.priorityId}
       />
 
       <section className="space-y-3">

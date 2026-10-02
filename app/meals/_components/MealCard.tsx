@@ -23,10 +23,9 @@ type MealRow = {
 };
 
 function toDraft(items: ItemRow[]): DraftItem[] {
-  return items
-    .filter((i) => i.foodId !== null)
-    .map((i) => ({
-      foodId: i.foodId!,
+  return items.map((i) => ({
+      mealItemId: i.id,
+      foodId: i.foodId,
       name: i.foodNameSnapshot,
       brand: null,
       kcalPer100g: Number(i.kcalPer100gSnapshot),
@@ -49,9 +48,7 @@ export function MealCard({ meal }: { meal: MealRow }) {
     id: meal.id,
     date: meal.date,
     name: meal.name,
-    time: meal.eatenAt
-      ? new Date(meal.eatenAt).toISOString().slice(11, 16)
-      : "",
+    eatenAt: meal.eatenAt,
     items: toDraft(meal.items),
   };
 

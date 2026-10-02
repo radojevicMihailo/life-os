@@ -1,6 +1,5 @@
 import {
   Activity,
-  Bell,
   BarChart3,
   CalendarDays,
   CheckSquare,
@@ -39,9 +38,7 @@ export const sections = {
       { href: "/tasks", label: "Zadaci", icon: ListTodo, description: "Pregledaj i organizuj zadatke." },
       { href: "/pomodoro", label: "Pomodoro", icon: Timer, description: "Vreme za fokus i odmor." },
       { href: "/calendar", label: "Kalendar", icon: CalendarDays, description: "Pogledaj dnevni raspored." },
-      { href: "/notifications", label: "Notifikacije", icon: Bell, description: "Podsetnici na ovom uređaju." },
-      { href: "/context", label: "Konteksti", icon: ClipboardList, description: "Grupiši zadatke po kontekstu." },
-      { href: "/priorities", label: "Prioriteti", icon: Target, description: "Odredi šta je najvažnije." },
+      { href: "/context", label: "Konteksti i prioriteti", icon: ClipboardList, description: "Konteksti i četiri kvadranta prioriteta." },
     ],
   },
   finance: {

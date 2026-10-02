@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 
 import { applicationError } from "../../application/ports";
 import type { DbTx } from "../client";
-import { goals } from "../schema";
+import { accountPurposes, goals } from "../schema";
 
 export type GoalRecord = typeof goals.$inferSelect;
 
@@ -53,8 +53,9 @@ export class GoalsRepository {
     const rows = await this.tx
       .select({ id: goals.id })
       .from(goals)
-      .where(and(eq(goals.accountId, accountId), eq(goals.isActive, true)))
-      .for("update");
+      // The caller already holds the account lock. Goal creators/movers must
+      // acquire it too; locking goals here would invert their lock order.
+      .where(and(eq(goals.accountId, accountId), eq(goals.isActive, true)));
     return rows.length > 0;
   }
 
@@ -66,6 +67,11 @@ export class GoalsRepository {
     targetAmount: string;
     now: Date;
   }): Promise<GoalRecord> {
+    const purposes = await this.tx.select({ currencyCode: accountPurposes.currencyCode })
+      .from(accountPurposes).where(eq(accountPurposes.goalId, input.id));
+    if (purposes.some((p) => p.currencyCode !== input.targetCurrencyCode)) {
+      applicationError("account_purpose_currency_mismatch");
+    }
     const [goal] = await this.tx
       .update(goals)
       .set({

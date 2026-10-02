@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export type DraftItem = {
-  foodId: string;
+  foodId: string | null;
+  mealItemId?: string;
   name: string;
   brand: string | null;
   kcalPer100g: number;

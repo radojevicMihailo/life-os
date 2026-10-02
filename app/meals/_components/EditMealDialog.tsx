@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { mealTimeForInput, mealTimeToIso } from "@/lib/meals/time";
 import { updateMeal, deleteMeal } from "../_actions/meals";
 import { FoodPicker, type PickedFood } from "./FoodPicker";
 import { MealItemRow, type DraftItem } from "./MealItemRow";
@@ -21,7 +22,7 @@ export type EditMealInitial = {
   id: string;
   date: string;
   name: string;
-  time: string;
+  eatenAt: Date | null;
   items: DraftItem[];
 };
 
@@ -34,11 +35,21 @@ export function EditMealDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(initial.name);
-  const [time, setTime] = useState(initial.time);
+  const [time, setTime] = useState("");
   const [items, setItems] = useState<DraftItem[]>(initial.items);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const router = useRouter();
+
+  function changeOpen(next: boolean) {
+    if (next) {
+      setName(initial.name);
+      setTime(mealTimeForInput(initial.eatenAt));
+      setItems(initial.items);
+      setError(null);
+    }
+    setOpen(next);
+  }
 
   function addPick(p: PickedFood) {
     setItems((cur) => [
@@ -59,17 +70,14 @@ export function EditMealDialog({
   function submit() {
     setError(null);
     start(async () => {
-      const eatenAt =
-        time && /^\d{2}:\d{2}$/.test(time)
-          ? new Date(`${initial.date}T${time}:00`).toISOString()
-          : null;
+      const eatenAt = mealTimeToIso(initial.date, time, initial.eatenAt);
       const res = await updateMeal({
         id: initial.id,
         date: initial.date,
         name: name.trim(),
         eatenAt,
         notes: null,
-        items: items.map((i) => ({ foodId: i.foodId, grams: i.grams })),
+        items: items.map((i) => ({ mealItemId: i.mealItemId, foodId: i.foodId, grams: i.grams })),
       });
       if (!res.ok) {
         setError(res.error);
@@ -89,7 +97,7 @@ export function EditMealDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>

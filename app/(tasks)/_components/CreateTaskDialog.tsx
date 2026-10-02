@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { TASK_PRIORITIES } from "@/lib/task-priorities";
 import { createTask } from "../_actions/tasks";
 import { DateField } from "./DateField";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -39,13 +40,14 @@ export function CreateTaskDialog({
   const [dueAt, setDueAt] = useState<Date | null>(initial?.date ?? null);
   const [withTime, setWithTime] = useState(initial?.withTime ?? false);
   const [contextId, setContextId] = useState("none");
+  const [priorityId, setPriorityId] = useState("none");
   const [pending, startTransition] = useTransition();
 
   function submit() {
     const trimmed = title.trim();
     if (!trimmed) return;
     startTransition(async () => {
-      const result = await createTask({ title: trimmed, dueAt: dueAt ?? undefined, contextIds: contextId === "none" ? undefined : [contextId] });
+      const result = await createTask({ title: trimmed, priorityId: priorityId === "none" ? undefined : priorityId as typeof TASK_PRIORITIES[number]["id"], dueAt: dueAt ?? undefined, contextIds: contextId === "none" ? undefined : [contextId] });
       if (!result.ok) {
         toast.error(result.error);
         return;
@@ -96,6 +98,13 @@ export function CreateTaskDialog({
               <SelectContent><SelectItem value="none">Bez konteksta</SelectItem>{contexts.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}</SelectContent>
             </Select>
             {contexts.length === 0 ? <Link href="/context" className="text-sm text-primary hover:underline">Dodaj prvi kontekst</Link> : null}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="calendar-task-priority">Prioritet</Label>
+            <Select value={priorityId} onValueChange={setPriorityId}>
+              <SelectTrigger id="calendar-task-priority" className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent><SelectItem value="none">Bez prioriteta</SelectItem>{TASK_PRIORITIES.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+            </Select>
           </div>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={pending}>

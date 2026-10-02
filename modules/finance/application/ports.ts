@@ -7,6 +7,7 @@ import type { UnitOfWork } from "../db/unit-of-work";
 
 export type IdKind =
   | "account"
+  | "accountPurpose"
   | "budgetLimit"
   | "budgetPeriod"
   | "category"
@@ -39,6 +40,9 @@ export interface ApplicationDependencies {
 }
 
 export type ApplicationErrorCode =
+  | "account_purpose_target_invalid"
+  | "account_purpose_currency_mismatch"
+  | "account_purpose_insufficient_balance"
   | "account_classification_unsupported"
   | "account_details_in_use"
   | "account_has_active_goals"

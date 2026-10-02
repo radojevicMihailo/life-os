@@ -3,6 +3,7 @@ import { Sparkles } from "lucide-react";
 import { NavTree } from "@/components/nav-tree";
 import { PomodoroBadge } from "@/components/pomodoro-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SettingsLink } from "@/components/settings-link";
 import { LogoutButton } from "@/components/logout-button";
 
 export function Sidebar() {
@@ -20,6 +21,7 @@ export function Sidebar() {
         <NavTree />
       </nav>
       <div className="mx-5 mb-5 border-t border-sidebar-border pt-5 text-xs leading-5 text-muted-foreground"><span className="mb-2 block h-0.5 w-9 bg-primary" />Mali koraci,<br />velike promene.</div>
+      <div className="px-3 pb-2"><SettingsLink /></div>
       <div className="flex min-w-0 items-center gap-2 border-t border-sidebar-border px-3 py-3">
         <ThemeToggle />
         <PomodoroBadge />

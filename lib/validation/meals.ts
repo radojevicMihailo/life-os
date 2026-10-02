@@ -2,9 +2,7 @@ import { z } from "zod";
 
 export const foodSourceSchema = z.enum(["manual", "off"]);
 
-const dateString = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date");
+const dateString = z.iso.date({ error: "Invalid date" });
 
 const macro = z.number().min(0).max(1000);
 
@@ -39,8 +37,17 @@ export const createMealSchema = z.object({
 });
 export type CreateMealInput = z.infer<typeof createMealSchema>;
 
+const updateMealItemInput = mealItemInput.extend({
+  foodId: z.string().uuid().nullable(),
+  mealItemId: z.string().uuid().optional(),
+}).refine((item) => item.foodId !== null || Boolean(item.mealItemId), {
+  message: "Deleted food must reference an existing meal item",
+  path: ["foodId"],
+});
+
 export const updateMealSchema = createMealSchema.extend({
   id: z.string().uuid(),
+  items: z.array(updateMealItemInput).min(1, "Add at least one food"),
 });
 export type UpdateMealInput = z.infer<typeof updateMealSchema>;
 

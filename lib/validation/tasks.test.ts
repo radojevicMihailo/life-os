@@ -76,3 +76,14 @@ describe("recurrenceRuleSchema", () => {
     expect(recurrenceRuleSchema.safeParse({ freq: "daily", interval: 0 }).success).toBe(false);
   });
 });
+
+it("rejects custom priority ids now that only four quadrants are supported", () => {
+  expect(createTaskSchema.safeParse({ title: "x", priorityId: "12345678-1234-4234-8234-123456789abc" }).success).toBe(false);
+});
+it("rejects an action end before its start", () => {
+  expect(createTaskSchema.safeParse({ title: "x", actionAt: new Date("2026-10-02T12:00:00Z"), actionEndAt: new Date("2026-10-02T11:00:00Z") }).success).toBe(false);
+});
+it("deduplicates contexts rather than failing a database primary key", () => {
+  const id = "12345678-1234-4234-8234-123456789abc";
+  expect(createTaskSchema.parse({ title: "x", contextIds: [id,id] }).contextIds).toEqual([id]);
+});

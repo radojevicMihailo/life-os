@@ -3,7 +3,7 @@ import { and, asc, eq, inArray, ne } from "drizzle-orm";
 import type { AccountClassification } from "../../domain/ledger";
 import { applicationError, type AccountSummary } from "../../application/ports";
 import type { DbTx } from "../client";
-import { accounts, currencies, goals, investmentAccounts, journalPostings } from "../schema";
+import { accountPurposes, accounts, currencies, goals, investmentAccounts, journalPostings } from "../schema";
 
 export interface AccountRecord extends AccountSummary {
   classification: AccountClassification;
@@ -224,6 +224,7 @@ export class AccountsRepository {
   async hasLinkedRecords(id: string): Promise<boolean> {
     for (const [table, column] of [
       [journalPostings, journalPostings.accountId],
+      [accountPurposes, accountPurposes.accountId],
       [goals, goals.accountId],
       [investmentAccounts, investmentAccounts.cashAccountId],
     ] as const) {

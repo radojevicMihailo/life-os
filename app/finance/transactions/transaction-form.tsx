@@ -1,5 +1,7 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
+
 import { useActionState, useState } from "react";
 
 import { createTransactionAction } from "@/modules/finance/ui/actions/transactions";
@@ -49,7 +51,7 @@ export function TransactionForm({ accounts, categories }: { accounts: Option[]; 
             : <label className="text-xs text-slate-400">Efektivni kurs ({toCurrency}/{fromCurrency})<input className={input} inputMode="decimal" name="effectiveRate" required {...fieldErrorProps(state, "effectiveRate")} /></label>}
         </> : null}
         {receivable ? <label className="text-xs text-slate-400">Druga strana<input className={input} name="counterparty" required {...fieldErrorProps(state, "counterparty")} /></label> : null}
-        <label className="text-xs text-slate-400">Datum i vreme<input className={input} name="occurredAt" type="datetime-local" /></label>
+        <label className="text-xs text-slate-400">Datum i vreme<Input className={input} name="occurredAt" type="datetime-local" /></label>
         <label className="text-xs text-slate-400 sm:col-span-2">Opis<input className={input} name="description" /></label>
       </div>
       <button className="mt-4 min-h-11 action-button rounded-xl px-5 text-sm font-semibold text-white disabled:opacity-50" disabled={pending} type="submit">Sačuvaj transakciju</button>

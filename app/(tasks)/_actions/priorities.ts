@@ -1,60 +1,17 @@
 "use server";
+import type { CreatePriorityInput, UpdatePriorityInput } from "@/lib/validation/priorities";
 
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import { priority } from "@/db/schema/tasks";
-import {
-  createPrioritySchema,
-  updatePrioritySchema,
-  type CreatePriorityInput,
-  type UpdatePriorityInput,
-} from "@/lib/validation/priorities";
-import { revalidateTaskRoutes } from "./_revalidate";
-
-type ActionResult<T = void> =
-  | { ok: true; data: T }
-  | { ok: false; error: string };
-
-function fail(error: string): ActionResult<never> {
-  return { ok: false, error };
+// Keep old action entry points safe for tabs opened before the deployment.
+const message = "Prioriteti su fiksni kvadranti Q1–Q4 i ne mogu se menjati.";
+export async function createPriority(_input: CreatePriorityInput): Promise<{ ok: false; error: string }> {
+  void _input;
+  return { ok: false, error: message };
 }
-
-export async function createPriority(
-  input: CreatePriorityInput,
-): Promise<ActionResult<{ id: string }>> {
-  const parsed = createPrioritySchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
-
-  try {
-    const [row] = await db
-      .insert(priority)
-      .values({
-        name: parsed.data.name,
-        color: parsed.data.color ?? null,
-        ...(parsed.data.rank !== undefined ? { rank: parsed.data.rank } : {}),
-      })
-      .returning({ id: priority.id });
-    revalidateTaskRoutes();
-    return { ok: true, data: { id: row.id } };
-  } catch (e) {
-    if (e instanceof Error && e.message.includes("duplicate")) {
-      return fail("Priority already exists");
-    }
-    throw e;
-  }
+export async function updatePriority(_input: UpdatePriorityInput): Promise<{ ok: false; error: string }> {
+  void _input;
+  return { ok: false, error: message };
 }
-
-export async function updatePriority(input: UpdatePriorityInput): Promise<ActionResult> {
-  const parsed = updatePrioritySchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
-  const { id, ...patch } = parsed.data;
-  await db.update(priority).set(patch).where(eq(priority.id, id));
-  revalidateTaskRoutes();
-  return { ok: true, data: undefined };
-}
-
-export async function deletePriority(id: string): Promise<ActionResult> {
-  await db.delete(priority).where(eq(priority.id, id));
-  revalidateTaskRoutes();
-  return { ok: true, data: undefined };
+export async function deletePriority(_id: string): Promise<{ ok: false; error: string }> {
+  void _id;
+  return { ok: false, error: message };
 }

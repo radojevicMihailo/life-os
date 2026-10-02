@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { and, gte, inArray, isNull } from "drizzle-orm";
+import { and, inArray, isNull, lte } from "drizzle-orm";
 import { Plus } from "lucide-react";
 import { db } from "@/db";
 import { habit, habitLog, type Habit, type HabitLog } from "@/db/schema/habits";
@@ -22,8 +22,6 @@ export default async function HabitsPage() {
   const today = new Date();
   const todayIso = isoDate(today);
   const days = lastNDays(7, today);
-  const earliestIso = isoDate(days[0]);
-  const thirtyIso = isoDate(lastNDays(30, today)[0]);
 
   const habits: Habit[] = await db
     .select()
@@ -33,30 +31,18 @@ export default async function HabitsPage() {
 
   const habitIds = habits.map((h) => h.id);
 
-  const weekLogs: HabitLog[] =
+  // Streaks need complete history; a 30-day query silently truncates long runs.
+  const historyLogs: HabitLog[] =
     habitIds.length > 0
       ? await db
           .select()
           .from(habitLog)
-          .where(and(inArray(habitLog.habitId, habitIds), gte(habitLog.date, earliestIso)))
+          .where(and(inArray(habitLog.habitId, habitIds), lte(habitLog.date, todayIso)))
       : [];
 
-  const wideLogs: HabitLog[] =
-    habitIds.length > 0
-      ? await db
-          .select()
-          .from(habitLog)
-          .where(and(inArray(habitLog.habitId, habitIds), gte(habitLog.date, thirtyIso)))
-      : [];
-
-  const weekByHabit = new Map<string, HabitLog[]>();
-  const wideByHabit = new Map<string, HabitLog[]>();
-  for (const h of habits) {
-    weekByHabit.set(h.id, []);
-    wideByHabit.set(h.id, []);
-  }
-  for (const l of weekLogs) weekByHabit.get(l.habitId)?.push(l);
-  for (const l of wideLogs) wideByHabit.get(l.habitId)?.push(l);
+  const historyByHabit = new Map<string, HabitLog[]>();
+  for (const h of habits) historyByHabit.set(h.id, []);
+  for (const log of historyLogs) historyByHabit.get(log.habitId)?.push(log);
 
   const scheduledToday = habits.filter((h) => isScheduledOn(h, today, todayIso));
 
@@ -90,7 +76,7 @@ export default async function HabitsPage() {
               <p className="text-sm text-muted-foreground">Danas nema planiranih navika.</p>
             ) : (
               scheduledToday.map((h) => {
-                const map = buildLogMap(wideByHabit.get(h.id) ?? []);
+                const map = buildLogMap(historyByHabit.get(h.id) ?? []);
                 return (
                   <HabitTodayRow
                     key={h.id}
@@ -112,7 +98,7 @@ export default async function HabitsPage() {
                   key={h.id}
                   habit={h}
                   days={days}
-                  logs={buildLogMap(weekByHabit.get(h.id) ?? [])}
+                  logs={buildLogMap(historyByHabit.get(h.id) ?? [])}
                 />
               ))}
             </div>
@@ -122,7 +108,7 @@ export default async function HabitsPage() {
             <h2 className="text-sm font-semibold text-muted-foreground">Statistika</h2>
             <div className="space-y-1.5">
               {habits.map((h) => {
-                const map = buildLogMap(wideByHabit.get(h.id) ?? []);
+                const map = buildLogMap(historyByHabit.get(h.id) ?? []);
                 return (
                   <HabitStatsCard
                     key={h.id}

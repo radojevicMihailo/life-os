@@ -3,9 +3,7 @@ import { z } from "zod";
 export const habitKindSchema = z.enum(["binary", "count"]);
 export const habitCadenceSchema = z.enum(["daily", "weekly_target", "weekdays"]);
 
-const dateString = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date");
+const dateString = z.iso.date({ error: "Invalid date" });
 
 const baseHabit = z.object({
   title: z.string().trim().min(1, "Title required").max(500),

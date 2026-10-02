@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TASK_PRIORITIES } from "@/lib/task-priorities";
 import { createTask } from "../_actions/tasks";
 import { RecurrenceEditor } from "./RecurrenceEditor";
 import { DateField } from "./DateField";
@@ -57,6 +58,7 @@ export function TaskForm({
   const [actionAt, setActionAt] = useState<Date | null>(null);
   const [actionWithTime, setActionWithTime] = useState(false);
   const [actionEndAt, setActionEndAt] = useState<Date | null>(null);
+  const [actionEndWithTime, setActionEndWithTime] = useState(false);
   const [showActionEnd, setShowActionEnd] = useState(false);
   const [dueAt, setDueAt] = useState<Date | null>(null);
   const [dueWithTime, setDueWithTime] = useState(false);
@@ -73,6 +75,7 @@ export function TaskForm({
     setActionAt(null);
     setActionWithTime(false);
     setActionEndAt(null);
+    setActionEndWithTime(false);
     setShowActionEnd(false);
     setDueAt(null);
     setDueWithTime(false);
@@ -88,7 +91,7 @@ export function TaskForm({
         title: trimmed,
         notes: notes.trim() || undefined,
         projectId: projectId ?? undefined,
-        priorityId: priorityId ?? undefined,
+        priorityId: priorityId as typeof TASK_PRIORITIES[number]["id"] | undefined,
         status,
         actionAt: actionAt ?? undefined,
         actionEndAt: showActionEnd && actionEndAt ? actionEndAt : undefined,
@@ -170,7 +173,7 @@ export function TaskForm({
             </div>
             <DateField
               value={actionAt}
-              onChange={setActionAt}
+              onChange={(d) => { setActionAt(d); if (!d) setActionEndAt(null); }}
               withTime={actionWithTime}
               onToggleTime={setActionWithTime}
             />
@@ -178,8 +181,8 @@ export function TaskForm({
               <DateField
                 value={actionEndAt}
                 onChange={setActionEndAt}
-                withTime={actionWithTime}
-                onToggleTime={setActionWithTime}
+                withTime={actionEndWithTime}
+                onToggleTime={setActionEndWithTime}
               />
             )}
           </div>

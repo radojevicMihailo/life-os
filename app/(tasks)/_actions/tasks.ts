@@ -3,7 +3,7 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { task, taskContext, type TaskStatus } from "@/db/schema/tasks";
-import { nextOccurrence } from "@/lib/recurrence";
+import { recurrenceDates } from "@/lib/task-recurrence";
 import {
   createTaskSchema,
   updateTaskSchema,
@@ -63,10 +63,21 @@ export async function updateTask(input: UpdateTaskInput): Promise<ActionResult> 
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
   const { id, ...patch } = parsed.data;
 
-  await db
-    .update(task)
-    .set({ ...patch, updatedAt: sql`now()` })
-    .where(eq(task.id, id));
+  const result = await db.transaction(async (tx) => {
+    const [existing] = await tx.select().from(task).where(eq(task.id, id)).for("update");
+    if (!existing) return fail("Task not found");
+    const actionAt = patch.actionAt !== undefined ? patch.actionAt : existing.actionAt;
+    const actionEndAt = actionAt === null ? null : patch.actionEndAt !== undefined ? patch.actionEndAt : existing.actionEndAt;
+    if (actionAt && actionEndAt && actionEndAt < actionAt) return fail("Kraj aktivnosti ne može biti pre početka.");
+    const { contextIds, ...fields } = patch;
+    await tx.update(task).set({ ...fields, actionEndAt, updatedAt: sql`now()` }).where(eq(task.id, id));
+    if (contextIds !== undefined) {
+      await tx.delete(taskContext).where(eq(taskContext.taskId, id));
+      if (contextIds.length) await tx.insert(taskContext).values(contextIds.map((contextId) => ({ taskId: id, contextId })));
+    }
+    return { ok: true, data: undefined } as ActionResult;
+  });
+  if (!result.ok) return result;
 
   revalidateTaskRoutes({ taskId: id });
   return { ok: true, data: undefined };
@@ -76,48 +87,28 @@ export async function setTaskStatus(id: string, status: TaskStatus): Promise<Act
   const parsed = taskStatusSchema.safeParse(status);
   if (!parsed.success) return fail("Invalid status");
 
-  const existing = await db.query.task.findFirst({ where: eq(task.id, id) });
-  if (!existing) return fail("Task not found");
-
-  const now = new Date();
-
-  if (status === "done" && existing.status !== "done" && existing.recurrence) {
-    const fromDate = existing.dueAt ?? existing.actionAt ?? now;
-    const next = nextOccurrence(existing.recurrence, fromDate);
-    const nextAction = existing.actionAt
-      ? nextOccurrence(existing.recurrence, existing.actionAt)
-      : null;
-
-    await db.transaction(async (tx) => {
-      await tx.insert(task).values({
-        title: existing.title,
-        notes: existing.notes,
-        projectId: existing.projectId,
-        parentTaskId: existing.parentTaskId,
-        priorityId: existing.priorityId,
-        status: "done",
-        actionAt: existing.actionAt,
-        dueAt: existing.dueAt,
-        recurrenceParentId: existing.id,
-      });
-      await tx
-        .update(task)
-        .set({
-          dueAt: next,
-          actionAt: nextAction,
-          updatedAt: sql`now()`,
-        })
-        .where(eq(task.id, id));
-    });
-
-    revalidateTaskRoutes();
-    return { ok: true, data: undefined };
-  }
-
-  await db
-    .update(task)
-    .set({ status, updatedAt: sql`now()` })
-    .where(eq(task.id, id));
+  const result = await db.transaction(async (tx) => {
+    const [existing] = await tx.select().from(task).where(eq(task.id, id)).for("update");
+    if (!existing) return fail("Task not found");
+    if (status === "done" && existing.status !== "done" && existing.recurrence) {
+      const [completed] = await tx.insert(task).values({
+        title: existing.title, notes: existing.notes, projectId: existing.projectId,
+        parentTaskId: existing.parentTaskId, priorityId: existing.priorityId,
+        status: "done", actionAt: existing.actionAt, actionEndAt: existing.actionEndAt,
+        dueAt: existing.dueAt, recurrenceParentId: existing.id,
+      }).returning({ id: task.id });
+      const links = await tx.select().from(taskContext).where(eq(taskContext.taskId, id));
+      if (links.length) await tx.insert(taskContext).values(links.map((link) => ({ taskId: completed.id, contextId: link.contextId })));
+      await tx.update(task).set({
+        ...recurrenceDates({ ...existing, recurrence: existing.recurrence }),
+        updatedAt: sql`now()`,
+      }).where(eq(task.id, id));
+    } else {
+      await tx.update(task).set({ status, updatedAt: sql`now()` }).where(eq(task.id, id));
+    }
+    return { ok: true, data: undefined } as ActionResult;
+  });
+  if (!result.ok) return result;
 
   revalidateTaskRoutes({ taskId: id });
   return { ok: true, data: undefined };

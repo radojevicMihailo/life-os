@@ -26,7 +26,7 @@ export function KeyboardShortcuts() {
         else if (e.key === "t") target = "/tasks";
         else if (e.key === "p") target = "/projects";
         else if (e.key === "c") target = "/context";
-        else if (e.key === "r") target = "/priorities";
+        else if (e.key === "r") target = "/context";
         pendingG.current = false;
         if (gTimer.current) clearTimeout(gTimer.current);
         if (target) {

@@ -41,7 +41,7 @@ export function EditAccountForm({ account, currencies }: { account: EditableAcco
         <label className="text-xs text-slate-400">Podvrsta računa<input className={control} name="subtype" defaultValue={account.subtype} required /></label>
         <label className="text-xs text-slate-400">Valuta računa<select className={control} name="currencyCode" defaultValue={account.currencyCode}>{currencies.filter((currency) => currency.isActive || currency.code === account.currencyCode).map((currency) => <option key={currency.code}>{currency.code}</option>)}</select></label>
       </div>
-      <p className="text-xs text-slate-500">Vrsta i valuta mogu da se promene samo dok račun nema transakcije, ciljeve ili povezan investicioni račun.</p>
+      <p className="text-xs text-slate-500">Vrsta i valuta mogu da se promene samo dok račun nema transakcije, rezervisane namene, ciljeve ili povezan investicioni račun.</p>
       <button className="min-h-11 action-button rounded-xl px-4 text-sm font-semibold text-white" disabled={pending}>Sačuvaj izmene</button>
       <ActionMessage state={state} success="Račun je izmenjen." />
     </form>

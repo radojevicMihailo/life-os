@@ -3,9 +3,7 @@ import { z } from "zod";
 export const travelRegionSchema = z.enum(["srbija", "okolne_drzave", "evropa", "svet"]);
 export const travelStatusSchema = z.enum(["idea", "planning", "booked", "done"]);
 
-const isoDate = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date")
+const isoDate = z.iso.date({ error: "Invalid date" })
   .optional()
   .nullable();
 

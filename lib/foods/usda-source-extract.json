@@ -1,0 +1,1122 @@
+[
+  {
+    "fdcId": 172217,
+    "description": "Milk, whole, 3.25% milkfat, without added vitamin A and vitamin D",
+    "nutrients": {
+      "1008": 61.0,
+      "1003": 3.15,
+      "1005": 4.78,
+      "1004": 3.27
+    }
+  },
+  {
+    "fdcId": 172205,
+    "description": "Milk, reduced fat, fluid, 2% milkfat, without added vitamin A and vitamin D",
+    "nutrients": {
+      "1008": 50.0,
+      "1003": 3.3,
+      "1005": 4.8,
+      "1004": 1.98
+    }
+  },
+  {
+    "fdcId": 171284,
+    "description": "Yogurt, plain, whole milk",
+    "nutrients": {
+      "1008": 61.0,
+      "1003": 3.47,
+      "1005": 4.66,
+      "1004": 3.25
+    }
+  },
+  {
+    "fdcId": 170886,
+    "description": "Yogurt, plain, low fat",
+    "nutrients": {
+      "1008": 63.0,
+      "1003": 5.25,
+      "1005": 7.04,
+      "1004": 1.55
+    }
+  },
+  {
+    "fdcId": 170894,
+    "description": "Yogurt, Greek, plain, nonfat (Includes foods for USDA's Food Distribution Program)",
+    "nutrients": {
+      "1008": 59.0,
+      "1003": 10.19,
+      "1005": 3.6,
+      "1004": 0.39
+    }
+  },
+  {
+    "fdcId": 173420,
+    "description": "Cheese, feta",
+    "nutrients": {
+      "1008": 265.0,
+      "1003": 14.21,
+      "1005": 3.88,
+      "1004": 21.49
+    }
+  },
+  {
+    "fdcId": 171241,
+    "description": "Cheese, gouda",
+    "nutrients": {
+      "1008": 356.0,
+      "1003": 24.94,
+      "1005": 2.22,
+      "1004": 27.44
+    }
+  },
+  {
+    "fdcId": 170845,
+    "description": "Cheese, mozzarella, whole milk",
+    "nutrients": {
+      "1008": 299.0,
+      "1003": 22.17,
+      "1005": 2.4,
+      "1004": 22.14
+    }
+  },
+  {
+    "fdcId": 170848,
+    "description": "Cheese, parmesan, hard",
+    "nutrients": {
+      "1008": 392.0,
+      "1003": 35.75,
+      "1005": 3.22,
+      "1004": 25.0
+    }
+  },
+  {
+    "fdcId": 173430,
+    "description": "Butter, without salt",
+    "nutrients": {
+      "1008": 717.0,
+      "1003": 0.85,
+      "1005": 0.06,
+      "1004": 81.11
+    }
+  },
+  {
+    "fdcId": 171257,
+    "description": "Cream, sour, cultured",
+    "nutrients": {
+      "1008": 198.0,
+      "1003": 2.44,
+      "1005": 4.63,
+      "1004": 19.35
+    }
+  },
+  {
+    "fdcId": 171287,
+    "description": "Egg, whole, raw, fresh",
+    "nutrients": {
+      "1008": 143.0,
+      "1003": 12.56,
+      "1005": 0.72,
+      "1004": 9.51
+    }
+  },
+  {
+    "fdcId": 173424,
+    "description": "Egg, whole, cooked, hard-boiled",
+    "nutrients": {
+      "1008": 155.0,
+      "1003": 12.58,
+      "1005": 1.12,
+      "1004": 10.61
+    }
+  },
+  {
+    "fdcId": 172183,
+    "description": "Egg, white, raw, fresh",
+    "nutrients": {
+      "1008": 52.0,
+      "1003": 10.9,
+      "1005": 0.73,
+      "1004": 0.17
+    }
+  },
+  {
+    "fdcId": 171077,
+    "description": "Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw",
+    "nutrients": {
+      "1008": 120.0,
+      "1003": 22.5,
+      "1005": 0.0,
+      "1004": 2.62
+    }
+  },
+  {
+    "fdcId": 171477,
+    "description": "Chicken, broilers or fryers, breast, meat only, cooked, roasted",
+    "nutrients": {
+      "1008": 165.0,
+      "1003": 31.02,
+      "1005": 0.0,
+      "1004": 3.57
+    }
+  },
+  {
+    "fdcId": 172385,
+    "description": "Chicken, broilers or fryers, thigh, meat and skin, raw",
+    "nutrients": {
+      "1008": 221.0,
+      "1003": 16.52,
+      "1005": 0.25,
+      "1004": 16.61
+    }
+  },
+  {
+    "fdcId": 172388,
+    "description": "Chicken, broilers or fryers, thigh, meat only, cooked, roasted",
+    "nutrients": {
+      "1008": 179.0,
+      "1003": 24.76,
+      "1005": 0.0,
+      "1004": 8.15
+    }
+  },
+  {
+    "fdcId": 171093,
+    "description": "Turkey, all classes, breast, meat and skin, raw",
+    "nutrients": {
+      "1008": 157.0,
+      "1003": 21.89,
+      "1005": 0.0,
+      "1004": 7.02
+    }
+  },
+  {
+    "fdcId": 167818,
+    "description": "Pork, fresh, loin, whole, separable lean and fat, raw",
+    "nutrients": {
+      "1008": 198.0,
+      "1003": 19.74,
+      "1005": 0.0,
+      "1004": 12.58
+    }
+  },
+  {
+    "fdcId": 167821,
+    "description": "Pork, fresh, loin, whole, separable lean and fat, cooked, roasted",
+    "nutrients": {
+      "1008": 248.0,
+      "1003": 27.09,
+      "1005": 0.0,
+      "1004": 14.65
+    }
+  },
+  {
+    "fdcId": 174030,
+    "description": "Beef, ground, 90% lean meat / 10% fat, raw",
+    "nutrients": {
+      "1008": 176.0,
+      "1003": 20.0,
+      "1005": 0.0,
+      "1004": 10.0
+    }
+  },
+  {
+    "fdcId": 171794,
+    "description": "Beef, ground, 90% lean meat / 10% fat, crumbles, cooked, pan-browned",
+    "nutrients": {
+      "1008": 230.0,
+      "1003": 28.45,
+      "1005": 0.0,
+      "1004": 12.04
+    }
+  },
+  {
+    "fdcId": 175167,
+    "description": "Fish, salmon, Atlantic, farmed, raw",
+    "nutrients": {
+      "1008": 208.0,
+      "1003": 20.42,
+      "1005": 0.0,
+      "1004": 13.42
+    }
+  },
+  {
+    "fdcId": 175168,
+    "description": "Fish, salmon, Atlantic, farmed, cooked, dry heat",
+    "nutrients": {
+      "1008": 206.0,
+      "1003": 22.1,
+      "1005": 0.0,
+      "1004": 12.35
+    }
+  },
+  {
+    "fdcId": 173709,
+    "description": "Fish, tuna, light, canned in water, drained solids (Includes foods for USDA's Food Distribution Program)",
+    "nutrients": {
+      "1008": 86.0,
+      "1003": 19.44,
+      "1005": 0.0,
+      "1004": 0.96
+    }
+  },
+  {
+    "fdcId": 173708,
+    "description": "Fish, tuna, light, canned in oil, drained solids",
+    "nutrients": {
+      "1008": 198.0,
+      "1003": 29.13,
+      "1005": 0.0,
+      "1004": 8.21
+    }
+  },
+  {
+    "fdcId": 175139,
+    "description": "Fish, sardine, Atlantic, canned in oil, drained solids with bone",
+    "nutrients": {
+      "1008": 208.0,
+      "1003": 24.62,
+      "1005": 0.0,
+      "1004": 11.45
+    }
+  },
+  {
+    "fdcId": 173717,
+    "description": "Fish, trout, rainbow, farmed, raw",
+    "nutrients": {
+      "1008": 141.0,
+      "1003": 19.94,
+      "1005": 0.0,
+      "1004": 6.18
+    }
+  },
+  {
+    "fdcId": 173718,
+    "description": "Fish, trout, rainbow, farmed, cooked, dry heat",
+    "nutrients": {
+      "1008": 168.0,
+      "1003": 23.8,
+      "1005": 0.0,
+      "1004": 7.38
+    }
+  },
+  {
+    "fdcId": 174924,
+    "description": "Bread, white, commercially prepared (includes soft bread crumbs)",
+    "nutrients": {
+      "1008": 266.0,
+      "1003": 8.85,
+      "1005": 49.42,
+      "1004": 3.33
+    }
+  },
+  {
+    "fdcId": 172688,
+    "description": "Bread, whole-wheat, commercially prepared",
+    "nutrients": {
+      "1008": 252.0,
+      "1003": 12.45,
+      "1005": 42.71,
+      "1004": 3.5
+    }
+  },
+  {
+    "fdcId": 172684,
+    "description": "Bread, rye",
+    "nutrients": {
+      "1008": 259.0,
+      "1003": 8.5,
+      "1005": 48.3,
+      "1004": 3.3
+    }
+  },
+  {
+    "fdcId": 169756,
+    "description": "Rice, white, long-grain, regular, raw, unenriched",
+    "nutrients": {
+      "1008": 365.0,
+      "1003": 7.13,
+      "1005": 79.95,
+      "1004": 0.66
+    }
+  },
+  {
+    "fdcId": 169757,
+    "description": "Rice, white, long-grain, regular, unenriched, cooked without salt",
+    "nutrients": {
+      "1008": 130.0,
+      "1003": 2.69,
+      "1005": 28.17,
+      "1004": 0.28
+    }
+  },
+  {
+    "fdcId": 169703,
+    "description": "Rice, brown, long-grain, raw (Includes foods for USDA's Food Distribution Program)",
+    "nutrients": {
+      "1008": 367.0,
+      "1003": 7.54,
+      "1005": 76.25,
+      "1004": 3.2
+    }
+  },
+  {
+    "fdcId": 169704,
+    "description": "Rice, brown, long-grain, cooked (Includes foods for USDA's Food Distribution Program)",
+    "nutrients": {
+      "1008": 123.0,
+      "1003": 2.74,
+      "1005": 25.58,
+      "1004": 0.97
+    }
+  },
+  {
+    "fdcId": 168927,
+    "description": "Pasta, dry, unenriched",
+    "nutrients": {
+      "1008": 371.0,
+      "1003": 13.04,
+      "1005": 74.67,
+      "1004": 1.51
+    }
+  },
+  {
+    "fdcId": 168928,
+    "description": "Pasta, cooked, unenriched, without added salt",
+    "nutrients": {
+      "1008": 158.0,
+      "1003": 5.8,
+      "1005": 30.86,
+      "1004": 0.93
+    }
+  },
+  {
+    "fdcId": 173904,
+    "description": "Cereals, oats, regular and quick, not fortified, dry",
+    "nutrients": {
+      "1008": 379.0,
+      "1003": 13.15,
+      "1005": 67.7,
+      "1004": 6.52
+    }
+  },
+  {
+    "fdcId": 173905,
+    "description": "Cereals, oats, regular and quick, unenriched, cooked with water (includes boiling and microwaving), without salt",
+    "nutrients": {
+      "1008": 71.0,
+      "1003": 2.54,
+      "1005": 12.0,
+      "1004": 1.52
+    }
+  },
+  {
+    "fdcId": 169761,
+    "description": "Wheat flour, white, all-purpose, unenriched",
+    "nutrients": {
+      "1008": 364.0,
+      "1003": 10.33,
+      "1005": 76.31,
+      "1004": 0.98
+    }
+  },
+  {
+    "fdcId": 168929,
+    "description": "Cornmeal, degermed, unenriched, yellow",
+    "nutrients": {
+      "1008": 370.0,
+      "1003": 7.11,
+      "1005": 79.45,
+      "1004": 1.75
+    }
+  },
+  {
+    "fdcId": 170685,
+    "description": "Buckwheat groats, roasted, dry",
+    "nutrients": {
+      "1008": 346.0,
+      "1003": 11.73,
+      "1005": 74.95,
+      "1004": 2.71
+    }
+  },
+  {
+    "fdcId": 170686,
+    "description": "Buckwheat groats, roasted, cooked",
+    "nutrients": {
+      "1008": 92.0,
+      "1003": 3.38,
+      "1005": 19.94,
+      "1004": 0.62
+    }
+  },
+  {
+    "fdcId": 168933,
+    "description": "Semolina, unenriched",
+    "nutrients": {
+      "1008": 360.0,
+      "1003": 12.68,
+      "1005": 72.83,
+      "1004": 1.05
+    }
+  },
+  {
+    "fdcId": 170284,
+    "description": "Barley, pearled, raw",
+    "nutrients": {
+      "1008": 352.0,
+      "1003": 9.91,
+      "1005": 77.72,
+      "1004": 1.16
+    }
+  },
+  {
+    "fdcId": 170285,
+    "description": "Barley, pearled, cooked",
+    "nutrients": {
+      "1008": 123.0,
+      "1003": 2.26,
+      "1005": 28.22,
+      "1004": 0.44
+    }
+  },
+  {
+    "fdcId": 172420,
+    "description": "Lentils, raw",
+    "nutrients": {
+      "1008": 352.0,
+      "1003": 24.63,
+      "1005": 63.35,
+      "1004": 1.06
+    }
+  },
+  {
+    "fdcId": 172421,
+    "description": "Lentils, mature seeds, cooked, boiled, without salt",
+    "nutrients": {
+      "1008": 116.0,
+      "1003": 9.02,
+      "1005": 20.13,
+      "1004": 0.38
+    }
+  },
+  {
+    "fdcId": 175202,
+    "description": "Beans, white, mature seeds, raw",
+    "nutrients": {
+      "1008": 333.0,
+      "1003": 23.36,
+      "1005": 60.27,
+      "1004": 0.85
+    }
+  },
+  {
+    "fdcId": 175203,
+    "description": "Beans, white, mature seeds, cooked, boiled, without salt",
+    "nutrients": {
+      "1008": 139.0,
+      "1003": 9.73,
+      "1005": 25.09,
+      "1004": 0.35
+    }
+  },
+  {
+    "fdcId": 173756,
+    "description": "Chickpeas (garbanzo beans, bengal gram), mature seeds, raw",
+    "nutrients": {
+      "1008": 378.0,
+      "1003": 20.47,
+      "1005": 62.95,
+      "1004": 6.04
+    }
+  },
+  {
+    "fdcId": 173757,
+    "description": "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
+    "nutrients": {
+      "1008": 164.0,
+      "1003": 8.86,
+      "1005": 27.42,
+      "1004": 2.59
+    }
+  },
+  {
+    "fdcId": 170420,
+    "description": "Peas, green, cooked, boiled, drained, without salt",
+    "nutrients": {
+      "1008": 84.0,
+      "1003": 5.36,
+      "1005": 15.63,
+      "1004": 0.22
+    }
+  },
+  {
+    "fdcId": 170026,
+    "description": "Potatoes, flesh and skin, raw",
+    "nutrients": {
+      "1008": 77.0,
+      "1003": 2.05,
+      "1005": 17.49,
+      "1004": 0.09
+    }
+  },
+  {
+    "fdcId": 170438,
+    "description": "Potatoes, boiled, cooked in skin, flesh, without salt",
+    "nutrients": {
+      "1008": 87.0,
+      "1003": 1.87,
+      "1005": 20.13,
+      "1004": 0.1
+    }
+  },
+  {
+    "fdcId": 168482,
+    "description": "Sweet potato, raw, unprepared (Includes foods for USDA's Food Distribution Program)",
+    "nutrients": {
+      "1008": 86.0,
+      "1003": 1.57,
+      "1005": 20.12,
+      "1004": 0.05
+    }
+  },
+  {
+    "fdcId": 170457,
+    "description": "Tomatoes, red, ripe, raw, year round average",
+    "nutrients": {
+      "1008": 18.0,
+      "1003": 0.88,
+      "1005": 3.89,
+      "1004": 0.2
+    }
+  },
+  {
+    "fdcId": 168409,
+    "description": "Cucumber, with peel, raw",
+    "nutrients": {
+      "1008": 15.0,
+      "1003": 0.65,
+      "1005": 3.63,
+      "1004": 0.11
+    }
+  },
+  {
+    "fdcId": 170108,
+    "description": "Peppers, sweet, red, raw",
+    "nutrients": {
+      "1008": 26.0,
+      "1003": 0.99,
+      "1005": 6.03,
+      "1004": 0.3
+    }
+  },
+  {
+    "fdcId": 170427,
+    "description": "Peppers, sweet, green, raw",
+    "nutrients": {
+      "1008": 20.0,
+      "1003": 0.86,
+      "1005": 4.64,
+      "1004": 0.17
+    }
+  },
+  {
+    "fdcId": 169967,
+    "description": "Broccoli, cooked, boiled, drained, without salt",
+    "nutrients": {
+      "1008": 35.0,
+      "1003": 2.38,
+      "1005": 7.18,
+      "1004": 0.41
+    }
+  },
+  {
+    "fdcId": 169986,
+    "description": "Cauliflower, raw",
+    "nutrients": {
+      "1008": 25.0,
+      "1003": 1.92,
+      "1005": 4.97,
+      "1004": 0.28
+    }
+  },
+  {
+    "fdcId": 169975,
+    "description": "Cabbage, raw",
+    "nutrients": {
+      "1008": 25.0,
+      "1003": 1.28,
+      "1005": 5.8,
+      "1004": 0.1
+    }
+  },
+  {
+    "fdcId": 170393,
+    "description": "Carrots, raw",
+    "nutrients": {
+      "1008": 41.0,
+      "1003": 0.93,
+      "1005": 9.58,
+      "1004": 0.24
+    }
+  },
+  {
+    "fdcId": 170000,
+    "description": "Onions, raw",
+    "nutrients": {
+      "1008": 40.0,
+      "1003": 1.1,
+      "1005": 9.34,
+      "1004": 0.1
+    }
+  },
+  {
+    "fdcId": 169230,
+    "description": "Garlic, raw",
+    "nutrients": {
+      "1008": 149.0,
+      "1003": 6.36,
+      "1005": 33.06,
+      "1004": 0.5
+    }
+  },
+  {
+    "fdcId": 168462,
+    "description": "Spinach, raw",
+    "nutrients": {
+      "1008": 23.0,
+      "1003": 2.86,
+      "1005": 3.63,
+      "1004": 0.39
+    }
+  },
+  {
+    "fdcId": 169249,
+    "description": "Lettuce, green leaf, raw",
+    "nutrients": {
+      "1008": 15.0,
+      "1003": 1.36,
+      "1005": 2.87,
+      "1004": 0.15
+    }
+  },
+  {
+    "fdcId": 169291,
+    "description": "Squash, summer, zucchini, includes skin, raw",
+    "nutrients": {
+      "1008": 17.0,
+      "1003": 1.21,
+      "1005": 3.11,
+      "1004": 0.32
+    }
+  },
+  {
+    "fdcId": 169228,
+    "description": "Eggplant, raw",
+    "nutrients": {
+      "1008": 25.0,
+      "1003": 0.98,
+      "1005": 5.88,
+      "1004": 0.18
+    }
+  },
+  {
+    "fdcId": 169251,
+    "description": "Mushrooms, white, raw",
+    "nutrients": {
+      "1008": 22.0,
+      "1003": 3.09,
+      "1005": 3.26,
+      "1004": 0.34
+    }
+  },
+  {
+    "fdcId": 169141,
+    "description": "Beans, snap, green, cooked, boiled, drained, without salt",
+    "nutrients": {
+      "1008": 35.0,
+      "1003": 1.89,
+      "1005": 7.88,
+      "1004": 0.28
+    }
+  },
+  {
+    "fdcId": 169145,
+    "description": "Beets, raw",
+    "nutrients": {
+      "1008": 43.0,
+      "1003": 1.61,
+      "1005": 9.56,
+      "1004": 0.17
+    }
+  },
+  {
+    "fdcId": 169276,
+    "description": "Radishes, raw",
+    "nutrients": {
+      "1008": 16.0,
+      "1003": 0.68,
+      "1005": 3.4,
+      "1004": 0.1
+    }
+  },
+  {
+    "fdcId": 171688,
+    "description": "Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)",
+    "nutrients": {
+      "1008": 52.0,
+      "1003": 0.26,
+      "1005": 13.81,
+      "1004": 0.17
+    }
+  },
+  {
+    "fdcId": 173944,
+    "description": "Bananas, raw",
+    "nutrients": {
+      "1008": 89.0,
+      "1003": 1.09,
+      "1005": 22.84,
+      "1004": 0.33
+    }
+  },
+  {
+    "fdcId": 169097,
+    "description": "Oranges, raw, all commercial varieties",
+    "nutrients": {
+      "1008": 47.0,
+      "1003": 0.94,
+      "1005": 11.75,
+      "1004": 0.12
+    }
+  },
+  {
+    "fdcId": 169118,
+    "description": "Pears, raw",
+    "nutrients": {
+      "1008": 57.0,
+      "1003": 0.36,
+      "1005": 15.23,
+      "1004": 0.14
+    }
+  },
+  {
+    "fdcId": 169928,
+    "description": "Peaches, yellow, raw",
+    "nutrients": {
+      "1008": 39.0,
+      "1003": 0.91,
+      "1005": 9.54,
+      "1004": 0.25
+    }
+  },
+  {
+    "fdcId": 171697,
+    "description": "Apricots, raw",
+    "nutrients": {
+      "1008": 48.0,
+      "1003": 1.4,
+      "1005": 11.12,
+      "1004": 0.39
+    }
+  },
+  {
+    "fdcId": 169949,
+    "description": "Plums, raw",
+    "nutrients": {
+      "1008": 46.0,
+      "1003": 0.7,
+      "1005": 11.42,
+      "1004": 0.28
+    }
+  },
+  {
+    "fdcId": 171719,
+    "description": "Cherries, sweet, raw",
+    "nutrients": {
+      "1008": 63.0,
+      "1003": 1.06,
+      "1005": 16.01,
+      "1004": 0.2
+    }
+  },
+  {
+    "fdcId": 167762,
+    "description": "Strawberries, raw",
+    "nutrients": {
+      "1008": 32.0,
+      "1003": 0.67,
+      "1005": 7.68,
+      "1004": 0.3
+    }
+  },
+  {
+    "fdcId": 167755,
+    "description": "Raspberries, raw",
+    "nutrients": {
+      "1008": 52.0,
+      "1003": 1.2,
+      "1005": 11.94,
+      "1004": 0.65
+    }
+  },
+  {
+    "fdcId": 171711,
+    "description": "Blueberries, raw",
+    "nutrients": {
+      "1008": 57.0,
+      "1003": 0.74,
+      "1005": 14.49,
+      "1004": 0.33
+    }
+  },
+  {
+    "fdcId": 174683,
+    "description": "Grapes, red or green (European type, such as Thompson seedless), raw",
+    "nutrients": {
+      "1008": 69.0,
+      "1003": 0.72,
+      "1005": 18.1,
+      "1004": 0.16
+    }
+  },
+  {
+    "fdcId": 167765,
+    "description": "Watermelon, raw",
+    "nutrients": {
+      "1008": 30.0,
+      "1003": 0.61,
+      "1005": 7.55,
+      "1004": 0.15
+    }
+  },
+  {
+    "fdcId": 168153,
+    "description": "Kiwifruit, green, raw",
+    "nutrients": {
+      "1008": 61.0,
+      "1003": 1.14,
+      "1005": 14.66,
+      "1004": 0.52
+    }
+  },
+  {
+    "fdcId": 170187,
+    "description": "Nuts, walnuts, english",
+    "nutrients": {
+      "1008": 654.0,
+      "1003": 15.23,
+      "1005": 13.71,
+      "1004": 65.21
+    }
+  },
+  {
+    "fdcId": 170567,
+    "description": "Nuts, almonds",
+    "nutrients": {
+      "1008": 579.0,
+      "1003": 21.15,
+      "1005": 21.55,
+      "1004": 49.93
+    }
+  },
+  {
+    "fdcId": 170581,
+    "description": "Nuts, hazelnuts or filberts",
+    "nutrients": {
+      "1008": 628.0,
+      "1003": 14.95,
+      "1005": 16.7,
+      "1004": 60.75
+    }
+  },
+  {
+    "fdcId": 173806,
+    "description": "Peanuts, all types, dry-roasted, without salt",
+    "nutrients": {
+      "1008": 587.0,
+      "1003": 24.35,
+      "1005": 21.26,
+      "1004": 49.66
+    }
+  },
+  {
+    "fdcId": 170562,
+    "description": "Seeds, sunflower seed kernels, dried",
+    "nutrients": {
+      "1008": 584.0,
+      "1003": 20.78,
+      "1005": 20.0,
+      "1004": 51.46
+    }
+  },
+  {
+    "fdcId": 170556,
+    "description": "Seeds, pumpkin and squash seed kernels, dried",
+    "nutrients": {
+      "1008": 559.0,
+      "1003": 30.23,
+      "1005": 10.71,
+      "1004": 49.05
+    }
+  },
+  {
+    "fdcId": 171413,
+    "description": "Oil, olive, salad or cooking",
+    "nutrients": {
+      "1008": 884.0,
+      "1003": 0.0,
+      "1005": 0.0,
+      "1004": 100.0
+    }
+  },
+  {
+    "fdcId": 171025,
+    "description": "Oil, sunflower, linoleic, (approx. 65%)",
+    "nutrients": {
+      "1008": 884.0,
+      "1003": 0.0,
+      "1005": 0.0,
+      "1004": 100.0
+    }
+  },
+  {
+    "fdcId": 169655,
+    "description": "Sugars, granulated",
+    "nutrients": {
+      "1008": 387.0,
+      "1003": 0.0,
+      "1005": 99.98,
+      "1004": 0.0
+    }
+  },
+  {
+    "fdcId": 169640,
+    "description": "Honey",
+    "nutrients": {
+      "1008": 304.0,
+      "1003": 0.3,
+      "1005": 82.4,
+      "1004": 0.0
+    }
+  },
+  {
+    "fdcId": 173053,
+    "description": "Beef, loin, top sirloin petite roast/filet, boneless, separable lean only, trimmed to 0\" fat, all grades, raw",
+    "nutrients": {
+      "1008": 128.0,
+      "1003": 23.04,
+      "1005": 0.0,
+      "1004": 3.98
+    }
+  },
+  {
+    "fdcId": 174693,
+    "description": "Beef, loin, top sirloin filet, boneless, separable lean only, trimmed to 0\" fat, all grades, cooked, grilled",
+    "nutrients": {
+      "1008": 171.0,
+      "1003": 30.58,
+      "1005": 0.0,
+      "1004": 5.37
+    }
+  },
+  {
+    "fdcId": 171767,
+    "description": "Beef, loin, tenderloin steak, boneless, separable lean only, trimmed to 0\" fat, all grades, raw",
+    "nutrients": {
+      "1008": 139.0,
+      "1003": 21.94,
+      "1005": 0.0,
+      "1004": 5.74
+    }
+  },
+  {
+    "fdcId": 170641,
+    "description": "Beef, loin, tenderloin steak, boneless, separable lean only, trimmed to 0\" fat, all grades, cooked, grilled",
+    "nutrients": {
+      "1008": 198.0,
+      "1003": 30.7,
+      "1005": 0.0,
+      "1004": 8.32
+    }
+  },
+  {
+    "fdcId": 171796,
+    "description": "Beef, ground, 85% lean meat / 15% fat, raw (Includes foods for USDA's Food Distribution Program)",
+    "nutrients": {
+      "1008": 215.0,
+      "1003": 18.59,
+      "1005": 0.0,
+      "1004": 15.0
+    }
+  },
+  {
+    "fdcId": 174034,
+    "description": "Beef, ground, 85% lean meat / 15% fat, crumbles, cooked, pan-browned",
+    "nutrients": {
+      "1008": 256.0,
+      "1003": 27.73,
+      "1005": 0.0,
+      "1004": 15.3
+    }
+  },
+  {
+    "fdcId": 171098,
+    "description": "Turkey, whole, breast, meat only, raw",
+    "nutrients": {
+      "1008": 114.0,
+      "1003": 23.66,
+      "1005": 0.14,
+      "1004": 1.48
+    }
+  },
+  {
+    "fdcId": 171496,
+    "description": "Turkey, whole, breast, meat only, cooked, roasted",
+    "nutrients": {
+      "1008": 147.0,
+      "1003": 30.13,
+      "1005": 0.0,
+      "1004": 2.08
+    }
+  },
+  {
+    "fdcId": 168249,
+    "description": "Pork, fresh, loin, tenderloin, separable lean only, raw",
+    "nutrients": {
+      "1008": 109.0,
+      "1003": 20.95,
+      "1005": 0.0,
+      "1004": 2.17
+    }
+  },
+  {
+    "fdcId": 168250,
+    "description": "Pork, fresh, loin, tenderloin, separable lean only, cooked, roasted",
+    "nutrients": {
+      "1008": 143.0,
+      "1003": 26.17,
+      "1005": 0.0,
+      "1004": 3.51
+    }
+  },
+  {
+    "fdcId": 172486,
+    "description": "Lamb, leg, shank half, separable lean only, trimmed to 1/4\" fat, choice, raw",
+    "nutrients": {
+      "1008": 125.0,
+      "1003": 20.52,
+      "1005": 0.0,
+      "1004": 4.19
+    }
+  },
+  {
+    "fdcId": 172487,
+    "description": "Lamb, leg, shank half, separable lean only, trimmed to 1/4\" fat, choice, cooked, roasted",
+    "nutrients": {
+      "1008": 180.0,
+      "1003": 28.17,
+      "1005": 0.0,
+      "1004": 6.67
+    }
+  }
+]

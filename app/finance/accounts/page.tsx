@@ -1,3 +1,5 @@
+import { getAccountPurposes } from "@/modules/finance/read-models/account-purposes";
+import { AccountPurposes } from "./account-purposes";
 import { EmptyState } from "@/modules/finance/ui/components/empty-state";
 import { Money } from "@/modules/finance/ui/components/money";
 import { PageHeader } from "@/modules/finance/ui/components/page-header";
@@ -11,9 +13,10 @@ const labels = { asset: "Aktiva", liability: "Obaveze", receivable: "Potraživan
 
 export default async function AccountsPage() {
   const { dependencies, valuationOptions } = await loadReadModelRuntime();
-  const [accounts, options] = await Promise.all([
+  const [accounts, options, purposes] = await Promise.all([
     listAccounts(dependencies, valuationOptions),
     getMutationOptions(dependencies),
+    getAccountPurposes(dependencies),
   ]);
 
   return <>
@@ -37,6 +40,7 @@ export default async function AccountsPage() {
               {account.valuation ? <SourceBadge metadata={account.valuation} /> : null}
             </div>
             {account.recentActivity.length ? <ul className="mt-4 space-y-2 border-t border-white/10 pt-4">{account.recentActivity.map((activity) => <li className="flex justify-between gap-3 text-xs" key={`${activity.transactionId}-${activity.amount}`}><span className="text-slate-400">{activity.occurredAt.toLocaleDateString("sr-Latn-RS")} · {activity.type}</span><span className="tabular-nums">{activity.amount} {account.currencyCode}</span></li>)}</ul> : null}
+            {account.classification === "asset" && purposes.summaries[account.id] ? <AccountPurposes accountId={account.id} currencyCode={account.currencyCode} active={account.isActive} summary={purposes.summaries[account.id]} options={purposes.options} /> : null}
             <EditAccountForm account={account} currencies={options.currencies} />
             <AccountStatusForm key={`${account.id}-${account.isActive}`} id={account.id} name={account.name} isActive={account.isActive} />
           </article>)}

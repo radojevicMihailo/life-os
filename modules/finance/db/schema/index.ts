@@ -5,3 +5,4 @@ export * from "./goals";
 export * from "./investments";
 export * from "./valuation";
 export * from "./security";
+export * from "./account-purposes";

@@ -30,6 +30,7 @@ import {
   type SetEntry,
   type SubrowKind,
 } from "@/db/schema/physical";
+import { withSubrowKey, moveSubrow as moveSubrowValues } from "@/lib/physical/subrows";
 import { SetArrayInput } from "./SetArrayInput";
 import { createActivity, deleteActivity, updateActivity } from "../_actions/activities";
 
@@ -244,7 +245,7 @@ export function DynamicActivityForm({
   const [values, setValues] = useState<ValueMap>({ ...emptyValues(topFields), ...(initial?.values ?? {}) });
   const [comment, setComment] = useState<string>(initial?.comment ?? "");
   const [stravaUrl, setStravaUrl] = useState<string>(initial?.stravaUrl ?? "");
-  const [subrows, setSubrows] = useState<SubrowState[]>(initial?.subrows ?? []);
+  const [subrows, setSubrows] = useState<(SubrowState & { rowKey: string })[]>(() => (initial?.subrows ?? []).map(withSubrowKey));
   const [pending, startTransition] = useTransition();
 
   function setTag(groupId: string, value: string) {
@@ -294,12 +295,12 @@ export function DynamicActivityForm({
   function addSubrow(kind: SubrowKind) {
     setSubrows((prev) => [
       ...prev,
-      {
+      withSubrowKey({
         kind,
         exerciseId: null,
         values: emptyValues(fieldsForKind(subrowFields, kind)),
         sortOrder: prev.length,
-      },
+      }),
     ]);
   }
 
@@ -310,11 +311,7 @@ export function DynamicActivityForm({
   function moveSubrow(idx: number, direction: -1 | 1) {
     const next = idx + direction;
     if (next < 0 || next >= subrows.length) return;
-    setSubrows((prev) => {
-      const out = prev.slice();
-      [out[idx], out[next]] = [out[next], out[idx]];
-      return out.map((s, i) => ({ ...s, sortOrder: i }));
-    });
+    setSubrows((prev) => moveSubrowValues(prev, idx, direction));
   }
 
   function submit() {
@@ -325,7 +322,7 @@ export function DynamicActivityForm({
       comment: comment.trim() === "" ? null : comment,
       stravaUrl: stravaUrl.trim() === "" ? null : stravaUrl.trim(),
       tagIds,
-      subrows,
+      subrows: subrows.map(({ kind, exerciseId, values, sortOrder }) => ({ kind, exerciseId, values, sortOrder })),
     };
     startTransition(async () => {
       const result = initial?.id
@@ -412,7 +409,7 @@ export function DynamicActivityForm({
           {subrows.map((row, idx) => {
             const rowFields = fieldsForKind(subrowFields, row.kind);
             return (
-              <div key={idx} className="rounded-md border p-3 space-y-3">
+              <div key={row.rowKey} className="rounded-md border p-3 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">Row {idx + 1}</span>

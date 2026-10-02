@@ -83,7 +83,7 @@ export default async function CalendarPage() {
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Calendar</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Kalendar</h1>
       </header>
       <CalendarView
         items={items}

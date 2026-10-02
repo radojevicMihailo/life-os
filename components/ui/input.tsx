@@ -1,8 +1,13 @@
 import * as React from "react"
 
+import { DateTimeInput } from "@/components/ui/date-time-input"
+
 import { cn } from "@/lib/utils"
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+  if (type === "date" || type === "datetime-local" || type === "time") {
+    return <DateTimeInput type={type as "date" | "datetime-local" | "time"} className={className} {...props} />
+  }
   return (
     <input
       type={type}

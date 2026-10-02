@@ -47,7 +47,7 @@ export function TemplateForm({
     start(async () => {
       const payload = {
         name: name.trim(),
-        items: items.map((i) => ({ foodId: i.foodId, grams: i.grams })),
+        items: items.map((i) => ({ foodId: i.foodId!, grams: i.grams })),
       };
       const res =
         mode.kind === "create"

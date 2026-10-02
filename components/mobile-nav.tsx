@@ -8,6 +8,7 @@ import { Menu, Sparkles, X } from "lucide-react";
 import { NavTree } from "@/components/nav-tree";
 import { PomodoroBadge } from "@/components/pomodoro-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SettingsLink } from "@/components/settings-link";
 import { LogoutButton } from "@/components/logout-button";
 
 export function MobileNav() {
@@ -50,6 +51,7 @@ export function MobileNav() {
             <nav className="flex flex-1 flex-col gap-4 overflow-y-auto px-3 pb-4">
               <NavTree />
             </nav>
+            <div className="px-3 pb-2"><SettingsLink onClick={() => setOpen(false)} /></div>
             <div className="flex min-w-0 items-center gap-2 border-t border-sidebar-border px-3 py-2">
               <ThemeToggle />
               <PomodoroBadge />
