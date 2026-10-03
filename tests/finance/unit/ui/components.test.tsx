@@ -37,6 +37,13 @@ describe("financial display components", () => {
     expect(html).toContain("12.345.678.901.234.567.890,12");
   });
 
+  it.each([
+    ["BTC", "0.00000001", "0,00000001"],
+    ["ETH", "0.000000000000000001", "0,000000000000000001"],
+  ])("displays the smallest %s amount without rounding it to zero", (currencyCode, amount, expected) => {
+    expect(renderToStaticMarkup(<Money amount={amount} currencyCode={currencyCode} />)).toContain(expected);
+  });
+
   it("uses the catalog minor unit for an activated currency", () => {
     const html = renderToStaticMarkup(
       <Money amount="1.234" currencyCode="BHD" minorUnit={3} />,

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { BrandMark } from "@/components/brand-mark";
 import { NavTree } from "@/components/nav-tree";
 import { PomodoroBadge } from "@/components/pomodoro-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -11,9 +11,7 @@ export function Sidebar() {
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
       <div className="px-5 py-7">
         <Link href="/" className="flex items-center gap-3 text-xl font-semibold tracking-tight">
-          <span className="flex size-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-700 via-blue-500 to-cyan-300 text-white shadow-[0_0_22px_rgba(35,123,255,0.5)]">
-            <Sparkles className="size-5" />
-          </span>
+          <BrandMark className="shadow-[0_3px_12px_rgba(8,19,36,0.2)]" />
           <span>Life OS<small className="block text-[0.65rem] font-normal tracking-normal text-muted-foreground">Bolji ja. Svaki dan.</small></span>
         </Link>
       </div>

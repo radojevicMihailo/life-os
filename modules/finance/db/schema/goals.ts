@@ -17,7 +17,6 @@ export const goals = pgTable(
     id: text("id").primaryKey(),
     name: text("name").notNull(),
     accountId: text("account_id")
-      .notNull()
       .references(() => accounts.id),
     targetCurrencyCode: text("target_currency_code")
       .notNull()

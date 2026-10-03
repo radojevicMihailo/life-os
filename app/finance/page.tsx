@@ -1,3 +1,4 @@
+import { GoalProgress } from "@/modules/finance/ui/components/goal-progress";
 import { EmptyState } from "@/modules/finance/ui/components/empty-state";
 import { Money } from "@/modules/finance/ui/components/money";
 import { PageHeader } from "@/modules/finance/ui/components/page-header";
@@ -94,11 +95,9 @@ export default async function DashboardPage() {
                 <li key={goal.id}>
                   <div className="flex justify-between gap-3 text-sm">
                     <span>{goal.name}</span>
-                    <span className="font-medium">{goal.percentage}%</span>
+
                   </div>
-                  <div aria-label={`${goal.name}: ${goal.percentage}%`} className="mt-2 h-2 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuenow={Number(goal.percentage)}>
-                    <div className="h-full rounded-full bg-blue-400" style={{ width: `${Math.min(100, Math.max(0, Number(goal.percentage)))}%` }} />
-                  </div>
+                  <div className="mt-2"><GoalProgress name={goal.name} balance={goal.balance} percentage={goal.percentage} targetAmount={goal.targetAmount} currencyCode={goal.currencyCode} underfunded={goal.underfunded} stale={goal.stale} /></div>
                 </li>
               ))}
             </ul>

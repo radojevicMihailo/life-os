@@ -41,7 +41,7 @@ describe("database seed", () => {
     expect(lotCount?.value).toBe(0);
   });
 
-  it("seeds the ISO catalog with exactly the required active currencies", async () => {
+  it("seeds fiat and native crypto currencies with the required active defaults", async () => {
     await seedDatabase(testDb.db);
 
     await testDb.pool.query(
@@ -65,7 +65,7 @@ describe("database seed", () => {
       catalogCurrencies
         .filter((currency) => currency.isActive)
         .map((currency) => currency.code),
-    ).toEqual(["EUR", "HUF", "RSD", "USD"]);
+    ).toEqual(["BTC", "ETH", "EUR", "HUF", "RSD", "USD"]);
     expect(catalogCurrencies).toEqual(
       expect.arrayContaining([
         { code: "EUR", isActive: true, name: "Euro" },

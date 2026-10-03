@@ -62,7 +62,7 @@ export async function getDashboard(
     await Promise.all([
       listAccounts(dependencies, valuationOptions, valuation),
       listBudgets(dependencies),
-      listGoals(dependencies),
+      listGoals(dependencies, valuationOptions),
       listInvestments(dependencies, valuationOptions, valuation),
       listTransactions(dependencies, { limit: 8 }),
       dependencies.unitOfWork.run(async (tx) => {
@@ -157,7 +157,7 @@ export async function getDashboard(
       incomeEur,
       netEur,
     },
-    goals: goals.items,
+    goals: goals.items.filter((goal) => goal.isActive),
     netWorth: {
       amount: valuation.totalEur,
       complete: valuation.totalEur !== null,

@@ -17,7 +17,7 @@ export async function loadHomeDashboard() {
   const weekdayDate = new Date(year, month - 1, day, 12);
   const { start: windowStart, end: windowEnd } = belgradeDayBounds(dayKey);
 
-  const [{ dependencies }, habits, logs, tasks, calendar] = await Promise.all([
+  const [{ dependencies, valuationOptions }, habits, logs, tasks, calendar] = await Promise.all([
     loadReadModelRuntime(),
     db.select().from(habit).where(isNull(habit.archivedAt)).orderBy(asc(habit.sortOrder), asc(habit.createdAt)),
     db.select({ habitId: habitLog.habitId, count: habitLog.count }).from(habitLog).where(eq(habitLog.date, dayKey)),
@@ -27,7 +27,7 @@ export async function loadHomeDashboard() {
     )).orderBy(asc(task.actionAt)).limit(100),
     fetchGoogleEventsAction(windowStart.toISOString(), windowEnd.toISOString()),
   ]);
-  const goalResult = await listGoals(dependencies);
+  const goalResult = await listGoals(dependencies, valuationOptions);
   const logCounts = new Map(logs.map((log) => [log.habitId, log.count]));
 
   return {

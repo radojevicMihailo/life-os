@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dialog as DialogPrimitive } from "radix-ui";
-import { Menu, Sparkles, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { BrandMark } from "@/components/brand-mark";
 import { NavTree } from "@/components/nav-tree";
 import { PomodoroBadge } from "@/components/pomodoro-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -35,9 +36,7 @@ export function MobileNav() {
             <div className="flex items-center justify-between px-5 py-4">
               <DialogPrimitive.Title asChild>
                 <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-                  <span className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-700 to-cyan-300 text-white">
-                    <Sparkles className="size-4" />
-                  </span>
+                  <BrandMark className="size-9 rounded-lg" />
                   Life OS
                 </Link>
               </DialogPrimitive.Title>
@@ -61,9 +60,7 @@ export function MobileNav() {
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>
       <Link href="/" className="flex items-center gap-2 text-base font-semibold tracking-tight">
-        <span className="flex size-7 items-center justify-center rounded-full bg-gradient-to-br from-blue-700 to-cyan-300 text-white">
-          <Sparkles className="size-3.5" />
-        </span>
+        <BrandMark className="size-8 rounded-lg" />
         Life OS
       </Link>
     </header>

@@ -11,9 +11,11 @@ type SeedDatabase = NodePgDatabase<typeof schema>;
 
 type CatalogCurrency = typeof currencies.$inferInsert;
 
-const activeCurrencyCodes = new Set(["RSD", "EUR", "USD", "HUF"]);
+const activeCurrencyCodes = new Set(["RSD", "EUR", "USD", "HUF", "BTC", "ETH"]);
 
 const catalogCurrencies: CatalogCurrency[] = [
+  { code: "BTC", name: "Bitcoin", minorUnit: "8" },
+  { code: "ETH", name: "Ethereum", minorUnit: "18" },
   { code: "AED", name: "UAE dirham", minorUnit: "2" },
   { code: "AFN", name: "Afghan afghani", minorUnit: "2" },
   { code: "ALL", name: "Albanian lek", minorUnit: "2" },

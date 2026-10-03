@@ -7,9 +7,9 @@ import { mutationDependencies } from "./runtime";
 
 export async function setAccountPurposeAction(_previous: ActionResult<{ id: string }> | undefined, formData: FormData) {
   return executeAction(() => setAccountPurpose(mutationDependencies(), parseAccountPurposeForm(formData)),
-    { revalidate: ["/finance/accounts"] });
+    { revalidate: ["/finance/accounts", "/finance/goals", "/finance", "/"] });
 }
 export async function removeAccountPurposeAction(_previous: ActionResult<{ id: string }> | undefined, formData: FormData) {
   return executeAction(() => removeAccountPurpose(mutationDependencies(), parseRemoveAccountPurposeForm(formData)),
-    { revalidate: ["/finance/accounts"] });
+    { revalidate: ["/finance/accounts", "/finance/goals", "/finance", "/"] });
 }

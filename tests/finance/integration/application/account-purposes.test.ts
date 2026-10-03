@@ -27,8 +27,8 @@ describe("account purpose reservations", () => {
   async function account(currencyCode = "EUR", classification: "asset" | "liability" = "asset") {
     return createAccount(deps, { name: `Account ${++sequence}`, currencyCode, classification, subtype: "cash" });
   }
-  async function goal(accountId: string, targetCurrencyCode = "EUR") {
-    return createGoal(deps, { name: `Goal ${++sequence}`, accountId, targetCurrencyCode, targetAmount: "1000" });
+  async function goal(_accountId: string, targetCurrencyCode = "EUR") {
+    return createGoal(deps, { name: `Goal ${++sequence}`, targetCurrencyCode, targetAmount: "1000" });
   }
 
   it("reserves for goals and budgets without changing the ledger; spending shows a deficit", async () => {
@@ -64,15 +64,14 @@ describe("account purpose reservations", () => {
     expect((await getAccountPurposes(deps)).summaries[cash.id]).toMatchObject({ reserved: "60", free: "40" });
   });
 
-  it("rejects currency mismatch, inactive and nonasset accounts, unknown targets, and excess precision", async () => {
+  it("rejects inactive and nonasset accounts, unknown targets, and excess precision", async () => {
     const cash = await account();
     const target = await goal(cash.id);
-    const usd = await account("USD");
     const liability = await account("EUR", "liability");
     const inactive = await account();
     await archiveAccount(deps, { id: inactive.id });
     await recordTransaction(deps, { type: "opening_balance", accountId: cash.id, amount: "100" });
-    for (const [accountId, code] of [[usd.id, "account_purpose_currency_mismatch"], [liability.id, "goal_account_must_be_asset"], [inactive.id, "account_inactive"]]) {
+    for (const [accountId, code] of [[liability.id, "goal_account_must_be_asset"], [inactive.id, "account_inactive"]]) {
       await expect(setAccountPurpose(deps, { accountId, targetType: "goal", targetId: target.id, amount: "10" })).rejects.toMatchObject({ code });
     }
     await expect(setAccountPurpose(deps, { accountId: cash.id, targetType: "budget", targetId: "missing", amount: "10" })).rejects.toMatchObject({ code: "account_purpose_target_invalid" });
@@ -83,14 +82,13 @@ describe("account purpose reservations", () => {
     expect((await getAccountPurposes(deps)).summaries[cash.id].items).toHaveLength(0);
   });
 
-  it("prevents changing reserved currencies and permits release on archived accounts", async () => {
+  it("keeps account reservation currency fixed while allowing new goal target currencies and permits release on archived accounts", async () => {
     const goalAccount = await account();
     const cash = await account();
-    const usd = await account("USD");
     const target = await goal(goalAccount.id);
     await recordTransaction(deps, { type: "opening_balance", accountId: cash.id, amount: "100" });
     const purpose = await setAccountPurpose(deps, { accountId: cash.id, targetType: "goal", targetId: target.id, amount: "10" });
-    await expect(updateGoal(deps, { id: target.id, name: target.name, accountId: usd.id, targetCurrencyCode: "USD", targetAmount: "100" })).rejects.toMatchObject({ code: "account_purpose_currency_mismatch" });
+    await expect(updateGoal(deps, { id: target.id, name: target.name, targetCurrencyCode: "USD", targetAmount: "100" })).resolves.toMatchObject({ targetCurrencyCode: "USD" });
     await expect(updateAccount(deps, { id: cash.id, name: cash.name, classification: "asset", subtype: "cash", currencyCode: "USD" })).rejects.toMatchObject({ code: "account_details_in_use" });
     await archiveAccount(deps, { id: cash.id });
     await expect(removeAccountPurpose(deps, { accountId: cash.id, id: purpose.id })).resolves.toEqual(purpose);

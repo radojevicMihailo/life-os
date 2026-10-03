@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import { z } from "zod";
 
 import { currencyCode, formRecord, identifier, optionalText, parseField, requiredText, serbianDecimal } from "./common";
@@ -5,9 +6,8 @@ import { currencyCode, formRecord, identifier, optionalText, parseField, require
 const goalFormSchema = z.object({
   id: z.unknown().optional(),
   name: requiredText,
-  accountId: identifier,
   targetCurrencyCode: currencyCode,
-  targetAmount: serbianDecimal(),
+  targetAmount: serbianDecimal().refine((value) => new Decimal(value).gt(0), "Unesite pozitivan iznos."),
 });
 
 export function parseGoalForm(input: FormData | Record<string, unknown>) {
@@ -15,7 +15,6 @@ export function parseGoalForm(input: FormData | Record<string, unknown>) {
   return {
     ...(optionalText(raw.id) ? { id: parseField("id", identifier, raw.id) } : {}),
     name: raw.name,
-    accountId: raw.accountId,
     targetCurrencyCode: raw.targetCurrencyCode,
     targetAmount: raw.targetAmount,
   };

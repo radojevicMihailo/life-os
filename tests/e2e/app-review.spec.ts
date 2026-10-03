@@ -44,3 +44,26 @@ test("task date picker supports calendar selection, time, and narrow screens ins
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   expect(errors).toEqual([]);
 });
+
+
+test("task priorities use short quadrant labels and keep Q2 green", async ({ page }) => {
+  await page.goto("/tasks");
+  for (const label of ["Q1", "Q2", "Q3", "Q4"]) {
+    await expect(page.getByRole("link", { name: label, exact: true }).first()).toBeVisible();
+  }
+  await expect(page.getByText(/^Q[1-4] - /)).toHaveCount(0);
+  await page.getByRole("link", { name: "Q2", exact: true }).first().click();
+  const badge = page.getByRole("link", { name: "Q2", exact: true }).first().locator("[data-slot=badge]");
+  await expect(badge).toHaveCSS("background-color", "rgb(34, 197, 94)");
+});
+
+
+test("account currency selector offers native BTC and ETH wallets", async ({ page }) => {
+  await page.goto("/finance/accounts");
+  const currency = page.locator('select[name="currencyCode"]').first();
+  await expect(currency).toHaveValue("EUR");
+  for (const code of ["BTC", "ETH"]) {
+    await currency.selectOption(code);
+    await expect(currency).toHaveValue(code);
+  }
+});

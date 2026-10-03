@@ -33,7 +33,7 @@ it("renews a valid session so it survives its original expiry", () => {
 
 
 it("serves the push worker and app icons without an access session", () => {
-  for (const path of ["/sw.js", "/icon-192.png", "/icon-512.png"]) {
+  for (const path of ["/sw.js", "/icon-192.png", "/icon-512.png", "/icon-maskable-512.png", "/apple-icon.png"]) {
     const response = proxy(new NextRequest(`https://life-os.example${path}`));
     expect(response.status).toBe(200);
     expect(response.headers.get("x-middleware-next")).toBe("1");

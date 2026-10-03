@@ -1,6 +1,6 @@
+import { GoalProgress } from "@/modules/finance/ui/components/goal-progress";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Check, Circle, Landmark, Repeat2 } from "lucide-react";
-import { Money } from "@/modules/finance/ui/components/money";
 import { loadHomeDashboard } from "./_lib/dashboard";
 
 export const dynamic = "force-dynamic";
@@ -46,7 +46,10 @@ export default async function Home() {
 
       <section className="cockpit-card min-w-0 p-5 sm:p-6" aria-label="Finansijski ciljevi">
         <PanelHeading icon={Landmark} title="Finansijski ciljevi" href="/finance/goals" />
-        {dashboard.goals.length === 0 ? <EmptyPanel href="/finance/goals" action="Postavi cilj">Još nema aktivnih finansijskih ciljeva.</EmptyPanel> : <ul className="space-y-3">{dashboard.goals.map((goal) => { const percentage = Math.min(100, Math.max(0, Number(goal.percentage))); return <li className="min-w-0 rounded-2xl border border-border bg-background/30 p-3.5" key={goal.id}><div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1 text-sm"><span className="min-w-0 truncate font-medium" title={goal.name}>{goal.name}</span><span className="min-w-0 break-words text-xs tabular-nums text-muted-foreground"><Money amount={goal.balance} currencyCode={goal.currencyCode} /> / <Money amount={goal.targetAmount} currencyCode={goal.currencyCode} /></span></div><div className="mt-3 flex items-center gap-3"><div className="h-2 flex-1 overflow-hidden rounded-full bg-muted" aria-label={`${goal.name}: ${percentage.toFixed(0)}%`} aria-valuenow={percentage} aria-valuemin={0} aria-valuemax={100} role="progressbar"><div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400" style={{ width: `${percentage}%` }} /></div><span className="w-10 text-right text-xs font-semibold tabular-nums text-blue-700 dark:text-cyan-300">{percentage.toFixed(0)}%</span></div></li>; })}</ul>}
+        {dashboard.goals.length === 0 ? <EmptyPanel href="/finance/goals" action="Postavi cilj">Još nema aktivnih finansijskih ciljeva.</EmptyPanel> : <ul className="space-y-3">{dashboard.goals.map((goal) => <li className="min-w-0 rounded-2xl border border-border bg-background/30 p-3.5" key={goal.id}>
+          <div className="mb-3 truncate text-sm font-medium" title={goal.name}>{goal.name}</div>
+          <GoalProgress name={goal.name} balance={goal.balance} percentage={goal.percentage} targetAmount={goal.targetAmount} currencyCode={goal.currencyCode} underfunded={goal.underfunded} stale={goal.stale} />
+        </li>)}</ul>}
       </section>
     </div>
 

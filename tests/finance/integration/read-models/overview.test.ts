@@ -3,7 +3,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createAccount } from "@/modules/finance/application/accounts";
 import { setBudgetLimit } from "@/modules/finance/application/budgets";
 import { createCategory } from "@/modules/finance/application/categories";
-import { createGoal } from "@/modules/finance/application/goals";
+import { setAccountPurpose } from "@/modules/finance/application/account-purposes";
+import { archiveGoal, createGoal } from "@/modules/finance/application/goals";
 import {
   buyInvestment,
   sellInvestment,
@@ -67,6 +68,26 @@ describe("finance overview read models", () => {
   afterAll(async () => {
     await testDb?.close();
   }, TEST_DATABASE_TEARDOWN_TIMEOUT_MS);
+
+  it("keeps archived funds out of the finance summary", async () => {
+    const active = await createGoal(dependencies, { name: "Active", targetCurrencyCode: "EUR", targetAmount: "1000" });
+    for (let i = 0; i < 4; i++) {
+      const archived = await createGoal(dependencies, { name: `Archived ${i}`, targetCurrencyCode: "EUR", targetAmount: "1000" });
+      await archiveGoal(dependencies, { id: archived.id });
+    }
+    expect((await getDashboard(dependencies, VALUATION_OPTIONS)).goals.map((goal) => goal.id)).toEqual([active.id]);
+    expect((await listGoals(dependencies)).items).toHaveLength(5);
+  });
+
+  it("uses the dashboard FX freshness threshold for its fund estimates", async () => {
+    const cash = await createAccount(dependencies, { name: "Dinari", classification: "asset", subtype: "cash", currencyCode: "RSD" });
+    await recordTransaction(dependencies, { type: "opening_balance", accountId: cash.id, amount: "10000" });
+    const fund = await createGoal(dependencies, { name: "Fund", targetCurrencyCode: "EUR", targetAmount: "1000" });
+    await setAccountPurpose(dependencies, { targetType: "goal", targetId: fund.id, accountId: cash.id, amount: "10000" });
+    await testDb.pool.query("insert into finance_exchange_rates(id,base_currency_code,quote_currency_code,rate,provider,provider_timestamp,retrieved_at,status) values ('dashboard-rate','RSD','EUR',0.008,'nbs',$1,$2,'valid')", [new Date(NOW.getTime() - 7200000), NOW]);
+    const dashboard = await getDashboard(dependencies, { ...VALUATION_OPTIONS, exchangeRateStaleAfterMs: 3600000 });
+    expect(dashboard.goals[0]).toMatchObject({ balance: "80", stale: true });
+  });
 
   it("builds traceable dashboard, account, budget, goal, and investment views", async () => {
     const cash = await createAccount(dependencies, {
@@ -161,12 +182,12 @@ describe("finance overview read models", () => {
       currencyCode: "EUR",
       month: "2026-08",
     });
-    await createGoal(dependencies, {
-      accountId: cash.id,
+    const emergencyFund = await createGoal(dependencies, {
       name: "Fond za hitne slučajeve",
       targetAmount: "2000",
       targetCurrencyCode: "EUR",
     });
+    await setAccountPurpose(dependencies, { accountId: cash.id, targetType: "goal", targetId: emergencyFund.id, amount: "1000" });
     await testDb.pool.query(
       "insert into finance_investment_accounts (id, name, cash_account_id) values ('broker', 'Broker', $1)",
       [brokerCash.id],
@@ -249,9 +270,9 @@ describe("finance overview read models", () => {
     ]);
     expect(goalView.items).toEqual([
       expect.objectContaining({
-        balance: "1380",
+        balance: "1000",
         name: "Fond za hitne slučajeve",
-        percentage: "69",
+        percentage: "50",
       }),
     ]);
     expect(investmentView.positions).toEqual([

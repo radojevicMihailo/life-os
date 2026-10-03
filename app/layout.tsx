@@ -13,7 +13,10 @@ export const metadata: Metadata = {
   title: "Life OS",
   description: "Personal life tracker",
   appleWebApp: { capable: true, title: "Life OS", statusBarStyle: "default" },
-  icons: { apple: "/icon-192.png" },
+  applicationName: "Life OS",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml", sizes: "any" }],
+  },
 };
 
 export default function RootLayout({

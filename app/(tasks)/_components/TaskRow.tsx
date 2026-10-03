@@ -1,5 +1,7 @@
 "use client";
 
+import { taskPriorityLabel } from "@/lib/task-priorities";
+
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Trash2, Pencil, Check, X, Repeat, Calendar, PlayCircle } from "lucide-react";
@@ -90,9 +92,9 @@ export function TaskRow({ task }: { task: TaskWithMeta }) {
               ? { backgroundColor: task.priorityColor, color: "white", borderColor: task.priorityColor }
               : undefined
           }
-          title={`Priority: ${task.priorityName}`}
+          title={`Prioritet: ${taskPriorityLabel(task.priorityName)}`}
         >
-          {task.priorityName}
+          {taskPriorityLabel(task.priorityName)}
         </Badge>
       )}
       {editing ? (

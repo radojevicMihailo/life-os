@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TASK_PRIORITIES } from "@/lib/task-priorities";
+import { TASK_PRIORITIES, taskPriorityLabel } from "@/lib/task-priorities";
 import { createTask } from "../_actions/tasks";
 import { RecurrenceEditor } from "./RecurrenceEditor";
 import { DateField } from "./DateField";
@@ -224,7 +224,7 @@ export function TaskForm({
                 <SelectItem value="none">None</SelectItem>
                 {priorities.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
-                    {p.name}
+                    {taskPriorityLabel(p.name)}
                   </SelectItem>
                 ))}
               </SelectContent>

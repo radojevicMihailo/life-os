@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { TASK_PRIORITIES } from "@/lib/task-priorities";
+import { TASK_PRIORITIES, taskPriorityLabel } from "@/lib/task-priorities";
 import { createTask } from "../_actions/tasks";
 import { DateField } from "./DateField";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -103,7 +103,7 @@ export function CreateTaskDialog({
             <Label htmlFor="calendar-task-priority">Prioritet</Label>
             <Select value={priorityId} onValueChange={setPriorityId}>
               <SelectTrigger id="calendar-task-priority" className="w-full"><SelectValue /></SelectTrigger>
-              <SelectContent><SelectItem value="none">Bez prioriteta</SelectItem>{TASK_PRIORITIES.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+              <SelectContent><SelectItem value="none">Bez prioriteta</SelectItem>{TASK_PRIORITIES.map((p) => <SelectItem key={p.id} value={p.id}>{taskPriorityLabel(p.name)}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <DialogFooter>

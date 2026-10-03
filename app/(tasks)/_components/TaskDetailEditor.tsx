@@ -19,7 +19,7 @@ import {
 import type { TaskStatus } from "@/db/schema/tasks";
 import { taskStatusLabel } from "@/db/schema/tasks";
 import { setTaskStatus, updateTask } from "../_actions/tasks";
-import { TASK_PRIORITIES } from "@/lib/task-priorities";
+import { TASK_PRIORITIES, taskPriorityLabel } from "@/lib/task-priorities";
 import { DateField } from "./DateField";
 import { taskStatusColors } from "@/lib/status-colors";
 
@@ -180,7 +180,7 @@ export function TaskDetailEditor({
           });
         }}>
           <SelectTrigger className="w-full" disabled={pending}><SelectValue /></SelectTrigger>
-          <SelectContent><SelectItem value="none">Bez prioriteta</SelectItem>{TASK_PRIORITIES.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+          <SelectContent><SelectItem value="none">Bez prioriteta</SelectItem>{TASK_PRIORITIES.map((p) => <SelectItem key={p.id} value={p.id}>{taskPriorityLabel(p.name)}</SelectItem>)}</SelectContent>
         </Select>
       </div>
 

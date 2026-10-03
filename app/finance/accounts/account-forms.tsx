@@ -22,7 +22,7 @@ export function AccountForm({ currencies }: { currencies: CurrencyOption[] }) {
       <label className="text-xs text-slate-400">Naziv računa<input className={control} name="name" required /></label>
       <label className="text-xs text-slate-400">Vrsta računa<select className={control} name="classification"><option value="asset">Aktiva</option><option value="liability">Obaveza</option><option value="receivable">Potraživanje</option></select></label>
       <label className="text-xs text-slate-400">Podvrsta računa<input className={control} name="subtype" required /></label>
-      <label className="text-xs text-slate-400">Valuta računa<select className={control} name="currencyCode">{currencies.filter((currency) => currency.isActive).map((currency) => <option key={currency.code}>{currency.code}</option>)}</select></label>
+      <label className="text-xs text-slate-400">Valuta računa<select className={control} name="currencyCode" defaultValue="EUR">{currencies.filter((currency) => currency.isActive).map((currency) => <option key={currency.code}>{currency.code}</option>)}</select></label>
     </div>
     <button className="mt-4 min-h-11 action-button rounded-xl px-5 text-sm font-semibold text-white" disabled={pending}>Kreiraj račun</button>
     <ActionMessage state={state} success="Račun je kreiran." />

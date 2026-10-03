@@ -1,162 +1,85 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-
-import { archiveAccount, createAccount } from "@/modules/finance/application/accounts";
+import { beforeAll, afterAll, describe, expect, it } from "vitest";
+import { createAccount, archiveAccount } from "@/modules/finance/application/accounts";
+import { createGoal, getGoalProgress, updateGoal, archiveGoal } from "@/modules/finance/application/goals";
+import { setAccountPurpose } from "@/modules/finance/application/account-purposes";
+import { setBudgetLimit } from "@/modules/finance/application/budgets";
 import { createCategory } from "@/modules/finance/application/categories";
-import { archiveGoal, createGoal, getGoalProgress, updateGoal } from "@/modules/finance/application/goals";
-import type { ApplicationDependencies, IdKind } from "@/modules/finance/application/ports";
 import { recordTransaction } from "@/modules/finance/application/transactions";
+import { setManualOverride } from "@/modules/finance/application/valuation";
+import type { ApplicationDependencies } from "@/modules/finance/application/ports";
 import { seedDatabase } from "@/modules/finance/db/seed";
-import type { UnitOfWork } from "@/modules/finance/db/unit-of-work";
+import { listGoals } from "@/modules/finance/read-models/goals";
+import { getAccountPurposes } from "@/modules/finance/read-models/account-purposes";
 import { migrateDatabase } from "@/test/migration/finance-migrate";
-import {
-  createTestDatabase,
-  TEST_DATABASE_HOOK_TIMEOUT_MS,
-  TEST_DATABASE_TEARDOWN_TIMEOUT_MS,
-  type TestDatabase,
-} from "../support/database";
+import { createTestDatabase, TEST_DATABASE_HOOK_TIMEOUT_MS, TEST_DATABASE_TEARDOWN_TIMEOUT_MS, type TestDatabase } from "../support/database";
+const now = new Date("2026-10-03T12:00:00Z");
+const options = { exchangeRateStaleAfterMs: 3600000 };
 
-function makeDeps(testDb: TestDatabase): ApplicationDependencies {
-  let sequence = 0;
-  return {
-    unitOfWork: { run: (work) => testDb.db.transaction((tx) => work(tx)) } satisfies UnitOfWork,
-    ids: { nextId: (kind: IdKind) => `${kind}-${++sequence}` },
-    clock: { now: () => new Date("2026-04-15T12:00:00.000Z") },
-  };
-}
-
-describe("goal application service", () => {
-  let deps: ApplicationDependencies;
+describe("goal funds", () => {
   let testDb: TestDatabase;
-
-  beforeEach(async () => {
-    testDb = await createTestDatabase();
-    await migrateDatabase(testDb.db);
-    await seedDatabase(testDb.db);
-    deps = makeDeps(testDb);
+  let deps: ApplicationDependencies;
+  let sequence = 0;
+  beforeAll(async () => {
+    testDb = await createTestDatabase(); await migrateDatabase(testDb.db); await seedDatabase(testDb.db);
+    deps = { unitOfWork: { run: (work, config) => testDb.db.transaction(work, config) }, clock: { now: () => now }, ids: { nextId: (kind) => `${kind}-fund-${++sequence}` } };
   }, TEST_DATABASE_HOOK_TIMEOUT_MS);
+  afterAll(async () => { await testDb?.close(); }, TEST_DATABASE_TEARDOWN_TIMEOUT_MS);
+  const goal = (currency = "EUR", amount = "1000") => createGoal(deps, { name: `Fund ${++sequence}`, targetCurrencyCode: currency, targetAmount: amount });
+  async function cash(currency: string, balance: string) {
+    const a = await createAccount(deps, { name: `Cash ${++sequence}`, classification: "asset", subtype: "cash", currencyCode: currency });
+    await recordTransaction(deps, { accountId: a.id, amount: balance, type: "opening_balance" }); return a;
+  }
+  const reserve = (accountId: string, targetId: string, amount: string) => setAccountPurpose(deps, { accountId, targetId, amount, targetType: "goal" });
+  const progress = (id: string) => getGoalProgress(deps, { id }, options);
 
-  afterEach(async () => {
-    await testDb?.close();
-  }, TEST_DATABASE_TEARDOWN_TIMEOUT_MS);
-
-  it("requires an active asset account with the same currency", async () => {
-    const liability = await createAccount(deps, {
-      classification: "liability", currencyCode: "EUR", name: "Card", subtype: "card",
-    });
-    const archived = await createAccount(deps, {
-      classification: "asset", currencyCode: "EUR", name: "Old cash", subtype: "cash",
-    });
-    await archiveAccount(deps, { id: archived.id });
-    const asset = await createAccount(deps, {
-      classification: "asset", currencyCode: "EUR", name: "Cash", subtype: "cash",
-    });
-
-    await expect(createGoal(deps, {
-      accountId: liability.id, name: "Card payoff", targetAmount: "100", targetCurrencyCode: "EUR",
-    })).rejects.toMatchObject({ code: "goal_account_must_be_asset" });
-    await expect(createGoal(deps, {
-      accountId: archived.id, name: "Archived", targetAmount: "100", targetCurrencyCode: "EUR",
-    })).rejects.toMatchObject({ code: "account_inactive" });
-    await expect(createGoal(deps, {
-      accountId: asset.id, name: "Wrong currency", targetAmount: "100", targetCurrencyCode: "USD",
-    })).rejects.toMatchObject({ code: "goal_currency_mismatch" });
-
-    const rows = await testDb.pool.query<{ count: string }>("select count(*)::text as count from finance_goals");
-    expect(rows.rows).toEqual([{ count: "0" }]);
+  it("creates funds without accounts and validates target currency and precision", async () => {
+    expect(await goal()).toMatchObject({ accountId: null });
+    await expect(goal("EUR", "0")).rejects.toMatchObject({ code: "money_non_positive" });
+    await expect(goal("EUR", "0.001")).rejects.toMatchObject({ code: "money_precision_exceeded" });
+    await expect(goal("ZZZ")).rejects.toMatchObject({ code: "currency_not_found" });
   });
-
-  it("persists goals and derives zero, negative, and over-target native balances", async () => {
-    const cash = await createAccount(deps, {
-      classification: "asset", currencyCode: "EUR", name: "Cash", subtype: "cash",
-    });
-    const expenses = await createCategory(deps, { classification: "expense", name: "Expenses" });
-    const goal = await createGoal(deps, {
-      accountId: cash.id, name: "Emergency fund", targetAmount: "100", targetCurrencyCode: "EUR",
-    });
-
-    expect(await getGoalProgress(deps, { id: goal.id })).toMatchObject({ balance: "0", percentage: "0" });
-    await recordTransaction(deps, { accountId: cash.id, amount: "125", type: "opening_balance" });
-    expect(await getGoalProgress(deps, { id: goal.id })).toMatchObject({ balance: "125", percentage: "125" });
-    await recordTransaction(deps, {
-      accountId: cash.id, amount: "150", categoryId: expenses.id, type: "expense",
-    });
-    expect(await getGoalProgress(deps, { id: goal.id })).toMatchObject({ balance: "-25", percentage: "-25" });
+  it("sums only assigned money: 800 EUR plus 200 EUR worth of RSD reaches 1000", async () => {
+    const eur = await cash("EUR", "1500"); const rsd = await cash("RSD", "30000"); const fund = await goal();
+    await reserve(eur.id, fund.id, "800"); await reserve(rsd.id, fund.id, "25000");
+    await setManualOverride(deps, { kind: "exchange_rate", baseCurrencyCode: "RSD", quoteCurrencyCode: "EUR", value: "0.008", effectiveAt: now });
+    expect(await progress(fund.id)).toMatchObject({ balance: "1000", percentage: "100", complete: true, underfunded: false });
+    expect((await progress(fund.id)).allocations).toHaveLength(2);
+    expect((await getAccountPurposes(deps)).summaries[eur.id].free).toBe("700");
+    await updateGoal(deps, { id: fund.id, name: "Changed target", targetCurrencyCode: "RSD", targetAmount: "125000" });
+    expect(await progress(fund.id)).toMatchObject({ balance: "125000", percentage: "100" });
   });
-
-  it("rolls back a failed goal persistence transaction", async () => {
-    const cash = await createAccount(deps, {
-      classification: "asset", currencyCode: "EUR", name: "Cash", subtype: "cash",
-    });
-    const duplicateIds: ApplicationDependencies = {
-      ...deps,
-      ids: { nextId: () => "duplicate-goal" },
-    };
-    await createGoal(duplicateIds, {
-      accountId: cash.id, name: "First", targetAmount: "100", targetCurrencyCode: "EUR",
-    });
-
-    await expect(createGoal(duplicateIds, {
-      accountId: cash.id, name: "Rejected", targetAmount: "200", targetCurrencyCode: "EUR",
-    })).rejects.toMatchObject({ cause: { code: "23505" } });
-
-    const rows = await testDb.pool.query<{ name: string }>("select name from finance_goals order by id");
-    expect(rows.rows).toEqual([{ name: "First" }]);
+  it("shares one account between separate goals and budgets without double reservation", async () => {
+    const a = await cash("EUR", "1000"); const first = await goal(); const second = await goal();
+    const category = await createCategory(deps, { name: `Budget ${++sequence}`, classification: "expense" });
+    await setBudgetLimit(deps, { categoryId: category.id, month: "2026-10", currencyCode: "EUR", amount: "100" });
+    const budget = (await testDb.pool.query("select id from finance_budget_limits where category_id=$1", [category.id])).rows[0];
+    await reserve(a.id, first.id, "500"); await reserve(a.id, second.id, "200");
+    await setAccountPurpose(deps, { accountId: a.id, targetId: budget.id, targetType: "budget", amount: "100" });
+    expect(await progress(first.id)).toMatchObject({ balance: "500", percentage: "50" });
+    expect(await progress(second.id)).toMatchObject({ balance: "200", percentage: "20" });
+    expect((await getAccountPurposes(deps)).summaries[a.id]).toMatchObject({ reserved: "800", free: "200" });
+    await expect(reserve(a.id, second.id, "401")).rejects.toMatchObject({ code: "account_purpose_insufficient_balance" });
+    await recordTransaction(deps, { type: "expense", accountId: a.id, categoryId: category.id, amount: "400" });
+    expect(await progress(first.id)).toMatchObject({ balance: "500", underfunded: true, allocations: [{ accountDeficit: "200", underfunded: true }] });
+    await archiveAccount(deps, { id: a.id });
+    expect((await progress(first.id)).allocations[0].accountActive).toBe(false);
   });
-
-  it("edits and archives a goal while preserving the historical row", async () => {
-    const first = await createAccount(deps, {
-      classification: "asset", currencyCode: "EUR", name: "Cash", subtype: "cash",
-    });
-    const second = await createAccount(deps, {
-      classification: "asset", currencyCode: "EUR", name: "Savings", subtype: "bank",
-    });
-    const goal = await createGoal(deps, {
-      accountId: first.id, name: "Emergency", targetAmount: "100", targetCurrencyCode: "EUR",
-    });
-
-    await expect(updateGoal(deps, {
-      id: goal.id,
-      accountId: second.id,
-      name: "Emergency reserve",
-      targetAmount: "250",
-      targetCurrencyCode: "EUR",
-    })).resolves.toMatchObject({
-      id: goal.id,
-      accountId: second.id,
-      name: "Emergency reserve",
-      targetAmount: "250.000000000000000000",
-      isActive: true,
-    });
-    await expect(archiveGoal(deps, { id: goal.id })).resolves.toMatchObject({
-      id: goal.id,
-      isActive: false,
-    });
-
-    await expect(testDb.pool.query(
-      "select name, is_active, archived_at is not null archived from finance_goals where id = $1",
-      [goal.id],
-    )).resolves.toMatchObject({
-      rows: [{ name: "Emergency reserve", is_active: false, archived: true }],
-    });
+  it("keeps missing rates unknown, stale sources visible and manual overrides authoritative", async () => {
+    const a = await cash("USD", "100"); const fund = await goal("HUF", "10000"); await reserve(a.id, fund.id, "100");
+    expect(await progress(fund.id)).toMatchObject({ balance: null, percentage: null, complete: false });
+    await testDb.pool.query("insert into finance_exchange_rates(id,base_currency_code,quote_currency_code,rate,provider,provider_timestamp,retrieved_at,status) values ('fund-usd-rate','USD','EUR',0.9,'nbs',$1,$2,'valid'),('fund-huf-rate','HUF','EUR',0.003,'nbs',$1,$2,'valid')", [new Date("2026-10-01T12:00:00Z"), now]);
+    expect(await progress(fund.id)).toMatchObject({ balance: "30000", complete: true, stale: true, allocations: [{ valuation: { stale: true, sourceToEur: { source: "nbs" } } }] });
+    await setManualOverride(deps, { kind: "exchange_rate", baseCurrencyCode: "USD", quoteCurrencyCode: "EUR", value: "0.8", effectiveAt: now });
+    expect((await progress(fund.id)).allocations[0].valuation.sourceToEur).toMatchObject({ source: "manual", manual: true, stale: false });
   });
-
-  it("blocks account archival while an active goal depends on it", async () => {
-    const cash = await createAccount(deps, {
-      classification: "asset", currencyCode: "EUR", name: "Goal cash", subtype: "cash",
-    });
-    const goal = await createGoal(deps, {
-      accountId: cash.id, name: "Protected goal", targetAmount: "100", targetCurrencyCode: "EUR",
-    });
-
-    await expect(archiveAccount(deps, { id: cash.id }))
-      .rejects.toMatchObject({ code: "account_has_active_goals" });
-    await expect(testDb.pool.query("select is_active from finance_accounts where id = $1", [cash.id]))
-      .resolves.toMatchObject({ rows: [{ is_active: true }] });
-
-    await archiveGoal(deps, { id: goal.id });
-    await expect(archiveAccount(deps, { id: cash.id }))
-      .resolves.toMatchObject({ isActive: false });
-    await expect(testDb.pool.query("select count(*)::text as count from finance_goals where id = $1", [goal.id]))
-      .resolves.toMatchObject({ rows: [{ count: "1" }] });
+  it("retains legacy references but never treats legacy balances as assigned savings", async () => {
+    const a = await cash("EUR", "1000");
+    await testDb.pool.query("insert into finance_goals(id,name,account_id,target_currency_code,target_amount) values ('legacy-fund','Legacy',$1,'EUR',1000)", [a.id]);
+    expect((await listGoals(deps, options)).items.find((g) => g.id === "legacy-fund")).toMatchObject({ balance: "0", legacyAccountId: a.id, legacyAccountName: a.name, allocations: [] });
+    await reserve(a.id, "legacy-fund", "100");
+    await updateGoal(deps, { id: "legacy-fund", name: "Legacy updated", targetCurrencyCode: "EUR", targetAmount: "200" });
+    expect(await progress("legacy-fund")).toMatchObject({ balance: "100", percentage: "50", legacyAccountId: a.id });
+    await archiveGoal(deps, { id: "legacy-fund" });
+    expect((await getAccountPurposes(deps)).summaries[a.id].reserved).toBe("100");
   });
 });

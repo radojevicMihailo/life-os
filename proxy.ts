@@ -3,7 +3,7 @@ import { ACCESS_COOKIE_NAME, ACCESS_SESSION_SECONDS, configuredAccessPassword, i
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (pathname.startsWith("/_next/") || ["/favicon.ico", "/icon.svg", "/icon-192.png", "/icon-512.png", "/manifest.webmanifest", "/sw.js"].includes(pathname)) {
+  if (pathname.startsWith("/_next/") || ["/favicon.ico", "/icon.svg", "/icon-192.png", "/icon-512.png", "/icon-maskable-512.png", "/apple-icon.png", "/manifest.webmanifest", "/sw.js"].includes(pathname)) {
     return NextResponse.next();
   }
   if (pathname === "/api/health" && request.method === "GET") return NextResponse.next();

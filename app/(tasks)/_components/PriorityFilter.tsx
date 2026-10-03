@@ -1,5 +1,7 @@
 "use client";
 
+import { taskPriorityLabel } from "@/lib/task-priorities";
+
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +38,7 @@ export function PriorityFilter({
               p.color && active === p.id ? { backgroundColor: p.color, color: "white" } : undefined
             }
           >
-            {p.name}
+            {taskPriorityLabel(p.name)}
           </Badge>
         </Link>
       ))}

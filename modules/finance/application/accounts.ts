@@ -3,7 +3,6 @@ import {
   AccountsRepository,
   type AccountRecord,
 } from "../db/repositories/accounts";
-import { GoalsRepository } from "../db/repositories/goals";
 import {
   applicationError,
   type AccountSummary,
@@ -102,9 +101,6 @@ export async function archiveAccount(
     const account = (await repository.lockByIds([input.id]))[0];
     if (!account) applicationError("account_not_found");
     if (account.isSystem) applicationError("account_system_archive_forbidden");
-    if (await new GoalsRepository(tx).hasActiveForAccount(account.id)) {
-      applicationError("account_has_active_goals");
-    }
     const archived = await repository.archive(input.id, deps.clock.now());
 
     return toAccountSummary(archived);

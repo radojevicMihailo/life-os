@@ -18,6 +18,7 @@ import type { DbTx } from "../client";
 import {
   accounts,
   exchangeRates,
+  goals,
   instruments,
   investmentTransactions,
   journalPostings,
@@ -129,15 +130,34 @@ export class ValuationRepository {
   }
 
   async latestRate(baseCurrencyCode: string, quoteCurrencyCode = "EUR") {
-    const [automatic] = await this.tx.select().from(exchangeRates).where(and(
+    let [automatic] = await this.tx.select().from(exchangeRates).where(and(
       eq(exchangeRates.baseCurrencyCode, baseCurrencyCode),
       eq(exchangeRates.quoteCurrencyCode, quoteCurrencyCode),
       eq(exchangeRates.status, "valid"),
     )).orderBy(desc(exchangeRates.providerTimestamp), desc(exchangeRates.retrievedAt), desc(exchangeRates.id)).limit(1);
-    const [manual] = await this.tx.select().from(manualValuationOverrides).where(and(
+    let [manual] = await this.tx.select().from(manualValuationOverrides).where(and(
       targetCondition({ kind: "exchange_rate", baseCurrencyCode, quoteCurrencyCode }),
       isNull(manualValuationOverrides.clearedAt),
     )).orderBy(desc(manualValuationOverrides.effectiveAt), desc(manualValuationOverrides.id)).limit(1);
+    // Native crypto wallets reuse the same EUR market prices as crypto positions.
+    // An explicit FX override still takes precedence in the valuation selector.
+    if (!automatic && (baseCurrencyCode === "BTC" || baseCurrencyCode === "ETH")) {
+      const [quote] = await this.tx.select({ quote: marketQuotes }).from(marketQuotes)
+        .innerJoin(instruments, eq(instruments.id, marketQuotes.instrumentId))
+        .where(and(eq(instruments.symbol, baseCurrencyCode), eq(instruments.class, "crypto"),
+          eq(marketQuotes.quoteCurrencyCode, quoteCurrencyCode), inArray(marketQuotes.status, ["valid", "stale"])))
+        .orderBy(desc(marketQuotes.providerTimestamp), desc(marketQuotes.retrievedAt), desc(marketQuotes.id)).limit(1);
+      if (quote) automatic = { ...quote.quote, baseCurrencyCode, rate: quote.quote.price };
+    }
+    if (!manual && (baseCurrencyCode === "BTC" || baseCurrencyCode === "ETH")) {
+      const [quoteOverride] = await this.tx.select({ override: manualValuationOverrides }).from(manualValuationOverrides)
+        .innerJoin(instruments, eq(instruments.id, manualValuationOverrides.instrumentId))
+        .where(and(eq(instruments.symbol, baseCurrencyCode), eq(instruments.class, "crypto"),
+          eq(manualValuationOverrides.kind, "market_quote"), eq(manualValuationOverrides.quoteCurrencyCode, quoteCurrencyCode),
+          isNull(manualValuationOverrides.clearedAt)))
+        .orderBy(desc(manualValuationOverrides.effectiveAt), desc(manualValuationOverrides.id)).limit(1);
+      if (quoteOverride) manual = quoteOverride.override;
+    }
     return { automatic, manual };
   }
 
@@ -198,8 +218,10 @@ export class ValuationRepository {
     const instrumentRows = await this.tx.selectDistinct({ code: instruments.quoteCurrencyCode })
       .from(instruments)
       .where(eq(instruments.isActive, true));
-    return [...new Set([...accountRows, ...instrumentRows].map((row) => row.code))]
-      .filter((code) => code !== "EUR")
+    const goalRows = await this.tx.selectDistinct({ code: goals.targetCurrencyCode })
+      .from(goals).where(eq(goals.isActive, true));
+    return [...new Set([...accountRows, ...instrumentRows, ...goalRows].map((row) => row.code))]
+      .filter((code) => code !== "EUR" && code !== "BTC" && code !== "ETH")
       .sort();
   }
 

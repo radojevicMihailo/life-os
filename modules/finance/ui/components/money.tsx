@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import { cryptoCurrencyMinorUnits } from "../../domain/money";
 
 export interface MoneyProps {
   amount: string;
@@ -18,10 +19,12 @@ export function formatMoney(
     currencyDisplay: "symbol",
     style: "currency",
   });
-  const minorUnit = catalogMinorUnit ??
+  const cryptoMinorUnit = cryptoCurrencyMinorUnits[currencyCode as keyof typeof cryptoCurrencyMinorUnits];
+  const minorUnit = catalogMinorUnit ?? cryptoMinorUnit ??
     currencyFormatter.resolvedOptions().maximumFractionDigits;
   const value = new Decimal(amount);
-  const fixed = value.abs().toFixed(minorUnit);
+  const raw = value.abs().toFixed(minorUnit);
+  const fixed = cryptoMinorUnit === undefined || !raw.includes(".") ? raw : raw.replace(/\.?0+$/, "");
   const [whole = "0", fraction] = fixed.split(".");
   const number = new Intl.NumberFormat("sr-Latn-RS", {
     maximumFractionDigits: 0,

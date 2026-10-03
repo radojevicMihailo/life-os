@@ -2,7 +2,10 @@ import Decimal from "decimal.js";
 
 import { DomainError, type DomainErrorCode } from "./errors";
 
+export const cryptoCurrencyMinorUnits = { BTC: 8, ETH: 18 } as const;
+
 export const currencyMinorUnits = {
+  ...cryptoCurrencyMinorUnits,
   RSD: 2,
   EUR: 2,
   USD: 2,

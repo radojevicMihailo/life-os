@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 
 import { applicationError } from "../../application/ports";
 import type { DbTx } from "../client";
-import { accountPurposes, goals } from "../schema";
+import { goals } from "../schema";
 
 export type GoalRecord = typeof goals.$inferSelect;
 
@@ -12,7 +12,7 @@ export class GoalsRepository {
   async create(input: {
     id: string;
     name: string;
-    accountId: string;
+    accountId: string | null;
     targetCurrencyCode: string;
     targetAmount: string;
     now: Date;
@@ -62,21 +62,14 @@ export class GoalsRepository {
   async update(input: {
     id: string;
     name: string;
-    accountId: string;
     targetCurrencyCode: string;
     targetAmount: string;
     now: Date;
   }): Promise<GoalRecord> {
-    const purposes = await this.tx.select({ currencyCode: accountPurposes.currencyCode })
-      .from(accountPurposes).where(eq(accountPurposes.goalId, input.id));
-    if (purposes.some((p) => p.currencyCode !== input.targetCurrencyCode)) {
-      applicationError("account_purpose_currency_mismatch");
-    }
     const [goal] = await this.tx
       .update(goals)
       .set({
         name: input.name,
-        accountId: input.accountId,
         targetCurrencyCode: input.targetCurrencyCode,
         targetAmount: input.targetAmount,
         updatedAt: input.now,

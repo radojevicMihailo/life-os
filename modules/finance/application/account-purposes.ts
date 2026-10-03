@@ -38,7 +38,7 @@ export async function setAccountPurpose(deps: ApplicationDependencies, input: Se
     if (!account) applicationError("account_not_found");
     if (!account.isActive) applicationError("account_inactive");
     if (account.classification !== "asset" || account.isSystem) applicationError("goal_account_must_be_asset");
-    if (targetCurrency !== account.currencyCode) applicationError("account_purpose_currency_mismatch");
+    if (input.targetType === "budget" && targetCurrency !== account.currencyCode) applicationError("account_purpose_currency_mismatch");
     const amount = Money.parse(input.amount, { code: account.currencyCode, minorUnit: account.minorUnit }).amount;
     const existing = await tx.select().from(accountPurposes).where(eq(accountPurposes.accountId, account.id));
     const same = existing.find((purpose) => input.targetType === "goal"
