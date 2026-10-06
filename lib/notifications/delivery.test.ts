@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { dispatchReminders } from "./delivery";
-import type { PushDevice, PushStore, Reminder } from "./types";
+import type { PushDevice, PushPayload, PushStore, Reminder } from "./types";
 
 const reminder: Reminder = { key: "task:a", title: "Call", startsAt: new Date("2026-10-01T10:30:00Z"), type: "task", url: "/tasks/a" };
 const device = (id: string): PushDevice => ({ id, endpoint: `https://web.push.apple.com/${id}`, keys: { p256dh: "key", auth: "auth" }, vapidPublicKey: "public" });
@@ -19,6 +19,18 @@ function memoryStore(devices: PushDevice[]) {
   return { store: store as unknown as PushStore, successful, devices: store };
 }
 describe("per-device reminder delivery", () => {
+  it("delivers exactly three reminders at 30, 10 and 1 minute before the event", async () => {
+    const { store } = memoryStore([device("phone")]);
+    const accepted: PushPayload[] = [];
+    for (let minutes = 31; minutes >= 0; minutes--) {
+      await dispatchReminders(store, async (_device, payload) => { accepted.push(payload); }, [reminder],
+        new Date(reminder.startsAt.getTime() - minutes * 60000));
+    }
+    expect(accepted.map((payload) => payload.title)).toEqual([
+      "Life OS · Zadatak za 30 min", "Life OS · Zadatak za 10 min", "Life OS · Zadatak za 1 min",
+    ]);
+    expect(accepted.map((payload) => payload.tag.split(":").at(-1))).toEqual(["30", "10", "1"]);
+  });
   it("sends to both devices independently and suppresses successful repeat ticks", async () => {
     const { store, successful } = memoryStore([device("mac"), device("phone")]);
     const accepted: string[] = [];
@@ -58,7 +70,7 @@ describe("per-device reminder delivery", () => {
   it("refreshes the clock for each device and skips an event that started while the first device was sending", async () => {
     const { store, successful } = memoryStore([device("mac"), device("phone")]);
     const accepted: string[] = [];
-    let now = new Date("2026-10-01T10:25:00Z");
+    let now = new Date("2026-10-01T10:20:00Z");
     await dispatchReminders(store, async (d) => {
       accepted.push(d.id);
       now = new Date("2026-10-01T10:31:00Z");

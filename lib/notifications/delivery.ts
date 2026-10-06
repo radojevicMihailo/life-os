@@ -29,7 +29,7 @@ export async function dispatchReminders(store: PushStore, send: PushSender, remi
       if (expired.has(device.id)) continue;
       let minutes = (item.startsAt.getTime() - clockNow().getTime()) / 60000;
       if (!Number.isFinite(minutes) || minutes <= 0) continue;
-      const dueLead = [30, 15, 5].find((value) => minutes <= value && minutes > value - 3);
+      const dueLead = [30, 10, 1].find((value) => minutes <= value && minutes > value - 3);
       // Interrupted sends retain their lease and can recover after the original window.
       const lead = (await store.retryLead(device.id, item)) ?? dueLead;
       if (lead === undefined || !(await store.claim(device.id, item, lead))) continue;

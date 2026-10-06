@@ -18,7 +18,7 @@ if (existsSync(ENV_PATH)) {
   }
 }
 
-const LEADS = (process.env.NOTIFY_LEAD_MINUTES ?? "30,15,5")
+const LEADS = (process.env.NOTIFY_LEAD_MINUTES ?? "30,10,1")
   .split(",").map((value) => Number(value.trim()))
   .filter((value) => Number.isFinite(value) && value > 0)
   .sort((a, b) => b - a);

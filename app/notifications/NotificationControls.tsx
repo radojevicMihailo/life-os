@@ -124,6 +124,6 @@ export function NotificationControls() {
       </div>
     </>}
     <p role="status" aria-live="polite" className="text-sm text-muted-foreground">{message}</p>
-    <p className="text-sm text-muted-foreground">Podsetnici stižu 30, 15 i 5 minuta pre zadatka ili događaja sa zadatim vremenom. Uključi ih posebno na svakom uređaju. Focus režim može utišati obaveštenja.</p>
+    <p className="text-sm text-muted-foreground">Podsetnici stižu 30 minuta, 10 minuta i 1 minut pre zadatka ili događaja sa zadatim vremenom. Uključi ih posebno na svakom uređaju. Focus režim može utišati obaveštenja.</p>
   </div>;
 }
