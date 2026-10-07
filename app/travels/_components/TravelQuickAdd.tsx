@@ -101,7 +101,10 @@ export function TravelQuickAdd() {
         type="date"
         aria-label="Datum početka"
         value={startDate}
-        onChange={(e) => setStartDate(e.target.value)}
+        onChange={(e) => {
+          setStartDate(e.target.value);
+          setEndDate(e.target.value);
+        }}
         disabled={pending}
         className="w-40"
       />

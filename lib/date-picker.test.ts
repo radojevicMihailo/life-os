@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { calendarDays, changeCalendarYear, dayValue, localDay, localTime, parseLocalDay, withinBounds } from "./date-picker";
+import { calendarDays, changeCalendarMonth, changeCalendarYear, dayValue, localDay, localTime, parseLocalDay, withinBounds } from "./date-picker";
 
 describe("local date picker values", () => {
+  it("jumps directly to a month while preserving year and time and clamping the day", () => {
+    const original = new Date(2026, 0, 31, 14, 37);
+    const changed = changeCalendarMonth(original, 1);
+    expect(localDay(changed)).toBe("2026-02-28");
+    expect(localTime(changed)).toBe("14:37");
+    expect(localDay(original)).toBe("2026-01-31");
+    expect(localDay(changeCalendarMonth(new Date(2024, 0, 31, 12), 1))).toBe("2024-02-29");
+    expect(localDay(changeCalendarMonth(new Date(2026, 0, 7, 12), 11))).toBe("2026-12-07");
+  });
   it("jumps directly to a year while keeping the month, day and time", () => {
     const original = new Date(2026, 9, 7, 14, 37);
     const changed = changeCalendarYear(original, 1995);

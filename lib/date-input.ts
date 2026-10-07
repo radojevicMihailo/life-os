@@ -1,5 +1,13 @@
 import { format } from "date-fns";
 
+export function defaultIntervalEnd(start: Date | null, withTime: boolean): Date | null {
+  if (!start) return null;
+  const end = new Date(start);
+  if (withTime) end.setHours(end.getHours() + 1);
+  else end.setHours(0, 0, 0, 0);
+  return end;
+}
+
 export function dateToInputValue(d: Date | null | undefined, withTime: boolean): string {
   if (!d) return "";
   const date = d instanceof Date ? d : new Date(d);

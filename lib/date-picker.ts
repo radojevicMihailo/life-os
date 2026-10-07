@@ -7,6 +7,14 @@ export function localDay(date: Date): string {
 export function localTime(date: Date): string {
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
+export function changeCalendarMonth(date: Date, month: number): Date {
+  const next = new Date(date);
+  next.setMonth(month, 1);
+  const lastDay = new Date(next);
+  lastDay.setMonth(next.getMonth() + 1, 0);
+  next.setDate(Math.min(date.getDate(), lastDay.getDate()));
+  return next;
+}
 export function changeCalendarYear(date: Date, year: number): Date {
   const next = new Date(date);
   const month = date.getMonth();

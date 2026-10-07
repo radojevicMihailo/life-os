@@ -29,6 +29,7 @@ import { RecurrenceEditor } from "./RecurrenceEditor";
 import { DateField } from "./DateField";
 import type { RecurrenceRule, TaskStatus } from "@/db/schema/tasks";
 import { taskStatusLabel } from "@/db/schema/tasks";
+import { defaultIntervalEnd } from "@/lib/date-input";
 
 export type ProjectOption = { id: string; name: string };
 export type PriorityOption = { id: string; name: string };
@@ -153,7 +154,11 @@ export function TaskForm({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowActionEnd(true)}
+                  onClick={() => {
+                    setActionEndAt(defaultIntervalEnd(actionAt, actionWithTime));
+                    setActionEndWithTime(actionWithTime);
+                    setShowActionEnd(true);
+                  }}
                 >
                   + End date
                 </Button>
@@ -173,7 +178,11 @@ export function TaskForm({
             </div>
             <DateField
               value={actionAt}
-              onChange={(d) => { setActionAt(d); if (!d) setActionEndAt(null); }}
+              onChange={(d, withTime) => {
+                setActionAt(d);
+                setActionEndAt(defaultIntervalEnd(d, withTime));
+                setActionEndWithTime(d ? withTime : false);
+              }}
               withTime={actionWithTime}
               onToggleTime={setActionWithTime}
             />

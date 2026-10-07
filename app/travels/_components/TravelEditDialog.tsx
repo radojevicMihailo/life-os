@@ -74,7 +74,7 @@ export function TravelEditDialog({ travel, compact = false }: { travel: Travel; 
           <div className="grid gap-2"><Label htmlFor={`travel-status-${travel.id}`}>Status</Label><select id={`travel-status-${travel.id}`} value={status} onChange={(event) => setStatus(event.target.value as TravelStatus)} disabled={pending} className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-ring">{statuses.map((item) => <option value={item} key={item}>{travelStatusLabel[item]}</option>)}</select></div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="grid gap-2"><Label htmlFor={`travel-start-${travel.id}`}>Početak</Label><Input id={`travel-start-${travel.id}`} type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} disabled={pending} /></div>
+          <div className="grid gap-2"><Label htmlFor={`travel-start-${travel.id}`}>Početak</Label><Input id={`travel-start-${travel.id}`} type="date" value={startDate} onChange={(event) => { setStartDate(event.target.value); setEndDate(event.target.value); }} disabled={pending} /></div>
           <div className="grid gap-2"><Label htmlFor={`travel-end-${travel.id}`}>Kraj</Label><Input id={`travel-end-${travel.id}`} type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} min={startDate || undefined} disabled={pending} /></div>
         </div>
         <div className="grid gap-2"><Label htmlFor={`travel-people-${travel.id}`}>Ljudi</Label><Input id={`travel-people-${travel.id}`} value={people} onChange={(event) => setPeople(event.target.value)} placeholder="Imena saputnika" maxLength={1000} disabled={pending} /></div>

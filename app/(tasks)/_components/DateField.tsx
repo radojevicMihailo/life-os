@@ -14,7 +14,7 @@ export function DateField({
   disabled,
 }: {
   value: Date | null;
-  onChange: (d: Date | null) => void;
+  onChange: (d: Date | null, withTime: boolean) => void;
   withTime: boolean;
   onToggleTime: (v: boolean) => void;
   id?: string;
@@ -27,7 +27,7 @@ export function DateField({
         disabled={disabled}
         type={withTime ? "datetime-local" : "date"}
         value={dateToInputValue(value, withTime)}
-        onChange={(e) => onChange(inputValueToDate(e.target.value, withTime))}
+        onChange={(e) => onChange(inputValueToDate(e.target.value, withTime), withTime)}
         className="flex-1"
       />
       <Button
@@ -43,7 +43,7 @@ export function DateField({
               const now = new Date();
               next.setHours(now.getHours(), now.getMinutes(), 0, 0);
             }
-            onChange(next);
+            onChange(next, !withTime);
           }
           onToggleTime(!withTime);
         }}

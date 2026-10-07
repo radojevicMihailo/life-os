@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CalendarYearSelect } from "@/components/ui/calendar-year-select";
+import { CalendarPeriodSelect } from "@/components/ui/calendar-period-select";
 import { travelRegionLabel, travelStatusLabel, type Travel } from "@/db/schema/travels";
 import { monthGrid, travelsOnDate } from "@/lib/travels/view";
 import { TravelEditDialog } from "./TravelEditDialog";
@@ -39,7 +39,11 @@ export function TravelCalendar({ travels, todayKey }: { travels: Travel[]; today
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="text-xl font-semibold capitalize">{title}</h2>
-        <CalendarYearSelect year={year} onYearChange={(nextYear) => {
+        <CalendarPeriodSelect month={monthNumber - 1} year={year} onMonthChange={(value) => {
+          const next = `${year}-${String(value + 1).padStart(2, "0")}`;
+          setMonth(next);
+          setSelectedDay(`${next}-01`);
+        }} onYearChange={(nextYear) => {
           const next = `${nextYear}-${month.slice(5)}`;
           setMonth(next);
           setSelectedDay(`${next}-01`);

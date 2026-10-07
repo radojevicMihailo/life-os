@@ -22,6 +22,7 @@ import { setTaskStatus, updateTask } from "../_actions/tasks";
 import { TASK_PRIORITIES, taskPriorityLabel } from "@/lib/task-priorities";
 import { DateField } from "./DateField";
 import { taskStatusColors } from "@/lib/status-colors";
+import { defaultIntervalEnd } from "@/lib/date-input";
 
 const statusOrder: TaskStatus[] = ["backlog", "in_progress", "waiting_for", "done", "canceled"];
 
@@ -130,12 +131,21 @@ export function TaskDetailEditor({
           value={actionAt}
           withTime={actionWithTime}
           onToggleTime={setActionWithTime}
-          onChange={(d) => {
+          onChange={(d, withTime) => {
             const prev = actionAt;
             const prevEnd = actionEndAt;
+            const prevWithTime = actionWithTime;
+            const prevEndWithTime = actionEndWithTime;
+            const end = defaultIntervalEnd(d, withTime);
             setActionAt(d);
-            if (!d) setActionEndAt(null);
-            patch({ actionAt: d, ...(!d ? { actionEndAt: null } : {}) }, () => { setActionAt(prev); setActionEndAt(prevEnd); });
+            setActionEndAt(end);
+            setActionEndWithTime(d ? withTime : false);
+            patch({ actionAt: d, actionEndAt: end }, () => {
+              setActionAt(prev);
+              setActionEndAt(prevEnd);
+              setActionWithTime(prevWithTime);
+              setActionEndWithTime(prevEndWithTime);
+            });
           }}
         />
         {actionAt && (

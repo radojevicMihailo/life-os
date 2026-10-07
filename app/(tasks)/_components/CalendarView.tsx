@@ -16,8 +16,8 @@ import {
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CalendarYearSelect } from "@/components/ui/calendar-year-select";
-import { changeCalendarYear } from "@/lib/date-picker";
+import { CalendarPeriodSelect } from "@/components/ui/calendar-period-select";
+import { changeCalendarMonth, changeCalendarYear } from "@/lib/date-picker";
 import type { TaskStatus } from "@/db/schema/tasks";
 import { CreateTaskDialog, type CreateTaskDialogInitial } from "./CreateTaskDialog";
 
@@ -238,7 +238,7 @@ export function CalendarView({
             <ChevronRight className="h-4 w-4" />
           </Button>
           <span data-testid="calendar-period" className="text-sm font-medium sm:ml-2">{title}</span>
-          <CalendarYearSelect year={cursor.getFullYear()} onYearChange={(year) => setCursor((date) => changeCalendarYear(date, year))} />
+          <CalendarPeriodSelect month={cursor.getMonth()} year={cursor.getFullYear()} onMonthChange={(month) => setCursor((date) => changeCalendarMonth(date, month))} onYearChange={(year) => setCursor((date) => changeCalendarYear(date, year))} />
           {toolbarExtras}
         </div>
         <div role="group" aria-label="Calendar view" className="inline-flex rounded-2xl border border-border bg-card shadow-sm p-0.5 text-sm">
