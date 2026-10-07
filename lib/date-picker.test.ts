@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { calendarDays, dayValue, localDay, localTime, parseLocalDay, withinBounds } from "./date-picker";
+import { calendarDays, changeCalendarYear, dayValue, localDay, localTime, parseLocalDay, withinBounds } from "./date-picker";
 
 describe("local date picker values", () => {
+  it("jumps directly to a year while keeping the month, day and time", () => {
+    const original = new Date(2026, 9, 7, 14, 37);
+    const changed = changeCalendarYear(original, 1995);
+    expect(localDay(changed)).toBe("1995-10-07");
+    expect(localTime(changed)).toBe("14:37");
+    expect(localDay(original)).toBe("2026-10-07");
+  });
+  it("keeps leap-day navigation in February when the target year is not leap", () => {
+    expect(localDay(changeCalendarYear(new Date(2024, 1, 29, 12), 2025))).toBe("2025-02-28");
+    expect(localDay(changeCalendarYear(new Date(2024, 1, 29, 12), 2028))).toBe("2028-02-29");
+  });
   it("parses local dates without UTC shifts and rejects calendar overflow", () => {
     const date = parseLocalDay("2026-10-02T19:20")!;
     expect([date.getFullYear(), date.getMonth(), date.getDate()]).toEqual([2026, 9, 2]);

@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { meal, mealItem } from "@/db/schema/meals";
 import { Button } from "@/components/ui/button";
 import { CalendarGrid } from "../_components/CalendarGrid";
+import { CalendarYearNavigation } from "../_components/CalendarYearNavigation";
 import { getMealTargets } from "../_actions/settings";
 
 export default async function MealsCalendarPage({
@@ -40,8 +41,8 @@ export default async function MealsCalendarPage({
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="outline" size="sm">
             <Link href={`/meals/calendar?month=${prev}`}>‹</Link>
           </Button>
@@ -51,6 +52,7 @@ export default async function MealsCalendarPage({
           <Button asChild variant="outline" size="sm">
             <Link href={`/meals/calendar?month=${next}`}>›</Link>
           </Button>
+          <CalendarYearNavigation month={format(month, "yyyy-MM")} />
         </div>
       </div>
       <CalendarGrid

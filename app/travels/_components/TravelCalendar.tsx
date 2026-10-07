@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CalendarYearSelect } from "@/components/ui/calendar-year-select";
 import { travelRegionLabel, travelStatusLabel, type Travel } from "@/db/schema/travels";
 import { monthGrid, travelsOnDate } from "@/lib/travels/view";
 import { TravelEditDialog } from "./TravelEditDialog";
@@ -36,7 +37,14 @@ export function TravelCalendar({ travels, todayKey }: { travels: Travel[]; today
 
   return <section aria-label="Kalendar putovanja" className="space-y-5">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <h2 className="text-xl font-semibold capitalize">{title}</h2>
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 className="text-xl font-semibold capitalize">{title}</h2>
+        <CalendarYearSelect year={year} onYearChange={(nextYear) => {
+          const next = `${nextYear}-${month.slice(5)}`;
+          setMonth(next);
+          setSelectedDay(`${next}-01`);
+        }} />
+      </div>
       <div className="flex items-center gap-2"><Button size="sm" variant="outline" onClick={() => { setMonth(todayKey.slice(0, 7)); setSelectedDay(todayKey); }}>Danas</Button><Button size="icon-sm" variant="outline" onClick={() => navigate(-1)} aria-label="Prethodni mesec"><ChevronLeft className="size-4" /></Button><Button size="icon-sm" variant="outline" onClick={() => navigate(1)} aria-label="Sledeći mesec"><ChevronRight className="size-4" /></Button></div>
     </div>
     <div className="overflow-hidden rounded-2xl border border-border bg-card">

@@ -6,6 +6,7 @@ import { listInvestments } from "@/modules/finance/read-models/investments";
 import { loadReadModelRuntime } from "@/modules/finance/read-models/runtime";
 import { getMutationOptions } from "@/modules/finance/read-models/forms";
 import { InvestmentAccountForm, InvestmentActivityForm, OpeningSetup, ResolveInstrumentForm } from "./investment-forms";
+import { InvestmentGuide } from "./investment-guide";
 
 function EurValue({ amount }: { amount: string | null }) {
   return amount === null ? (
@@ -36,10 +37,13 @@ export default async function InvestmentsPage() {
 
   return (
     <>
-      <PageHeader eyebrow="Portfolio" title="Investicije">
-        Pozicije, FIFO lotovi i aktivnost sa odvojenim tržišnim i troškovnim
-        vrednostima.
-      </PageHeader>
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+        <PageHeader eyebrow="Portfolio" title="Investicije">
+          Pozicije, FIFO lotovi i aktivnost sa odvojenim tržišnim i troškovnim
+          vrednostima.
+        </PageHeader>
+        <div className="mb-6 sm:mt-8"><InvestmentGuide /></div>
+      </div>
       <section className="grid gap-4 xl:grid-cols-2"><InvestmentAccountForm accounts={options.accounts} /><ResolveInstrumentForm /></section>
       <OpeningSetup currencies={options.currencies} instruments={options.instruments} investmentAccounts={options.investmentAccounts} />
       <div className="my-6"><InvestmentActivityForm instruments={options.instruments} investmentAccounts={options.investmentAccounts} /></div>

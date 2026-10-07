@@ -4,7 +4,8 @@ import * as React from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { calendarDays, dayValue, localDay, localTime, parseLocalDay, withinBounds, type DateInputType } from "@/lib/date-picker";
+import { CalendarYearSelect } from "@/components/ui/calendar-year-select";
+import { calendarDays, changeCalendarYear, dayValue, localDay, localTime, parseLocalDay, withinBounds, type DateInputType } from "@/lib/date-picker";
 
 const locale = "sr-Latn-RS";
 const focusStyle = "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
@@ -161,7 +162,14 @@ export function DateTimeInput({ type, className, value: controlledValue, default
         {type !== "time" && <>
           <div className="mb-2 flex items-center justify-between">
             <button type="button" className={smallButton} aria-label="Prethodni mesec" onClick={() => { const next = new Date(month.getFullYear(), month.getMonth() - 1, 1, 12); setMonth(next); setFocusedDay(localDay(next)); }}><ChevronLeft className="h-4 w-4" /></button>
-            <span className="text-sm font-semibold capitalize" aria-live="polite">{new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(month)}</span>
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="text-sm font-semibold capitalize" aria-live="polite">{new Intl.DateTimeFormat(locale, { month: "long" }).format(month)}</span>
+              <CalendarYearSelect year={month.getFullYear()} minYear={parseLocalDay(String(props.min ?? ""))?.getFullYear()} maxYear={parseLocalDay(String(props.max ?? ""))?.getFullYear()} onYearChange={(year) => {
+                const next = changeCalendarYear(month, year);
+                setMonth(next);
+                setFocusedDay(localDay(next));
+              }} />
+            </div>
             <button type="button" className={smallButton} aria-label="Sledeći mesec" onClick={() => { const next = new Date(month.getFullYear(), month.getMonth() + 1, 1, 12); setMonth(next); setFocusedDay(localDay(next)); }}><ChevronRight className="h-4 w-4" /></button>
           </div>
           <div className="grid grid-cols-7 text-center text-[11px] font-medium text-muted-foreground" aria-hidden="true">{["Pon", "Uto", "Sre", "Čet", "Pet", "Sub", "Ned"].map(day => <span key={day} className="py-1">{day}</span>)}</div>
