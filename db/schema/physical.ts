@@ -13,6 +13,8 @@ import {
   AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import type { BlockDetails, BlockKind, PlanBlocks, TagPlacement } from "@/lib/physical/types";
+export type { SetEntry } from "@/lib/physical/types";
 
 export const fieldScopeEnum = pgEnum("physical_field_scope", ["top", "subrow"]);
 export type FieldScope = (typeof fieldScopeEnum.enumValues)[number];
@@ -40,7 +42,7 @@ export const fieldKindLabel: Record<FieldKind, string> = {
   exercise_ref: "Exercise reference",
 };
 
-export type SetEntry = { weight: number; reps: number; bodyweight?: boolean; warmup?: boolean; perSide?: boolean };
+
 
 export type FieldConfig = {
   min?: number;
@@ -54,6 +56,7 @@ export const activityTagGroup = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull().unique(),
+    placement: jsonb("placement").$type<TagPlacement>(),
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
   },
@@ -124,6 +127,7 @@ export const activity = pgTable(
   "physical_activities",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    title: text("title"),
     performedAt: timestamp("performed_at", { withTimezone: true }).notNull(),
     values: jsonb("values").$type<Record<string, unknown>>().notNull().default({}),
     comment: text("comment"),
@@ -134,7 +138,7 @@ export const activity = pgTable(
   (t) => [index("activity_performed_at_idx").on(t.performedAt)],
 );
 
-export type SubrowKind = "exercise" | "split" | "sprint";
+export type SubrowKind = BlockKind;
 
 export const activitySubrow = pgTable(
   "physical_activity_subrows",
@@ -148,6 +152,7 @@ export const activitySubrow = pgTable(
       onDelete: "restrict",
     }),
     values: jsonb("values").$type<Record<string, unknown>>().notNull().default({}),
+    details: jsonb("details").$type<BlockDetails>(),
     sortOrder: integer("sort_order").notNull().default(0),
   },
   (t) => [index("activity_subrow_activity_idx").on(t.activityId)],
@@ -175,6 +180,7 @@ export const workoutPlan = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull(),
     notes: text("notes"),
+    blocks: jsonb("blocks").$type<PlanBlocks>(),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().default(sql`now()`),
@@ -267,3 +273,8 @@ export type Split = typeof split.$inferSelect;
 export type SplitDay = typeof splitDay.$inferSelect;
 export type SplitDayTag = typeof splitDayTag.$inferSelect;
 export type SplitDayWorkoutPlan = typeof splitDayWorkoutPlan.$inferSelect;
+
+export const activitySubrowTag = pgTable("physical_activity_subrow_tags", {
+ subrowId: uuid("subrow_id").notNull().references(()=>activitySubrow.id,{onDelete:"cascade"}),
+ tagId: uuid("tag_id").notNull().references(()=>activityTag.id,{onDelete:"cascade"}),
+},t=>[primaryKey({columns:[t.subrowId,t.tagId]}),index("physical_activity_subrow_tags_tag_idx").on(t.tagId)]);

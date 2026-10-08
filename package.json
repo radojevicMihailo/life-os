@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --exclude \"tests/finance/integration/**\"",
+    "test": "vitest run --exclude \"tests/finance/integration/**\" --exclude \"tests/physical/integration/**\"",
     "test:watch": "vitest",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
@@ -23,9 +23,10 @@
     "db:seed": "node --env-file-if-exists=.env.local scripts/seed-finance.mjs",
     "test:finance": "vitest run tests/finance/unit",
     "test:integration": "vitest run tests/finance/integration --maxWorkers=2",
-    "test:unit": "vitest run --exclude \"tests/finance/integration/**\"",
+    "test:unit": "vitest run --exclude \"tests/finance/integration/**\" --exclude \"tests/physical/integration/**\"",
     "notify:setup": "node scripts/web-push-setup.mjs",
-    "db:seed:foods": "node --env-file-if-exists=.env.local scripts/seed-foods.mjs"
+    "db:seed:foods": "node --env-file-if-exists=.env.local scripts/seed-foods.mjs",
+    "test:physical:integration": "vitest run tests/physical/integration --maxWorkers=1"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

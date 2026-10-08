@@ -1,14 +1,13 @@
 import "server-only";
-import { and, asc, desc, eq, gte, inArray, isNull, lte } from "drizzle-orm";
+import { asc, eq, inArray, isNull, or } from "drizzle-orm";
 import { db } from "@/db";
+import { loadActivity, loadActivities } from "@/lib/physical/repository";
+import type { Summary } from "@/lib/physical/types";
 import {
-  activity,
-  activitySubrow,
   activityTag,
   activityTagGroup,
   exercise,
   exerciseGroup,
-  physicalActivityTag,
   physicalField,
   split,
   splitDay,
@@ -63,11 +62,11 @@ export async function getExerciseGroups(): Promise<ExerciseGroup[]> {
     .orderBy(asc(exerciseGroup.sortOrder), asc(exerciseGroup.name));
 }
 
-export async function getExercises(): Promise<Exercise[]> {
+export async function getExercises(includeIds: string[] = []): Promise<Exercise[]> {
   return db
     .select()
     .from(exercise)
-    .where(isNull(exercise.archivedAt))
+    .where(includeIds.length ? or(isNull(exercise.archivedAt), inArray(exercise.id, includeIds)) : isNull(exercise.archivedAt))
     .orderBy(asc(exercise.name));
 }
 
@@ -93,73 +92,20 @@ export type ActivityListFilters = {
   to?: Date;
 };
 
-export type ActivityListRow = Activity & { tagIds: string[]; subrowCount: number };
+export type ActivityListRow = Activity & { tagIds: string[]; subrowCount: number; summary: Summary };
 
 export async function getActivities(filters: ActivityListFilters): Promise<ActivityListRow[]> {
-  const conditions = [];
-  if (filters.from) conditions.push(gte(activity.performedAt, filters.from));
-  if (filters.to) conditions.push(lte(activity.performedAt, filters.to));
-
-  let activityIds: string[] | null = null;
-  if (filters.tagId) {
-    const tagged = await db
-      .select({ id: physicalActivityTag.activityId })
-      .from(physicalActivityTag)
-      .where(eq(physicalActivityTag.tagId, filters.tagId));
-    activityIds = tagged.map((r) => r.id);
-    if (activityIds.length === 0) return [];
-    conditions.push(inArray(activity.id, activityIds));
-  }
-
-  const rows = await db
-    .select()
-    .from(activity)
-    .where(conditions.length ? and(...conditions) : undefined)
-    .orderBy(desc(activity.performedAt));
-
-  if (rows.length === 0) return [];
-
-  const ids = rows.map((r) => r.id);
-  const [subrows, tagLinks] = await Promise.all([
-    db.select().from(activitySubrow).where(inArray(activitySubrow.activityId, ids)),
-    db.select().from(physicalActivityTag).where(inArray(physicalActivityTag.activityId, ids)),
-  ]);
-
-  const subCount = new Map<string, number>();
-  for (const s of subrows) subCount.set(s.activityId, (subCount.get(s.activityId) ?? 0) + 1);
-
-  const tagMap = new Map<string, string[]>();
-  for (const t of tagLinks) {
-    const list = tagMap.get(t.activityId) ?? [];
-    list.push(t.tagId);
-    tagMap.set(t.activityId, list);
-  }
-
-  return rows.map((a) => ({
-    ...a,
-    tagIds: tagMap.get(a.id) ?? [],
-    subrowCount: subCount.get(a.id) ?? 0,
-  }));
+  return loadActivities(db, filters);
 }
 
 export type ActivityDetail = {
   activity: Activity;
-  subrows: ActivitySubrow[];
+  subrows: (ActivitySubrow & { tagIds: string[] })[];
   tagIds: string[];
 };
 
 export async function getActivity(id: string): Promise<ActivityDetail | null> {
-  const [a] = await db.select().from(activity).where(eq(activity.id, id)).limit(1);
-  if (!a) return null;
-  const [subrows, tagLinks] = await Promise.all([
-    db
-      .select()
-      .from(activitySubrow)
-      .where(eq(activitySubrow.activityId, id))
-      .orderBy(asc(activitySubrow.sortOrder)),
-    db.select().from(physicalActivityTag).where(eq(physicalActivityTag.activityId, id)),
-  ]);
-  return { activity: a, subrows, tagIds: tagLinks.map((t) => t.tagId) };
+  return loadActivity(db,id);
 }
 
 export type WorkoutPlanListRow = WorkoutPlan & { exerciseCount: number };
