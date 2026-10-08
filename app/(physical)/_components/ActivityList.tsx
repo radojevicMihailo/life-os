@@ -11,7 +11,7 @@ export function ActivityList({
   tags: ActivityTag[];
 }) {
   if (rows.length === 0) {
-    return <p className="text-sm text-muted-foreground">No activities yet.</p>;
+    return <p className="text-sm text-muted-foreground">Još nema aktivnosti.</p>;
   }
   const tagById = new Map(tags.map((t) => [t.id, t]));
   return (
@@ -20,7 +20,7 @@ export function ActivityList({
         const tagNames = r.tagIds
           .map((id) => tagById.get(id)?.name)
           .filter((n): n is string => Boolean(n));
-        const label = tagNames.length > 0 ? tagNames.join(" · ") : "Untagged";
+        const label = r.title || ({running:"Trčanje",gym:"Teretana",mixed:"Kombinovani trening"}[r.mode]);
         return (
           <li key={r.id}>
             <Link href={`/activities/${r.id}`}>
@@ -29,14 +29,16 @@ export function ActivityList({
                   <div>
                     <div className="text-sm font-medium">{label}</div>
                     <div className="text-xs text-muted-foreground">
-                      {new Date(r.performedAt).toLocaleString()}
+                      {new Date(r.performedAt).toLocaleString("sr-RS")}
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {r.stravaUrl ? "Strava · " : ""}
-                    {r.subrowCount} {r.subrowCount === 1 ? "row" : "rows"}
+                    {r.subrowCount} delova
                   </div>
                 </div>
+                <p className="mt-2 text-xs text-muted-foreground">{tagNames.join(" · ")}</p>
+                <p className="mt-2 text-sm">{[r.summary.distanceKm > 0 ? `${r.summary.distanceComplete ? "" : "Uneseno: "}${new Intl.NumberFormat("sr-RS").format(r.summary.distanceKm)} km` : null,r.summary.exerciseCount > 0 ? `${r.summary.exerciseCount} vežbi · ${r.summary.setCount} serija` : null].filter(Boolean).join(" · ")}</p>
                 {r.comment ? (
                   <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{r.comment}</p>
                 ) : null}

@@ -1,5 +1,5 @@
 export function parseNumber(text:string,options:{min?:number;integer?:boolean}={}):number|null{
- const normalized=text.trim().replace(",",".");if(!/^\d+(?:\.\d+)?$/.test(normalized))return null;
+ const normalized=text.trim().replace(",",".");if(!/^-?\d+(?:\.\d+)?$/.test(normalized))return null;
  const value=Number(normalized);return Number.isFinite(value)&&value>=(options.min??0)&&(!options.integer||Number.isInteger(value))?value:null;
 }
 export function parseDistance(text:string):number|null{const n=parseNumber(text);return n!=null&&n>0?n:null;}

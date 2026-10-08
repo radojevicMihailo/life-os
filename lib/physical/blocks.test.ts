@@ -26,3 +26,8 @@ it("retains legacy unknown fields and manual pace without inventing metrics",()=
  const payload=toActivityWrite({performedAt:new Date(),title:null,values:{extra:9},comment:null,stravaUrl:null,tagIds:[],blocks:[b,newBlock("split")]});
  expect(payload.subrows).toHaveLength(1); expect(payload.values.extra).toBe(9); expect(payload.subrows[0].values.custom).toBe("keep");
 });
+it("retains deliberately skipped and optional empty parts while discarding untouched placeholders",()=>{
+ const skipped=newBlock("exercise"),optional=newBlock("split");skipped.details.status="skipped";optional.details.optional=true;
+ const payload=toActivityWrite({performedAt:new Date(),title:null,values:{},comment:null,stravaUrl:null,tagIds:[],blocks:[skipped,optional,newBlock("split")]});
+ expect(payload.subrows.map(b=>b.details.status)).toEqual(["skipped","pending"]);expect(payload.subrows[1].details.optional).toBe(true);
+});

@@ -8,7 +8,7 @@ export type BlockDetails = { version: 1; legacyActuals?: boolean; label: string 
 export type TrainingBlock = { id?: string; rowKey: string; kind: BlockKind; exerciseId: string | null; values: Record<string, unknown>; details: BlockDetails; tagIds: string[]; sortOrder: number };
 export type StoredBlock = Omit<TrainingBlock,"rowKey"|"details"|"tagIds"> & { id: string; details: BlockDetails | null; tagIds?: string[] };
 export type PlanBlock = Omit<TrainingBlock,"id"|"rowKey"|"details"> & { details: Omit<BlockDetails,"status"> };
-export type PlanBlocks = { version: 1; items: PlanBlock[] };
+export type PlanBlocks = { version: 1; tagIds?: string[]; items: PlanBlock[] };
 export type ActivityDraft = { id?: string; title: string | null; performedAt: Date; values: Record<string, unknown>; comment: string | null; stravaUrl: string | null; tagIds: string[]; blocks: TrainingBlock[] };
 export type ActivityWrite = Omit<ActivityDraft,"id"|"blocks"> & { subrows: Omit<TrainingBlock,"rowKey">[] };
 export type TagPlacement = { scope: "session"|"block"; modes: EntryMode[]; kinds: BlockKind[] };
@@ -16,3 +16,5 @@ export type GroupConfig = { id: string; placement: TagPlacement | null };
 export type TagRef = { id: string; groupId: string };
 export type TagContext = { scope: "session"; mode: EntryMode } | { scope: "block"; kind: BlockKind };
 export type Summary = { distanceKm: number; distanceComplete: boolean; activeRunSeconds: number; timeComplete: boolean; runPaceSeconds: number | null; exerciseCount: number; setCount: number };
+
+export type SourceOption = { id:string; kind:"activity"|"plan"|"splitDay"; label:string; draft:ActivityDraft; previous?:ActivityDraft; conflicts:{groupId:string;tagIds:string[]}[] };

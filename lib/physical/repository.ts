@@ -5,7 +5,7 @@ import * as schema from "@/db/schema/physical";
 import { activityPayloadSchema, workoutPlanPayloadSchema } from "@/lib/validation/physical";
 import { trainingBlockSchema } from "./trainingSchemas";
 import { tagConflicts } from "./tagSelection";
-import { adaptStoredBlock } from "./blocks";
+import { adaptStoredBlock,inferEntryMode } from "./blocks";
 import { summarizeActivity } from "./activitySummary";
 import type { BlockDetails } from "./types";
 const {activity,activitySubrow,activitySubrowTag,activityTag,exercise,physicalActivityTag,physicalField,workoutPlan,workoutPlanExercise}=schema;
@@ -73,7 +73,7 @@ export async function saveWorkoutPlan(database:PhysicalDb,raw:unknown,id?:string
   if(catalog.length!==exerciseIds.length)throw new TrainingInputError("Jedna od vežbi više ne postoji.");
   const oldExerciseRows=id?await tx.select().from(workoutPlanExercise).where(eq(workoutPlanExercise.planId,id)):[];
   for(const ex of catalog)if(ex.archivedAt&&!existing?.blocks?.items.some(b=>b.exerciseId===ex.id)&&!oldExerciseRows.some(e=>e.exerciseId===ex.id))throw new TrainingInputError("Izaberi aktivnu vežbu za novi šablon.");
-  const tags=await tx.select().from(activityTag);for(const b of data.blocks?.items??[])if(b.tagIds.some(t=>!tags.some(tag=>tag.id===t))||tagConflicts(b.tagIds,tags).length)throw new TrainingInputError("Proveri opcije delova šablona.");
+  const tags=await tx.select().from(activityTag);for(const b of [{tagIds:data.blocks?.tagIds??[]},...(data.blocks?.items??[])])if(b.tagIds.some(t=>!tags.some(tag=>tag.id===t))||tagConflicts(b.tagIds,tags).length)throw new TrainingInputError("Proveri opcije delova šablona.");
   let planId=id;
   const patch={name:data.name,notes:data.notes??null,...(data.blocks?{blocks:data.blocks}:{})};
   if(planId)await tx.update(workoutPlan).set({...patch,updatedAt:sql`now()`}).where(eq(workoutPlan.id,planId));
@@ -107,5 +107,5 @@ export async function loadActivities(database:PhysicalDb,filters:{tagId?:string;
  const ids=rows.map(r=>r.id);
  const [subrows,tags]=await Promise.all([database.select().from(activitySubrow).where(inArray(activitySubrow.activityId,ids)).orderBy(asc(activitySubrow.sortOrder)),database.select().from(physicalActivityTag).where(inArray(physicalActivityTag.activityId,ids))]);
  const blockTags=subrows.length?await database.select().from(activitySubrowTag).where(inArray(activitySubrowTag.subrowId,subrows.map(b=>b.id))):[];
- return rows.map(a=>{const blocks=subrows.filter(b=>b.activityId===a.id).map(b=>({...b,tagIds:blockTags.filter(t=>t.subrowId===b.id).map(t=>t.tagId)}));return {...a,tagIds:[...new Set([...tags.filter(t=>t.activityId===a.id).map(t=>t.tagId),...blocks.flatMap(b=>b.tagIds)])],subrowCount:blocks.length,summary:summarizeActivity(blocks.map(adaptStoredBlock))};});
+ return rows.map(a=>{const blocks=subrows.filter(b=>b.activityId===a.id).map(b=>({...b,tagIds:blockTags.filter(t=>t.subrowId===b.id).map(t=>t.tagId)}));return {...a,tagIds:[...new Set([...tags.filter(t=>t.activityId===a.id).map(t=>t.tagId),...blocks.flatMap(b=>b.tagIds)])],subrowCount:blocks.length,mode:inferEntryMode(blocks.map(adaptStoredBlock),"mixed"),summary:summarizeActivity(blocks.map(adaptStoredBlock))};});
 }

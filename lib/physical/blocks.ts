@@ -20,6 +20,6 @@ export function inferEntryMode(rows:TrainingBlock[],fallback:EntryMode):EntryMod
 }
 export function toActivityWrite(draft:ActivityDraft):ActivityWrite{
  const {blocks,id,...parent}=draft;void id;
- const nonempty=blocks.filter(b=>b.id||b.exerciseId||b.tagIds.length||b.details.label||b.details.note||Object.keys(b.details.targets).length||Object.values(b.values).some(v=>v!=null&&v!==""&&(!Array.isArray(v)||v.length)));
+ const nonempty=blocks.filter(b=>b.id||b.exerciseId||b.details.status!=="pending"||b.details.optional||b.details.restSec!=null||b.details.linkNext||b.tagIds.length||b.details.label||b.details.note||Object.keys(b.details.targets).length||Object.values(b.values).some(v=>v!=null&&v!==""&&(!Array.isArray(v)||v.length)));
  return {...parent,tagIds:[...new Set(parent.tagIds)],subrows:nonempty.map((b,sortOrder)=>{const {rowKey,...stored}=b;void rowKey;return {...structuredClone(stored),sortOrder};})};
 }

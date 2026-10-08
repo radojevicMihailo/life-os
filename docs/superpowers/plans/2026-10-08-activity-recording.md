@@ -514,3 +514,20 @@ Review the plan against the approved spec before execution. Public signatures ab
 ## Execution handoff
 
 Recommended: native execution in this session, task by task, because the same ordered-block contracts span forms, storage and templates. A fresh final reviewer should check the completed branch for preservation of historical data, planned-versus-actual semantics and migration safety. Subagent-driven execution is an available alternative with fresh implementer/reviewer contexts per task. The user reviews this plan and selects the execution method before application code changes.
+
+
+## Execution record — 2026-10-08
+
+Implemented all six tasks on `codex/activity-recording` in the shared checkout. Fresh final review found three Important issues (template custom values, old repeat links, stale exercise target conversion); all were reproduced by failing tests and fixed. Additional regression tests cover signed custom values, skipped/optional empty parts, and pending gym classification.
+
+Final verification: 91 unit files / 442 tests; PostgreSQL integration 5/5 using the actual additive migration; TypeScript, scoped ESLint, production build, and diff whitespace checks passed. Typecheck was rerun sequentially after build because the parallel build regenerated `.next/types` during an earlier typecheck.
+
+Browser evidence in isolated local test database: 5.2 km / 31:12 -> 6:00 pace; mixed run/sprints/run/jumps/timed recovery survives save and reorder; invalid sprint count is blocked; Petak A template transfers region/type and ranges with blank outcomes; canceling source replacement preserves malformed raw distance; simulated DB failure keeps all fields and retry succeeds; supersets can be linked with keyboard Enter and render A1/A2; editor and overview fit 375px in light/dark themes. Other structural variants are covered by shared inputs and domain tests, rather than claimed as individually browser-tested.
+
+Decisions made:
+- Used the shared checkout with a feature branch instead of a linked worktree, following the user's request for immediate implementation. Tradeoff: tests and edits share this checkout.
+- Added server-verified `legacyActuals` metadata to permit unchanged incomplete historical records to survive repeated edits. Tradeoff: legacy exceptions remain supported, but altered results must pass current validation.
+- Used native form constraint validation to preserve raw invalid inputs instead of a separate invalid-state registry. Tradeoff: behavior depends on browser native form constraints; verified in Chrome.
+- Stored whole-training template tags in versioned `blocks.tagIds` to preserve configured regions. Tradeoff: JSON references require server validation and sanitizing removed options.
+
+No deferred review findings. Production migration and deployment were not performed. Migration ready: `db/unified-migrations/0010_activity_blocks.sql`.

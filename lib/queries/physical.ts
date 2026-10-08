@@ -1,9 +1,15 @@
 import "server-only";
-import { asc, eq, inArray, isNull, or } from "drizzle-orm";
+import { asc, desc, eq, inArray, isNull, or } from "drizzle-orm";
 import { db } from "@/db";
 import { loadActivity, loadActivities } from "@/lib/physical/repository";
-import type { Summary } from "@/lib/physical/types";
+import type { Summary,ActivityDraft,EntryMode } from "@/lib/physical/types";
+import { adaptStoredBlock } from "@/lib/physical/blocks";
+import { includeRequestedActivity } from "@/lib/physical/sourceSelection";
+import { repeatActivity,draftFromPlan } from "@/lib/physical/drafts";
+import { resolvePlanBlocks,combinePlanDrafts,sanitizePlanTags } from "@/lib/physical/planAdapter";
+import { tagConflicts } from "@/lib/physical/tagSelection";
 import {
+  activity, activitySubrow, activitySubrowTag, physicalActivityTag,
   activityTag,
   activityTagGroup,
   exercise,
@@ -92,7 +98,7 @@ export type ActivityListFilters = {
   to?: Date;
 };
 
-export type ActivityListRow = Activity & { tagIds: string[]; subrowCount: number; summary: Summary };
+export type ActivityListRow = Activity & { tagIds: string[]; subrowCount: number; mode: EntryMode; summary: Summary };
 
 export async function getActivities(filters: ActivityListFilters): Promise<ActivityListRow[]> {
   return loadActivities(db, filters);
@@ -139,7 +145,8 @@ export async function getWorkoutPlan(id: string): Promise<WorkoutPlanDetail | nu
     .from(workoutPlanExercise)
     .where(eq(workoutPlanExercise.planId, id))
     .orderBy(asc(workoutPlanExercise.sortOrder));
-  return { plan: p, exercises };
+  const tags = await getTags();
+  return { plan: {...p, blocks: p.blocks ? sanitizePlanTags(p.blocks,tags) : null}, exercises };
 }
 
 export type SplitListRow = Split & { dayCount: number };
@@ -201,4 +208,47 @@ export async function getSplit(id: string): Promise<SplitDetail | null> {
       workoutPlanIds: planMap.get(d.id) ?? [],
     })),
   };
+}
+
+/** Batched source loading; no mutation happens when a source is previewed. */
+export async function getRecordingSources(requestedSource?:string): Promise<import("@/lib/physical/types").SourceOption[]> {
+ const [recentActivities,plans,days,allTags]=await Promise.all([
+  db.select().from(activity).orderBy(desc(activity.performedAt)).limit(20),
+  db.select().from(workoutPlan).where(isNull(workoutPlan.archivedAt)).orderBy(asc(workoutPlan.name)),
+  db.select({day:splitDay,splitName:split.name}).from(splitDay).innerJoin(split,eq(splitDay.splitId,split.id)).where(isNull(split.archivedAt)).orderBy(asc(split.name),asc(splitDay.sortOrder)),
+  getTags(),
+ ]);
+ const activities=await includeRequestedActivity(recentActivities,requestedSource,async id=>(await db.select().from(activity).where(eq(activity.id,id)).limit(1))[0]??null);
+ const ids=activities.map(a=>a.id),planIds=plans.map(p=>p.id),dayIds=days.map(d=>d.day.id);
+ const [rows,sessionTags,legacyExercises,dayTags,dayPlans]=await Promise.all([
+  ids.length?db.select().from(activitySubrow).where(inArray(activitySubrow.activityId,ids)).orderBy(asc(activitySubrow.sortOrder)):Promise.resolve([]),
+  ids.length?db.select().from(physicalActivityTag).where(inArray(physicalActivityTag.activityId,ids)):Promise.resolve([]),
+  planIds.length?db.select().from(workoutPlanExercise).where(inArray(workoutPlanExercise.planId,planIds)).orderBy(asc(workoutPlanExercise.sortOrder)):Promise.resolve([]),
+  dayIds.length?db.select().from(splitDayTag).where(inArray(splitDayTag.dayId,dayIds)):Promise.resolve([]),
+  dayIds.length?db.select().from(splitDayWorkoutPlan).where(inArray(splitDayWorkoutPlan.dayId,dayIds)):Promise.resolve([]),
+ ]);
+ const links=rows.length?await db.select().from(activitySubrowTag).where(inArray(activitySubrowTag.subrowId,rows.map(r=>r.id))):[];
+ const today=new Date();
+ const activitySources=activities.map(a=>{
+  const previous:ActivityDraft={id:a.id,title:a.title,performedAt:a.performedAt,values:a.values,comment:a.comment,stravaUrl:a.stravaUrl,tagIds:sessionTags.filter(t=>t.activityId===a.id).map(t=>t.tagId),blocks:rows.filter(r=>r.activityId===a.id).map(r=>adaptStoredBlock({...r,tagIds:links.filter(t=>t.subrowId===r.id).map(t=>t.tagId)}))};
+  return {id:a.id,kind:"activity" as const,label:a.title??`Trening · ${a.performedAt.toLocaleDateString("sr-RS")}`,draft:repeatActivity(previous,today),previous,conflicts:[]};
+ });
+ const planSources=plans.map(p=>{
+  const blocks=sanitizePlanTags(resolvePlanBlocks(p.blocks,legacyExercises.filter(e=>e.planId===p.id)),allTags);
+  const draft=draftFromPlan({name:p.name,notes:p.notes,tagIds:[],blocks},today);
+  return {id:p.id,kind:"plan" as const,label:p.name,draft,conflicts:tagConflicts(draft.tagIds,allTags)};
+ });
+ const splitSources=days.flatMap(({day,splitName})=>{
+  const drafts=dayPlans.filter(link=>link.dayId===day.id).flatMap(link=>{const source=planSources.find(p=>p.id===link.planId);return source?[source.draft]:[];});
+  if(!drafts.length)return [];
+  const label=`${splitName} · Dan ${day.sortOrder+1}`;
+  const draft=combinePlanDrafts(drafts,label,dayTags.filter(t=>t.dayId===day.id).map(t=>t.tagId),today);
+  return [{id:day.id,kind:"splitDay" as const,label,draft,conflicts:tagConflicts(draft.tagIds,allTags)}];
+ });
+ return [...planSources,...splitSources,...activitySources];
+}
+
+export async function getRecordingCatalog(includeIds:string[]=[]){
+ const [tagGroups,tags,fields,exerciseGroups,exercises]=await Promise.all([getTagGroups(),getTags(),getAllFields(),getExerciseGroups(),getExercises(includeIds)]);
+ return {tagGroups,tags,...fields,exerciseGroups,exercises};
 }

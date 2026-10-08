@@ -26,6 +26,7 @@ export default async function EditSplitPage({
         <ChevronLeft className="h-4 w-4" /> Splits
       </Link>
       <h1 className="text-2xl font-semibold">{data.split.name}</h1>
+      <div className="flex flex-wrap gap-2">{data.days.filter(d=>d.workoutPlanIds.length).map(d=><Link key={d.id} href={`/activities/new?source=splitDay:${d.id}`} className="rounded-lg border px-3 py-2 text-sm hover:bg-accent">Zabeleži dan {d.sortOrder+1}</Link>)}</div>
       <SplitForm
         tagGroups={tagGroups}
         tags={tags}

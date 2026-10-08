@@ -19,4 +19,4 @@ export const trainingBlockSchema=baseBlock.superRefine((b,ctx)=>{
 const planBlock=baseBlock.omit({id:true,details:true,values:true}).extend({details:blockDetailsSchema.omit({status:true}),values:z.record(z.string(),z.unknown())}).superRefine((b,ctx)=>{
  for(const key of ["sets","distance","duration","pace","sprintDistance","sprintDuration","sprintReps","sprintRest"])if(b.values[key]!=null)ctx.addIssue({code:"custom",path:["values",key],message:"Šablon čuva ciljeve, ne rezultate."});
 });
-export const planBlocksSchema=z.object({version:z.literal(1),items:z.array(planBlock)});
+export const planBlocksSchema=z.object({version:z.literal(1),tagIds:z.array(z.uuid()).optional(),items:z.array(planBlock)});

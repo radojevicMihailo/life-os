@@ -45,3 +45,8 @@ it("round-trips legacy incomplete results but rejects a changed invalid result o
  await expect(saveActivity(database.db,toActivityWrite(d),old.id)).rejects.toThrow();
  d.blocks[0].values.distance=0;await expect(saveActivity(database.db,toActivityWrite(d))).rejects.toThrow();
 });
+it("classifies a pending gym workout from its structure rather than completed results",async()=>{
+ const d=draft(),b=newBlock("exercise");b.details.label="Eksplozivni push";d.blocks=[b];d.title=null;
+ const id=await saveActivity(database.db,toActivityWrite(d)),row=(await loadActivities(database.db)).find(a=>a.id===id);
+ expect(row).toMatchObject({mode:"gym",summary:{exerciseCount:0,distanceKm:0}});
+});

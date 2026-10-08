@@ -16,3 +16,14 @@ it("copies actual values into targets only after explicit selection",()=>{
  const draft=draftFromPlan({name:"Tempo",notes:"goal",tagIds:[],blocks:plan},new Date());
  expect(draft.blocks[0].values).toEqual({});expect(draft.blocks[0].details.status).toBe("pending");
 });
+it("preserves template custom instructions when reopened without copying actual result keys",()=>{
+ const plan=planFromActivity(source(),false);plan.items[0].values={terrain:"brdo",custom:{cue:"lagano"}};
+ const reopened=draftFromPlan({name:"Petak",notes:null,tagIds:[],blocks:plan},new Date());
+ expect(planFromActivity(reopened,false).items[0].values).toEqual(plan.items[0].values);
+});
+it("replaces stale exercise targets with achieved repetition and timed set ranges",()=>{
+ const d=source(),b=newBlock("exercise");b.details.status="done";b.details.targets={reps:{min:8,max:8},durationSec:{min:20,max:20}};b.values={sets:[{reps:12},{reps:10}]};d.blocks=[b];
+ expect(planFromActivity(d,true).items[0].details.targets).toEqual({setCount:{min:2,max:2},reps:{min:10,max:12}});
+ b.values={sets:[{durationSec:45},{durationSec:60}]};
+ expect(planFromActivity(d,true).items[0].details.targets).toEqual({setCount:{min:2,max:2},durationSec:{min:45,max:60}});
+});

@@ -9,3 +9,6 @@ it("accepts explicit duration parts without silently normalizing invalid seconds
 it("supports zero weight and rest but whole sprint counts",()=>{
  expect(parseNumber("0",{min:0})).toBe(0);expect(parseNumber("1.5",{integer:true,min:1})).toBeNull();expect(parseNumber("12oops",{min:0})).toBeNull();
 });
+it("preserves signed custom numeric fields while built-in measurements remain nonnegative",()=>{
+ expect(parseNumber("-2,5",{min:-Infinity})).toBe(-2.5);expect(parseNumber("-3",{min:-Infinity,integer:true})).toBe(-3);expect(parseNumber("-3")).toBeNull();
+});

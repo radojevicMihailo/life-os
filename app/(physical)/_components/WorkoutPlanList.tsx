@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import type { WorkoutPlanListRow } from "@/lib/queries/physical";
 
 export function WorkoutPlanList({ rows }: { rows: WorkoutPlanListRow[] }) {
-  if (rows.length === 0) return <p className="text-sm text-muted-foreground">No workout plans yet.</p>;
+  if (rows.length === 0) return <p className="text-sm text-muted-foreground">Još nema šablona treninga.</p>;
   return (
     <ul className="space-y-2">
       {rows.map((p) => (
@@ -13,7 +13,7 @@ export function WorkoutPlanList({ rows }: { rows: WorkoutPlanListRow[] }) {
               <div className="flex items-center justify-between">
                 <div className="text-sm font-medium">{p.name}</div>
                 <div className="text-xs text-muted-foreground">
-                  {p.exerciseCount} exercise{p.exerciseCount === 1 ? "" : "s"}
+                  {p.blocks ? `${p.blocks.items.length} delova` : `${p.exerciseCount} vežbi`}
                 </div>
               </div>
               {p.notes ? (
