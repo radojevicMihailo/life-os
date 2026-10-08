@@ -5,7 +5,8 @@ import { placementSchema } from "@/lib/physical/trainingSchemas";
 import { authorizePhysicalAction,physicalActionError } from "@/lib/physical/actionAccess";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { activityTagGroup } from "@/db/schema/physical";
+import { placementDependencyError } from "@/lib/physical/tagSelection";
+import { activityTag, activityTagGroup } from "@/db/schema/physical";
 import { revalidatePhysicalRoutes } from "./_revalidate";
 
 type ActionResult<T = void> = { ok: true; data: T } | { ok: false; error: string };
@@ -53,6 +54,9 @@ export async function updateTagGroupPlacement(input:{id:string;placement:import(
   await authorizePhysicalAction();
   const parsed=z.object({id:z.uuid(),placement:placementSchema}).safeParse(input);
   if(!parsed.success)return fail("Proveri mesto prikaza grupe.");
+  const [groups,tags]=await Promise.all([db.select().from(activityTagGroup),db.select().from(activityTag)]);
+  const error=placementDependencyError(parsed.data.id,parsed.data.placement,groups,tags);
+  if(error)return fail(error);
   await db.update(activityTagGroup).set({placement:parsed.data.placement}).where(eq(activityTagGroup.id,parsed.data.id));
   revalidatePhysicalRoutes();return {ok:true,data:undefined};
  }catch(error){return physicalActionError(error);}

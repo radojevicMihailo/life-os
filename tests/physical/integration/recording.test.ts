@@ -50,3 +50,21 @@ it("classifies a pending gym workout from its structure rather than completed re
  const id=await saveActivity(database.db,toActivityWrite(d)),row=(await loadActivities(database.db)).find(a=>a.id===id);
  expect(row).toMatchObject({mode:"gym",summary:{exerciseCount:0,distanceKm:0}});
 });
+it("backfills purpose visibility by ID and keeps it stable after renaming configuration",async()=>{
+ const {readFile}=await import("node:fs/promises");
+ const {visibleGroups}=await import("@/lib/physical/tagSelection");
+ const names=["Namera","Region","Vrsta trčanje","Vrsta aktivnog odmora","Sport"];
+ const groups=await database.db.insert(activityTagGroup).values(names.map(name=>({name}))).onConflictDoUpdate({target:activityTagGroup.name,set:{placement:null}}).returning();
+ const purpose=groups.find(g=>g.name==="Namera")!;
+ const choices=await database.db.insert(activityTag).values(["Snaga","Eksplozivnost","Hipertrofija","EMOM","Trčanje","Aktivni odmor","Sport","Pauza"].map(name=>({name,groupId:purpose.id}))).returning();
+ const migration=await readFile(new URL("../../../db/unified-migrations/0011_activity_purpose_visibility.sql",import.meta.url),"utf8");await database.pool.query(migration);
+ const configured=(await database.db.select().from(activityTagGroup)).filter(g=>names.includes(g.name));
+ for(const tag of choices){
+  const dependent=["Snaga","Eksplozivnost","Hipertrofija","EMOM"].includes(tag.name)?"Region":tag.name==="Trčanje"?"Vrsta trčanje":tag.name==="Aktivni odmor"?"Vrsta aktivnog odmora":tag.name==="Sport"?"Sport":null;
+  expect(visibleGroups(configured,choices,[tag.id],{scope:"session",mode:"mixed"}).map(g=>g.name).sort()).toEqual(["Namera",...(dependent?[dependent]:[])].sort());
+ }
+ const strength=choices.find(t=>t.name==="Snaga")!;
+ await database.db.update(activityTag).set({name:"Preimenovana snaga"}).where(eq(activityTag.id,strength.id));
+ const region=configured.find(g=>g.name==="Region")!;await database.db.update(activityTagGroup).set({name:"Preimenovan region"}).where(eq(activityTagGroup.id,region.id));
+ expect(visibleGroups(await database.db.select().from(activityTagGroup),await database.db.select().from(activityTag),[strength.id],{scope:"session",mode:"gym"}).some(g=>g.id===region.id)).toBe(true);
+});

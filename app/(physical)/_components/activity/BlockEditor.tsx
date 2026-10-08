@@ -16,15 +16,15 @@ import {CustomFields} from "./CustomFields";
 import {TargetSummary} from "./TargetSummary";
 import {NumberInput} from "./NumberInput";
 export type BlockCatalog={exercises:Exercise[];exerciseGroups:ExerciseGroup[];tagGroups:ActivityTagGroup[];tags:ActivityTag[];subrowFields:PhysicalField[]};
-export type BlockEditorProps=BlockCatalog&{blocks:TrainingBlock[];onChange:(blocks:TrainingBlock[])=>void;mode:"actual"|"template";errors?:Record<string,string>};
+export type BlockEditorProps=BlockCatalog&{blocks:TrainingBlock[];onChange:(blocks:TrainingBlock[])=>void;mode:"actual"|"template";errors?:Record<string,string>;sessionTagIds?:string[]};
 const builtins=["distance","duration","pace","sets","sprintDistance","sprintDuration","sprintReps","sprintRest"];
-export function BlockEditor({blocks,onChange,mode,errors={},...catalog}:BlockEditorProps){
+export function BlockEditor({blocks,onChange,mode,errors={},sessionTagIds=[],...catalog}:BlockEditorProps){
  const labels=supersetLabels(blocks);
  const update=(idx:number,block:TrainingBlock)=>onChange(blocks.map((b,i)=>i===idx?block:b));
  function values(idx:number,next:Record<string,unknown>){const block=blocks[idx];const hasResults=Object.values(next).some(v=>v!=null&&v!==""&&(!Array.isArray(v)||v.length>0));update(idx,{...block,values:next,details:{...block.details,status:hasResults?"done":"pending"}});}
  return <div className="space-y-4">{blocks.map((block,index)=>{const updateBlock=(next:TrainingBlock)=>update(index,next);const error=Object.entries(errors).find(([path])=>path.startsWith(`subrows.${index}.`))?.[1];return <div key={block.rowKey} className="space-y-2">{labels[index]&&<p className="text-xs font-medium text-muted-foreground">Superserija {labels[index]}</p>}<BlockCard title={catalog.exercises.find(e=>e.id===block.exerciseId)?.name} block={block} index={index} count={blocks.length} onMove={dir=>onChange(moveBlock(blocks,index,dir))} onRemove={()=>onChange(removeBlock(blocks,index))} onDuplicate={()=>onChange(duplicateBlock(blocks,index))} error={error}>
  {mode==="actual"&&<TargetSummary targets={block.details.targets}/>}
- <TagSelection groups={catalog.tagGroups} tags={catalog.tags} selectedIds={block.tagIds} context={{scope:"block",kind:block.kind}} onChange={tagIds=>updateBlock({...block,tagIds})}/>
+ <TagSelection groups={catalog.tagGroups} tags={catalog.tags} selectedIds={block.tagIds} conditionIds={[...sessionTagIds,...block.tagIds]} context={{scope:"block",kind:block.kind}} onChange={tagIds=>updateBlock({...block,tagIds})}/>
  {mode==="actual"&&block.kind==="split"&&<RunFields block={block} onChange={next=>values(index,next)}/>}
  {mode==="actual"&&block.kind==="sprint"&&<SprintFields block={block} onChange={next=>values(index,next)}/>}
  {block.kind==="exercise"&&(mode==="actual"?<ExerciseFields block={block} exercises={catalog.exercises} groups={catalog.exerciseGroups} onChange={next=>values(index,next)} onExerciseChange={exerciseId=>updateBlock({...block,exerciseId})}/>:<label className="block text-sm font-medium">Vežba (može kasnije)<select value={block.exerciseId??""} className="mt-2 h-11 w-full rounded-lg border bg-background px-3" onChange={e=>updateBlock({...block,exerciseId:e.target.value||null})}><option value="">Izbor još nije zaključan</option>{catalog.exercises.filter(e=>!e.archivedAt||e.id===block.exerciseId).map(e=><option key={e.id} value={e.id}>{e.name}</option>)}</select></label>)}

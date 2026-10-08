@@ -51,6 +51,8 @@ export function TagGroupEditor({ sections }: { sections: Section[] }) {
           <TagGroupCard
             key={s.group.id}
             group={s.group}
+            groups={sections.map(s=>s.group)}
+            allTags={sections.flatMap(s=>s.tags)}
             tags={s.tags}
             onRenameGroup={renameGroup}
             onRemoveGroup={removeGroup}
@@ -75,12 +77,16 @@ export function TagGroupEditor({ sections }: { sections: Section[] }) {
 
 function TagGroupCard({
   group,
+  groups,
+  allTags,
   tags,
   onRenameGroup,
   onRemoveGroup,
   pending,
 }: {
   group: ActivityTagGroup;
+  groups: ActivityTagGroup[];
+  allTags: ActivityTag[];
   tags: ActivityTag[];
   onRenameGroup: (g: ActivityTagGroup, value: string) => void;
   onRemoveGroup: (g: ActivityTagGroup) => void;
@@ -137,7 +143,7 @@ function TagGroupCard({
         </Button>
       </div>
 
-      <TagPlacementEditor group={group} />
+      <TagPlacementEditor group={group} groups={groups} tags={allTags} />
       <ul className="space-y-2">
         {tags.map((t) => (
           <li key={t.id} className="flex items-center gap-2 rounded-md border px-3 py-2">

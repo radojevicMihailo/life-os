@@ -23,8 +23,9 @@ export function ActivityList({
         const label = r.title || ({running:"Trčanje",gym:"Teretana",mixed:"Kombinovani trening"}[r.mode]);
         return (
           <li key={r.id}>
-            <Link href={`/activities/${r.id}`}>
-              <Card className="px-4 py-3 hover:bg-accent">
+            <Card className="relative px-4 py-3 pr-24 hover:bg-accent">
+              <Link href={`/activities/${r.id}`} className="absolute inset-0 rounded-xl focus-visible:outline-2 focus-visible:outline-ring" aria-label={`Pregled treninga: ${label}`} />
+              <Link href={`/activities/${r.id}/edit`} className="absolute right-4 top-4 z-10 rounded-lg border bg-background px-3 py-2 text-sm font-medium hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring" aria-label={`Izmeni trening: ${label}`}>Izmeni</Link>
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm font-medium">{label}</div>
@@ -43,7 +44,6 @@ export function ActivityList({
                   <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{r.comment}</p>
                 ) : null}
               </Card>
-            </Link>
           </li>
         );
       })}
