@@ -1,9 +1,11 @@
+import {intervalSeconds,type IntervalSegment} from "./intervals";
 import type {SetEntry,TrainingBlock} from "./types";
 import {secondsToHhmmss,secondsToMmSs} from "./formatDuration";
 import {computePace} from "./pace";
-export const blockKindLabels={split:"Trčanje",exercise:"Vežba",sprint:"Sprintovi / intervali"};
+export const blockKindLabels={split:"Trčanje",exercise:"Vežba",sprint:"Sprintovi",interval:"Intervali"};
 export function describeBlock(block:TrainingBlock):string{
  const v=block.values;
+ if(block.kind==="interval")return (Array.isArray(v.segments)?v.segments as IntervalSegment[]:[]).map((s,i)=>`${i+1}. ${s.label||"Deonica"} · ${s.distance??"—"} km · ${s.pace?`${secondsToMmSs(s.pace)} /km`:intervalSeconds(s)?secondsToMmSs(intervalSeconds(s)!):"—"}`).join("\n")||"Deonice još nisu unete";
  if(block.kind==="split"){
  const distance=typeof v.distance==="number"&&v.distance>0?v.distance:null,time=typeof v.duration==="number"&&v.duration>0?v.duration:null;
  const pace=distance&&time?computePace(distance,time):null;

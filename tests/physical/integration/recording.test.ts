@@ -68,3 +68,13 @@ it("backfills purpose visibility by ID and keeps it stable after renaming config
  const region=configured.find(g=>g.name==="Region")!;await database.db.update(activityTagGroup).set({name:"Preimenovan region"}).where(eq(activityTagGroup.id,region.id));
  expect(visibleGroups(await database.db.select().from(activityTagGroup),await database.db.select().from(activityTag),[strength.id],{scope:"session",mode:"gym"}).some(g=>g.id===region.id)).toBe(true);
 });
+
+it("saves and edits ordered interval segments with the migrated database constraint",async()=>{
+ const {progressionExample}=await import("@/lib/physical/intervals");
+ const d=draft(),b=newBlock("interval");b.details.status="done";b.values={segments:progressionExample()};d.blocks=[b];
+ const id=await saveActivity(database.db,toActivityWrite(d));
+ let loaded=await loadActivity(database.db,id);expect(loaded?.subrows[0].kind).toBe("interval");expect(loaded?.subrows[0].values.segments).toEqual(progressionExample());
+ b.id=loaded!.subrows[0].id;const segments=progressionExample();segments[2].pace=285;b.values={segments};await saveActivity(database.db,toActivityWrite(d),id);
+ loaded=await loadActivity(database.db,id);expect(loaded?.subrows[0].values.segments).toEqual(segments);
+ expect((await loadActivities(database.db)).find(a=>a.id===id)?.summary).toMatchObject({distanceKm:5,activeRunSeconds:1705});
+});

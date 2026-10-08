@@ -1,10 +1,11 @@
-export type BlockKind = "exercise" | "split" | "sprint";
+import type {IntervalSegment} from "./intervals";
+export type BlockKind = "exercise" | "split" | "sprint" | "interval";
 export type EntryMode = "running" | "gym" | "mixed";
 export type BlockStatus = "pending" | "done" | "skipped";
 export type NumericRange = { min: number; max: number };
 export type SetEntry = { weight?: number; reps?: number; durationSec?: number; bodyweight?: boolean; warmup?: boolean; perSide?: boolean };
 export type BlockTargets = { distanceKm?: NumericRange; durationSec?: NumericRange; repetitions?: NumericRange; sprintDistanceM?: NumericRange; sprintDurationSec?: NumericRange; restSec?: NumericRange; setCount?: NumericRange; reps?: NumericRange };
-export type BlockDetails = { version: 1; legacyActuals?: boolean; label: string | null; note: string | null; status: BlockStatus; targets: BlockTargets; linkNext: boolean; restSec: number | null; optional: boolean };
+export type BlockDetails = { version: 1; legacyActuals?: boolean; intervalTargets?: IntervalSegment[]; label: string | null; note: string | null; status: BlockStatus; targets: BlockTargets; linkNext: boolean; restSec: number | null; optional: boolean };
 export type TrainingBlock = { id?: string; rowKey: string; kind: BlockKind; exerciseId: string | null; values: Record<string, unknown>; details: BlockDetails; tagIds: string[]; sortOrder: number };
 export type StoredBlock = Omit<TrainingBlock,"rowKey"|"details"|"tagIds"> & { id: string; details: BlockDetails | null; tagIds?: string[] };
 export type PlanBlock = Omit<TrainingBlock,"id"|"rowKey"|"details"> & { details: Omit<BlockDetails,"status"> };

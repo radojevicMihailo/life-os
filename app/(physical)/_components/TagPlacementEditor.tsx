@@ -13,7 +13,7 @@ export function TagPlacementEditor({group,groups,tags}:{group:ActivityTagGroup;g
   const previous=placement;setPlacement(next);
   startTransition(async()=>{const result=await updateTagGroupPlacement({id:group.id,placement:next});if(!result.ok){setPlacement(previous);toast.error(result.error);}});
  }
- const choices=placement.scope==="session"?[{key:"running",label:"Trčanje"},{key:"gym",label:"Teretana"},{key:"mixed",label:"Kombinovano"}]:[{key:"split",label:"Trčanje"},{key:"exercise",label:"Vežbe"},{key:"sprint",label:"Sprintovi"}];
+ const choices=placement.scope==="session"?[{key:"running",label:"Trčanje"},{key:"gym",label:"Teretana"},{key:"mixed",label:"Kombinovano"}]:[{key:"split",label:"Trčanje"},{key:"exercise",label:"Vežbe"},{key:"sprint",label:"Sprintovi"},{key:"interval",label:"Intervali"}];
  const selected=placement.scope==="session"?placement.modes:placement.kinds;
  const parents=groups.filter(g=>g.id!==group.id&&tags.some(t=>t.groupId===g.id));
  const parentTags=tags.filter(t=>t.groupId===placement.when?.groupId);

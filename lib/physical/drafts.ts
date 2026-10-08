@@ -1,11 +1,11 @@
 import { emptyDetails } from "./blocks";
 import type { ActivityDraft,BlockTargets,PlanBlocks,SetEntry } from "./types";
-const actualKeys=new Set(["sets","distance","duration","pace","sprintDistance","sprintDuration","sprintReps","sprintRest"]);
+const actualKeys=new Set(["segments","sets","distance","duration","pace","sprintDistance","sprintDuration","sprintReps","sprintRest"]);
 export function repeatActivity(source:ActivityDraft,today:Date):ActivityDraft{
- return {title:source.title,performedAt:new Date(today),values:{},comment:null,stravaUrl:null,tagIds:[...source.tagIds],blocks:source.blocks.map((b,sortOrder)=>({...structuredClone(b),id:undefined,rowKey:crypto.randomUUID(),sortOrder,values:{},details:{...structuredClone(b.details),status:"pending"}}))};
+ return {title:source.title,performedAt:new Date(today),values:{},comment:null,stravaUrl:null,tagIds:[...source.tagIds],blocks:source.blocks.map((b,sortOrder)=>({...structuredClone(b),id:undefined,rowKey:crypto.randomUUID(),sortOrder,values:b.kind==="interval"?{segments:((b.values.segments??[]) as import("./intervals").IntervalSegment[]).map(s=>({...s,distance:null,duration:null,pace:null}))}:{},details:{...structuredClone(b.details),status:"pending"}}))};
 }
 export function draftFromPlan(plan:{name:string;notes:string|null;tagIds:string[];blocks:PlanBlocks},today:Date):ActivityDraft{
- return {title:plan.name,performedAt:new Date(today),values:{},comment:plan.notes,stravaUrl:null,tagIds:[...new Set([...(plan.blocks.tagIds??[]),...plan.tagIds])],blocks:plan.blocks.items.map((b,sortOrder)=>({...structuredClone(b),rowKey:crypto.randomUUID(),sortOrder,values:Object.fromEntries(Object.entries(b.values).filter(([k])=>!actualKeys.has(k))),details:{...emptyDetails(),...structuredClone(b.details),status:"pending"}}))};
+ return {title:plan.name,performedAt:new Date(today),values:{},comment:plan.notes,stravaUrl:null,tagIds:[...new Set([...(plan.blocks.tagIds??[]),...plan.tagIds])],blocks:plan.blocks.items.map((b,sortOrder)=>({...structuredClone(b),rowKey:crypto.randomUUID(),sortOrder,values:b.kind==="interval"?{...Object.fromEntries(Object.entries(b.values).filter(([k])=>!actualKeys.has(k))),segments:(b.details.intervalTargets??[]).map(s=>({...s,distance:null,duration:null,pace:null}))}:Object.fromEntries(Object.entries(b.values).filter(([k])=>!actualKeys.has(k))),details:{...emptyDetails(),...structuredClone(b.details),status:"pending"}}))};
 }
 export function planFromActivity(source:ActivityDraft,resultsAsTargets:boolean):PlanBlocks{
  return {version:1,tagIds:[...source.tagIds],items:source.blocks.map(b=>{
@@ -19,6 +19,7 @@ export function planFromActivity(source:ActivityDraft,resultsAsTargets:boolean):
  }
  }
  const {status,...details}=structuredClone(b.details);void status;
+ if(b.kind==="interval"&&resultsAsTargets&&b.details.status==="done"&&Array.isArray(b.values.segments))details.intervalTargets=structuredClone(b.values.segments);
  return {kind:b.kind,exerciseId:b.exerciseId,sortOrder:b.sortOrder,tagIds:[...b.tagIds],values:Object.fromEntries(Object.entries(b.values).filter(([k])=>!actualKeys.has(k))),details:{...details,targets}};
  })};
 }
