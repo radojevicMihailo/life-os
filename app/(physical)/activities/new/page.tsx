@@ -7,7 +7,7 @@ import {
   getTagGroups,
   getTags,
 } from "@/lib/queries/physical";
-import { DynamicActivityForm } from "../../_components/DynamicActivityForm";
+import { ActivityForm } from "../../_components/activity/ActivityForm";
 
 export const dynamic = "force-dynamic";
 
@@ -21,15 +21,16 @@ export default async function NewActivityPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8 space-y-6">
+    <div className="mx-auto max-w-3xl px-4 sm:px-6 py-8 space-y-6">
       <Link
         href="/activities"
         className="inline-flex items-center text-sm text-muted-foreground hover:underline"
       >
-        <ChevronLeft className="h-4 w-4" /> Activities
+        <ChevronLeft className="h-4 w-4" /> Aktivnosti
       </Link>
-      <h1 className="text-2xl font-semibold">Log activity</h1>
-      <DynamicActivityForm
+      <h1 className="text-2xl font-semibold">Zabeleži trening</h1>
+      <p className="text-sm text-muted-foreground">Jedan trening, svi njegovi delovi.</p>
+      <ActivityForm
         tagGroups={tagGroups}
         tags={tags}
         topFields={fields.topFields}

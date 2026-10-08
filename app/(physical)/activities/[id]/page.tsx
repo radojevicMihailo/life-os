@@ -9,7 +9,8 @@ import {
   getTagGroups,
   getTags,
 } from "@/lib/queries/physical";
-import { DynamicActivityForm } from "../../_components/DynamicActivityForm";
+import { ActivityForm } from "../../_components/activity/ActivityForm";
+import { adaptStoredBlock } from "@/lib/physical/blocks";
 
 export const dynamic = "force-dynamic";
 
@@ -27,23 +28,16 @@ export default async function ActivityDetailPage({
     getTags(),
     getAllFields(),
     getExerciseGroups(),
-    getExercises(),
+    getExercises(data.subrows.flatMap(b=>b.exerciseId?[b.exerciseId]:[])),
   ]);
 
-  const subrows = data.subrows.map((s) => ({
-    kind: s.kind,
-    exerciseId: s.exerciseId,
-    values: (s.values ?? {}) as Record<string, unknown>,
-    sortOrder: s.sortOrder,
-  }));
-
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8 space-y-6">
+    <div className="mx-auto max-w-3xl px-4 sm:px-6 py-8 space-y-6">
       <Link href="/activities" className="inline-flex items-center text-sm text-muted-foreground hover:underline">
         <ChevronLeft className="h-4 w-4" /> Activities
       </Link>
-      <h1 className="text-2xl font-semibold">Edit activity</h1>
-      <DynamicActivityForm
+      <h1 className="text-2xl font-semibold">Izmeni trening</h1>
+      <ActivityForm
         tagGroups={tagGroups}
         tags={tags}
         topFields={fields.topFields}
@@ -52,12 +46,13 @@ export default async function ActivityDetailPage({
         exercises={exercises}
         initial={{
           id: data.activity.id,
+          title: data.activity.title,
           performedAt: data.activity.performedAt,
           values: (data.activity.values ?? {}) as Record<string, unknown>,
           comment: data.activity.comment,
           stravaUrl: data.activity.stravaUrl,
           tagIds: data.tagIds,
-          subrows,
+          blocks: data.subrows.map(adaptStoredBlock),
         }}
       />
     </div>
