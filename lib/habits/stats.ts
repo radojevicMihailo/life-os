@@ -1,7 +1,11 @@
-import { addDays } from "date-fns";
+import { addDays, parseISO } from "date-fns";
 import type { Habit, HabitLog } from "@/db/schema/habits";
 import { isoDate, weekKey } from "./date";
 import { isInRange, isScheduledOn } from "./schedule";
+
+export function statisticsEnd(habit: Habit, today: Date): Date {
+  return habit.endDate && habit.endDate < isoDate(today) ? parseISO(habit.endDate) : today;
+}
 
 export type LogMap = Map<string, number>;
 
@@ -29,7 +33,7 @@ function currentStreakDailyLike(
   today: Date,
 ): number {
   let streak = 0;
-  let cursor = today;
+  let cursor = statisticsEnd(habit, today);
   while (true) {
     const iso = isoDate(cursor);
     if (!isInRange(habit, iso)) break;
@@ -49,12 +53,13 @@ function metWeekTarget(
   habit: Habit,
   logs: LogMap,
   weekStart: Date,
+  through: Date,
 ): boolean {
   let met = 0;
   for (let i = 0; i < 7; i++) {
     const d = addDays(weekStart, i);
     const iso = isoDate(d);
-    if (!isInRange(habit, iso)) continue;
+    if (!isInRange(habit, iso) || iso > isoDate(through)) continue;
     if (metOnDay(habit, logs.get(iso))) met++;
   }
   return met >= habit.weeklyTarget;
@@ -62,11 +67,12 @@ function metWeekTarget(
 
 function currentStreakWeekly(habit: Habit, logs: LogMap, today: Date): number {
   let streak = 0;
-  let cursor = today;
-  const isCurrentWeek = (d: Date) => weekKey(d) === weekKey(today);
+  let cursor = statisticsEnd(habit, today);
+  const through = statisticsEnd(habit, today);
+  const isCurrentWeek = (d: Date) => isoDate(through) === isoDate(today) && weekKey(d) === weekKey(today);
   while (true) {
-    const ws = new Date(weekKey(cursor));
-    if (metWeekTarget(habit, logs, ws)) streak++;
+    const ws = parseISO(weekKey(cursor));
+    if (metWeekTarget(habit, logs, ws, through)) streak++;
     else if (isCurrentWeek(cursor)) {
       // current week not yet met — don't break
     } else break;
@@ -77,19 +83,21 @@ function currentStreakWeekly(habit: Habit, logs: LogMap, today: Date): number {
 }
 
 export function currentStreak(habit: Habit, logs: LogMap, today: Date): number {
+  if (isoDate(statisticsEnd(habit, today)) < habit.startDate) return 0;
   if (habit.cadence === "weekly_target") return currentStreakWeekly(habit, logs, today);
   return currentStreakDailyLike(habit, logs, today);
 }
 
 export function bestStreak(habit: Habit, logs: LogMap, today: Date): number {
-  const start = new Date(habit.startDate);
+  const start = parseISO(habit.startDate);
+  const through = statisticsEnd(habit, today);
   if (habit.cadence === "weekly_target") {
     let best = 0;
     let run = 0;
-    let ws = new Date(weekKey(start));
-    const end = today;
+    let ws = parseISO(weekKey(start));
+    const end = through;
     while (ws <= end) {
-      if (metWeekTarget(habit, logs, ws)) {
+      if (metWeekTarget(habit, logs, ws, through)) {
         run++;
         if (run > best) best = run;
       } else {
@@ -103,7 +111,7 @@ export function bestStreak(habit: Habit, logs: LogMap, today: Date): number {
   let best = 0;
   let run = 0;
   let cursor = start;
-  while (cursor <= today) {
+  while (cursor <= through) {
     const iso = isoDate(cursor);
     if (isScheduledOn(habit, cursor, iso)) {
       if (metOnDay(habit, logs.get(iso))) {
@@ -123,10 +131,11 @@ export function completionPct30d(
   logs: LogMap,
   today: Date,
 ): number {
+  const through = statisticsEnd(habit, today);
   let scheduled = 0;
   let met = 0;
   for (let i = 0; i < 30; i++) {
-    const d = addDays(today, -i);
+    const d = addDays(through, -i);
     const iso = isoDate(d);
     if (!isScheduledOn(habit, d, iso)) continue;
     scheduled++;

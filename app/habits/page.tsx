@@ -8,7 +8,7 @@ import { HabitTodayRow } from "./_components/HabitTodayRow";
 import { HabitWeekGrid } from "./_components/HabitWeekGrid";
 import { HabitStatsCard } from "./_components/HabitStatsCard";
 import { isoDate, lastNDays } from "@/lib/habits/date";
-import { isScheduledOn } from "@/lib/habits/schedule";
+import { isCompleted, isScheduledOn } from "@/lib/habits/schedule";
 import {
   buildLogMap,
   bestStreak,
@@ -44,7 +44,9 @@ export default async function HabitsPage() {
   for (const h of habits) historyByHabit.set(h.id, []);
   for (const log of historyLogs) historyByHabit.get(log.habitId)?.push(log);
 
-  const scheduledToday = habits.filter((h) => isScheduledOn(h, today, todayIso));
+  const active = habits.filter(h => !isCompleted(h, todayIso));
+  const completed = habits.filter(h => isCompleted(h, todayIso));
+  const scheduledToday = active.filter((h) => isScheduledOn(h, today, todayIso));
 
   return (
     <div className="space-y-8">
@@ -68,10 +70,12 @@ export default async function HabitsPage() {
         </p>
       ) : (
         <>
+          <section className="space-y-6" aria-labelledby="active-habits">
+            <h2 id="active-habits" className="text-xl font-semibold">Aktivne navike · {active.length}</h2>
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground">
+            <h3 className="text-sm font-semibold text-muted-foreground">
               Danas · {scheduledToday.length}
-            </h2>
+            </h3>
             {scheduledToday.length === 0 ? (
               <p className="text-sm text-muted-foreground">Danas nema planiranih navika.</p>
             ) : (
@@ -90,10 +94,10 @@ export default async function HabitsPage() {
             )}
           </section>
 
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground">Poslednjih 7 dana</h2>
+          {active.length > 0 && <section className="space-y-2">
+            <h3 className="text-sm font-semibold text-muted-foreground">Poslednjih 7 dana</h3>
             <div className="space-y-1.5 rounded-2xl border border-border bg-card shadow-sm p-3">
-              {habits.map((h) => (
+              {active.map((h) => (
                 <HabitWeekGrid
                   key={h.id}
                   habit={h}
@@ -102,12 +106,12 @@ export default async function HabitsPage() {
                 />
               ))}
             </div>
-          </section>
+          </section>}
 
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground">Statistika</h2>
+          {active.length > 0 && <section className="space-y-2">
+            <h3 className="text-sm font-semibold text-muted-foreground">Statistika</h3>
             <div className="space-y-1.5">
-              {habits.map((h) => {
+              {active.map((h) => {
                 const map = buildLogMap(historyByHabit.get(h.id) ?? []);
                 return (
                   <HabitStatsCard
@@ -120,6 +124,15 @@ export default async function HabitsPage() {
                 );
               })}
             </div>
+          </section>}
+          </section>
+          <section className="space-y-3" aria-labelledby="completed-habits">
+            <h2 id="completed-habits" className="text-xl font-semibold">Završene navike · {completed.length}</h2>
+            <p className="text-sm text-muted-foreground">Rezultati se računaju samo od početka do završetka navike. Procenat prikazuje poslednjih 30 dana njenog trajanja.</p>
+            {completed.length === 0 ? <p className="text-sm text-muted-foreground">Nema završenih navika.</p> : completed.map(h => {
+              const map = buildLogMap(historyByHabit.get(h.id) ?? []);
+              return <HabitStatsCard key={h.id} habit={h} current={currentStreak(h, map, today)} best={bestStreak(h, map, today)} pct30={completionPct30d(h, map, today)} completed />;
+            })}
           </section>
         </>
       )}

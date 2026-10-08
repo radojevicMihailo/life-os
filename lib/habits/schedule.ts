@@ -33,3 +33,7 @@ export function isScheduledOn(habit: Habit, date: Date, isoDate: string): boolea
   if (habit.cadence === "weekdays") return maskHasWeekday(habit.weekdays, date);
   return true;
 }
+
+export function isCompleted(habit: Habit, todayIso: string): boolean {
+  return habit.endDate != null && habit.endDate < todayIso;
+}

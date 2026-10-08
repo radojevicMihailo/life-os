@@ -72,4 +72,20 @@ describe("habit page history", () => {
     const [stats] = propsMatching(page, props => "best" in props && "current" in props);
     expect(stats).toMatchObject({ current: 0, best: 90, pct30: 0 });
   });
+  it("separates completed habits from active daily/week rows and preserves their final statistics", async () => {
+    vi.useFakeTimers();
+    const today = new Date(2026, 9, 8, 12);vi.setSystemTime(today);
+    const completed = {id:"completed",title:"September",kind:"binary",cadence:"daily",startDate:"2026-09-01",endDate:"2026-09-03",targetCount:1,weeklyTarget:0,weekdays:127} as Habit;
+    const active = {...completed,id:"active",title:"October",startDate:"2026-10-01",endDate:null};
+    const logs = ["2026-09-01","2026-09-02","2026-09-03"].map(date=>({habitId:completed.id,date,count:1})) as HabitLog[];
+    select.mockReturnValue({from:()=>({where})});where.mockReturnValueOnce({orderBy});orderBy.mockResolvedValue([completed,active]);where.mockResolvedValueOnce(logs);
+    const page = await HabitsPage();
+    const stats = propsMatching(page, props => "best" in props && "current" in props);
+    expect(stats.find(props=>(props.habit as Habit).id===completed.id)).toMatchObject({completed:true,current:3,best:3,pct30:100});
+    const rows = propsMatching(page, props => "days" in props || "isoToday" in props);
+    expect(rows.every(props=>(props.habit as Habit).id===active.id)).toBe(true);
+    expect(propsMatching(page, props=>props.id==="active-habits")).toHaveLength(1);
+    expect(propsMatching(page, props=>props.id==="completed-habits")).toHaveLength(1);
+  });
+
 });
