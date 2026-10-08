@@ -8,3 +8,7 @@ export function tagConflicts(tagIds:string[],tags:TagRef[]):{groupId:string;tagI
  const selected=new Set(tagIds),groups=new Map<string,string[]>();for(const t of tags)if(selected.has(t.id))groups.set(t.groupId,[...(groups.get(t.groupId)??[]),t.id]);
  return [...groups].filter(([,ids])=>ids.length>1).map(([groupId,tagIds])=>({groupId,tagIds}));
 }
+export function selectTag(ids:string[],tags:TagRef[],groupId:string,tagId:string|null):string[]{
+ const groupIds=new Set(tags.filter(t=>t.groupId===groupId).map(t=>t.id));
+ const kept=ids.filter(id=>!groupIds.has(id));return tagId?[...kept,tagId]:kept;
+}

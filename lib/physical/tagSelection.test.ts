@@ -12,3 +12,9 @@ it("defaults old groups to whole workout without inferring from names",()=>{
 it("finds conflicts only within the same group",()=>{
  expect(tagConflicts(["a","b","c","a"],[{id:"a",groupId:"g"},{id:"b",groupId:"g"},{id:"c",groupId:"h"}])).toEqual([{groupId:"g",tagIds:["a","b"]}]);
 });
+it("replaces only the selected group and allows clearing it",async()=>{
+ const {selectTag}=await import("./tagSelection");
+ const tags=[{id:"a",groupId:"g"},{id:"b",groupId:"g"},{id:"c",groupId:"h"}];
+ expect(selectTag(["a","c"],tags,"g","b")).toEqual(["c","b"]);
+ expect(selectTag(["b","c"],tags,"g",null)).toEqual(["c"]);
+});

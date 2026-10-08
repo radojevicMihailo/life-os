@@ -23,16 +23,16 @@ export default async function ConfigurationPage() {
   return (
     <div className="mx-auto w-full max-w-5xl px-6 py-8 space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold">Configuration</h1>
+        <h1 className="text-2xl font-semibold">Konfiguracija</h1>
         <p className="text-sm text-muted-foreground">
-          Activity tag groups, exercise groups, and exercises.
+          Grupe opisa treninga, grupe vežbi i katalog vežbi.
         </p>
       </div>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Activity tag groups</h2>
+        <h2 className="text-lg font-semibold">Opis treninga</h2>
         <p className="text-xs text-muted-foreground">
-          Define tag-groups (e.g. Intent, Region, Pace). When logging activity, pick zero or more tags across groups.
+          Podesi svoje grupe, na primer region ili vrstu trčanja, i izaberi da li se prikazuju na celom treningu ili njegovim delovima.
         </p>
         <TagGroupEditor sections={editorSections} />
       </section>
@@ -40,16 +40,16 @@ export default async function ConfigurationPage() {
       <Separator />
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Exercise groups</h2>
-        <p className="text-xs text-muted-foreground">Groups are global.</p>
+        <h2 className="text-lg font-semibold">Grupe vežbi</h2>
+        <p className="text-xs text-muted-foreground">Grupe su zajedničke za sve treninge.</p>
         <ExerciseGroupEditor groups={groups} />
       </section>
 
       <Separator />
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Exercises</h2>
-        <p className="text-xs text-muted-foreground">Each exercise has a name and an optional group.</p>
+        <h2 className="text-lg font-semibold">Vežbe</h2>
+        <p className="text-xs text-muted-foreground">Svaka vežba ima naziv i opcionu grupu.</p>
         <ExerciseEditor groups={groups} exercises={exercises} />
       </section>
 

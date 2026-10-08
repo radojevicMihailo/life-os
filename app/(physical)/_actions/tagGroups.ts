@@ -1,6 +1,8 @@
 "use server";
 
 import { z } from "zod";
+import { placementSchema } from "@/lib/physical/trainingSchemas";
+import { authorizePhysicalAction,physicalActionError } from "@/lib/physical/actionAccess";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { activityTagGroup } from "@/db/schema/physical";
@@ -44,4 +46,14 @@ export async function removeTagGroup(id: string): Promise<ActionResult> {
   await db.delete(activityTagGroup).where(eq(activityTagGroup.id, id));
   revalidatePhysicalRoutes();
   return { ok: true, data: undefined };
+}
+
+export async function updateTagGroupPlacement(input:{id:string;placement:import("@/lib/physical/types").TagPlacement}):Promise<ActionResult>{
+ try {
+  await authorizePhysicalAction();
+  const parsed=z.object({id:z.uuid(),placement:placementSchema}).safeParse(input);
+  if(!parsed.success)return fail("Proveri mesto prikaza grupe.");
+  await db.update(activityTagGroup).set({placement:parsed.data.placement}).where(eq(activityTagGroup.id,parsed.data.id));
+  revalidatePhysicalRoutes();return {ok:true,data:undefined};
+ }catch(error){return physicalActionError(error);}
 }

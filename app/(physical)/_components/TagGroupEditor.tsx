@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TagPlacementEditor } from "./TagPlacementEditor";
 import { Card } from "@/components/ui/card";
 import { addTagGroup, removeTagGroup, renameTagGroup } from "../_actions/tagGroups";
 import { addTag, removeTag, updateTag } from "../_actions/tags";
@@ -136,6 +137,7 @@ function TagGroupCard({
         </Button>
       </div>
 
+      <TagPlacementEditor group={group} />
       <ul className="space-y-2">
         {tags.map((t) => (
           <li key={t.id} className="flex items-center gap-2 rounded-md border px-3 py-2">
