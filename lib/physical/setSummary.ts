@@ -1,4 +1,4 @@
-import type { SetEntry } from "@/db/schema/physical";
+import type { SetEntry } from "./types";
 
 export type SetSummary = {
   totalVolume: number;
@@ -12,9 +12,9 @@ export function setSummary(sets: SetEntry[]): SetSummary {
   let maxWeight = 0;
   let totalReps = 0;
   for (const s of sets) {
-    const effReps = s.perSide === true ? s.reps * 2 : s.reps;
-    totalVolume += s.weight * effReps;
-    if (s.weight > maxWeight) maxWeight = s.weight;
+    const effReps = s.perSide === true ? (s.reps ?? 0) * 2 : (s.reps ?? 0);
+    totalVolume += (s.weight ?? 0) * effReps;
+    if ((s.weight ?? 0) > maxWeight) maxWeight = s.weight ?? 0;
     totalReps += effReps;
   }
   return { totalVolume, maxWeight, totalReps, setCount: sets.length };

@@ -1,13 +1,13 @@
 import { z, ZodTypeAny } from "zod";
 import type { PhysicalField } from "@/db/schema/physical";
+import { blockDetailsSchema, planBlocksSchema } from "@/lib/physical/trainingSchemas";
 
 export const setEntrySchema = z.object({
-  weight: z.number().nonnegative(),
-  reps: z.number().int().nonnegative(),
-  bodyweight: z.boolean().optional(),
-  warmup: z.boolean().optional(),
-  perSide: z.boolean().optional(),
-});
+  weight: z.number().finite().nonnegative().optional(),
+  reps: z.number().int().nonnegative().optional(),
+  durationSec: z.number().int().positive().optional(),
+  bodyweight: z.boolean().optional(), warmup: z.boolean().optional(), perSide: z.boolean().optional(),
+}).refine(s => (s.reps != null) !== (s.durationSec != null), "Unesi ponavljanja ili trajanje serije.");
 
 function baseFragment(kind: PhysicalField["kind"]): ZodTypeAny {
   switch (kind) {
@@ -60,6 +60,7 @@ export function activityPayloadSchema(
   const subrowValuesSchema = buildValuesSchema(subrowFields, true);
   return z.object({
     performedAt: z.date(),
+    title: z.string().trim().max(200).optional().nullable(),
     values: valuesSchema,
     comment: z.string().max(10_000).optional().nullable(),
     stravaUrl: z.url().max(2_000).optional().nullable(),
@@ -68,6 +69,9 @@ export function activityPayloadSchema(
       .array(
         z.object({
           kind: z.enum(["exercise", "split", "sprint"]).default("exercise"),
+          id: z.uuid().optional(),
+          details: blockDetailsSchema.optional().nullable(),
+          tagIds: z.array(z.uuid()).default([]),
           exerciseId: z.uuid().optional().nullable(),
           values: subrowValuesSchema,
           sortOrder: z.number().int().nonnegative(),
@@ -78,6 +82,7 @@ export function activityPayloadSchema(
 }
 
 export const workoutPlanPayloadSchema = z.object({
+  blocks: planBlocksSchema.optional(),
   name: z.string().trim().min(1).max(200),
   notes: z.string().max(20_000).optional().nullable(),
   exercises: z

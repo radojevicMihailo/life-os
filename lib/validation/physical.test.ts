@@ -128,3 +128,11 @@ describe("setEntrySchema perSide", () => {
     expect(setEntrySchema.safeParse({ weight: 10, reps: 10, perSide: "yes" }).success).toBe(false);
   });
 });
+
+describe("timed recovery sets",()=>{
+ it("accepts time without invented weight and rejects mixed reps/time",()=>{
+  expect(setEntrySchema.safeParse({durationSec:45}).success).toBe(true);
+  expect(setEntrySchema.safeParse({reps:3,durationSec:45}).success).toBe(false);
+  expect(setEntrySchema.safeParse({weight:-1,reps:3}).success).toBe(false);
+ });
+});
