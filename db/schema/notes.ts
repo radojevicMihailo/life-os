@@ -15,7 +15,7 @@ export type NoteKind = (typeof noteKindEnum.enumValues)[number];
 
 export const noteKindLabel: Record<NoteKind, string> = {
   free: "Slobodna beleška",
-  todo: "Lista zadataka",
+  todo: "Lista za kupovinu",
 };
 
 export const noteCategory = pgTable("note_categories", {

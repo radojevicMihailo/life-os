@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, sql, asc } from "drizzle-orm";
+import { and, eq, sql, asc } from "drizzle-orm";
 import { db } from "@/db";
 import { note, noteItem } from "@/db/schema/notes";
 import {
@@ -168,5 +168,15 @@ export async function deleteItem(input: { id: string }): Promise<ActionResult> {
     await touchNote(row.noteId);
     revalidateNoteRoutes({ noteId: row.noteId });
   }
+  return { ok: true, data: undefined };
+}
+
+export async function clearDoneItems(input: { noteId: string }): Promise<ActionResult> {
+  const parsed = deleteNoteSchema.safeParse({ id: input.noteId });
+  if (!parsed.success) return fail("Neispravna lista.");
+  const noteId = parsed.data.id;
+  await db.delete(noteItem).where(and(eq(noteItem.noteId, noteId), eq(noteItem.done, true)));
+  await touchNote(noteId);
+  revalidateNoteRoutes({ noteId });
   return { ok: true, data: undefined };
 }

@@ -32,6 +32,7 @@ export default async function NoteDetailPage({
     <div>
       <PageHeader title="Beleška" />
       <NoteEditor
+        key={row.id}
         id={row.id}
         initialTitle={row.title}
         initialKind={row.kind}

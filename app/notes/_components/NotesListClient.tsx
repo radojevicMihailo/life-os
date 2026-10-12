@@ -35,7 +35,8 @@ export function NotesListClient({ notes, categories }: { notes: NoteListItem[]; 
 
   function newNote(kind: NoteKind) {
     startTransition(async () => {
-      const r = await createNote({ title: "Nova beleška", kind });
+      const title = kind === "todo" ? `Kupovina · ${new Intl.DateTimeFormat("sr-Latn-RS").format(new Date())}` : "Nova beleška";
+      const r = await createNote({ title, kind });
       if (r.ok) router.push(`/notes/${r.data.id}`);
       else toast.error(r.error);
     });
@@ -51,7 +52,7 @@ export function NotesListClient({ notes, categories }: { notes: NoteListItem[]; 
           className="max-w-sm"
         />
         <Button onClick={() => newNote("free")} disabled={pending}><StickyNote className="size-4" /> Slobodna beleška</Button>
-        <Button onClick={() => newNote("todo")} disabled={pending} variant="outline"><ListChecks className="size-4" /> Lista zadataka</Button>
+        <Button onClick={() => newNote("todo")} disabled={pending} variant="outline"><ListChecks className="size-4" /> Nova lista za kupovinu</Button>
       </div>
       {categories.length > 0 ? <div className="flex flex-wrap gap-2"><Button size="sm" variant={categoryFilter === "all" ? "default" : "outline"} onClick={() => setCategoryFilter("all")}>Sve kategorije</Button>{categories.map((category) => <Button key={category.id} size="sm" variant={categoryFilter === category.id ? "default" : "outline"} onClick={() => setCategoryFilter(category.id)}>{category.name}</Button>)}</div> : null}
       {filtered.length === 0 ? (
