@@ -1,13 +1,18 @@
 "use server";
 
 import { z } from "zod";
-import { eq, sql } from "drizzle-orm";
+import { DrizzleQueryError, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { exercise } from "@/db/schema/physical";
 import { revalidatePhysicalRoutes } from "./_revalidate";
 
 type ActionResult<T = void> = { ok: true; data: T } | { ok: false; error: string };
 const fail = (error: string): ActionResult<never> => ({ ok: false, error });
+
+function isUniqueViolation(error: unknown): boolean {
+  const cause = error instanceof DrizzleQueryError ? error.cause : error;
+  return typeof cause === "object" && cause !== null && "code" in cause && cause.code === "23505";
+}
 
 const addSchema = z.object({
   groupId: z.uuid().optional().nullable(),
@@ -28,7 +33,7 @@ export async function addExercise(input: z.input<typeof addSchema>): Promise<Act
     revalidatePhysicalRoutes();
     return { ok: true, data: { id: row.id } };
   } catch (e) {
-    if ((e as { code?: string }).code === "23505") return fail("Exercise name must be unique");
+    if (isUniqueViolation(e)) return fail("Exercise name must be unique");
     throw e;
   }
 }
@@ -43,7 +48,12 @@ export async function updateExercise(input: z.input<typeof updateSchema>): Promi
   const parsed = updateSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
   const { id, ...patch } = parsed.data;
-  await db.update(exercise).set({ ...patch, updatedAt: sql`now()` }).where(eq(exercise.id, id));
+  try {
+    await db.update(exercise).set({ ...patch, updatedAt: sql`now()` }).where(eq(exercise.id, id));
+  } catch (e) {
+    if (isUniqueViolation(e)) return fail("Exercise name must be unique");
+    throw e;
+  }
   revalidatePhysicalRoutes();
   return { ok: true, data: undefined };
 }
