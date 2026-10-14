@@ -17,7 +17,7 @@ export default async function GoalsPage() {
   const [goals, options, purposes] = await Promise.all([
     listGoals(dependencies, valuationOptions), getMutationOptions(dependencies), getAccountPurposes(dependencies),
   ]);
-  const accounts = options.accounts.filter((account) => account.isActive && account.classification === "asset")
+  const accounts = options.accounts.filter((account) => account.isActive && (account.classification === "asset" || account.classification === "receivable"))
     .map((account) => ({ ...account, free: purposes.summaries[account.id]?.free ?? "0" }));
 
   return <>
@@ -36,7 +36,7 @@ export default async function GoalsPage() {
           {!goal.allocations.length ? <p className="text-sm text-slate-500">Još nema izdvojenih sredstava.</p> : <ul className="space-y-3">
             {goal.allocations.map((allocation) => <li className="rounded-2xl border border-white/10 p-3.5" key={`${allocation.id}-${allocation.amount}`}>
               <div className="flex flex-wrap items-start justify-between gap-2">
-                <Link href="/finance/accounts" className="min-w-0 break-words text-sm font-medium text-blue-200 hover:underline">{allocation.accountName}{allocation.accountActive ? "" : " · Arhiviran račun"}</Link>
+                <Link href="/finance/accounts" className="min-w-0 break-words text-sm font-medium text-blue-200 hover:underline">{allocation.accountName}{allocation.accountClassification === "receivable" ? " · Potraživanje" : ""}{allocation.accountActive ? "" : " · Arhiviran račun"}</Link>
                 <Money amount={allocation.amount} currencyCode={allocation.currencyCode} label={`Izdvojeno sa računa ${allocation.accountName}`} />
               </div>
               {allocation.currencyCode !== goal.currencyCode ? <div className="mt-2 space-y-2 text-xs text-slate-400">
@@ -61,7 +61,7 @@ export default async function GoalsPage() {
           <details className="mt-4 rounded-2xl border border-blue-400/20 bg-blue-400/5 px-4">
             <summary className="flex min-h-12 cursor-pointer items-center gap-2 text-sm font-medium text-blue-200"><Plus className="size-4" />Dodaj sredstva</summary>
             <div className="pb-4">
-              <p className="mb-3 text-xs text-slate-500">Rezervacija označava namenu postojećeg novca; ne pomera sredstva između računa.</p>
+              <p className="mb-3 text-xs text-slate-500">Rezervacija označava namenu novca ili potraživanja; ne pomera sredstva između računa.</p>
               {accounts.some((account) => !goal.allocations.some((allocation) => allocation.accountId === account.id)) ? <GoalAllocationForm key={goal.allocations.map((allocation) => allocation.id).join(",")} goalId={goal.id} accounts={accounts.filter((account) => !goal.allocations.some((allocation) => allocation.accountId === account.id))} /> : <p className="text-sm text-slate-400">{accounts.length ? "Svi aktivni računi su već povezani. Za njih izaberi Izmeni iznos." : "Dodaj aktivan račun u Finansije → Računi."}</p>}
             </div>
           </details>

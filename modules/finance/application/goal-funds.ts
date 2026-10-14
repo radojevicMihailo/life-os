@@ -14,7 +14,7 @@ export interface GoalValuationOptions { exchangeRateStaleAfterMs: number }
 export interface GoalAllocation {
   id: string; accountId: string; accountName: string; currencyCode: string; amount: string;
   convertedAmount: string | null; valuation: GoalFxMetadata;
-  accountActive: boolean; underfunded: boolean; accountDeficit: string;
+  accountClassification: string; accountActive: boolean; underfunded: boolean; accountDeficit: string;
 }
 export interface GoalFundReadModel {
   id: string; name: string; targetAmount: string; currencyCode: string; isActive: boolean;
@@ -54,7 +54,7 @@ export async function loadGoalFundsInTransaction(tx: DbTx, now: Date, options?: 
       const accountDeficit = funding.get(account.id)?.deficit ?? "0";
       return { id: purpose.id, accountId: account.id, accountName: account.name, currencyCode: purpose.currencyCode,
         amount: new ExactDecimal(purpose.amount).toFixed(), convertedAmount: conversion.amount, valuation: conversion.valuation,
-        accountActive: account.isActive, underfunded: accountDeficit !== "0", accountDeficit };
+        accountClassification: account.classification, accountActive: account.isActive, underfunded: accountDeficit !== "0", accountDeficit };
     });
     const complete = allocations.every((a) => a.convertedAmount !== null);
     const balance = complete ? allocations.reduce((sum, a) => sum.plus(a.convertedAmount!), new ExactDecimal(0)).toFixed() : null;

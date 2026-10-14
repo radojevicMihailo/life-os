@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 import type { ApplicationDependencies } from "../application/ports";
 import { LedgerRepository } from "../db/repositories/ledger";
 import { accountPurposes, accounts, budgetLimits, categories, goals } from "../db/schema";
@@ -28,8 +28,8 @@ export interface AccountPurposeSummary {
 
 export async function getAccountPurposes(deps: ApplicationDependencies) {
   return deps.unitOfWork.run(async (tx) => {
-    const assetAccounts = await tx.select({ id: accounts.id }).from(accounts).where(eq(accounts.classification, "asset"));
-    const balances = await new LedgerRepository(tx).getNativeBalances(assetAccounts.map((a) => a.id));
+    const reservableAccounts = await tx.select({ id: accounts.id }).from(accounts).where(inArray(accounts.classification, ["asset", "receivable"]));
+    const balances = await new LedgerRepository(tx).getNativeBalances(reservableAccounts.map((a) => a.id));
     const purposeRows = await tx.select().from(accountPurposes).orderBy(asc(accountPurposes.createdAt), asc(accountPurposes.id));
     const goalRows = await tx.select().from(goals).orderBy(asc(goals.name));
     const budgetRows = await tx.select({ id: budgetLimits.id, currencyCode: budgetLimits.currencyCode,

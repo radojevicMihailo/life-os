@@ -8,7 +8,7 @@ import { ActionMessage } from "@/modules/finance/ui/components/action-message";
 import { Money } from "@/modules/finance/ui/components/money";
 
 const control = "mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white";
-export type AllocationAccount = { id: string; name: string; currencyCode: string; free: string };
+export type AllocationAccount = { id: string; name: string; currencyCode: string; classification: string; free: string };
 
 export function GoalAllocationForm({ goalId, accounts, allocation }: {
   goalId: string;
@@ -22,7 +22,7 @@ export function GoalAllocationForm({ goalId, accounts, allocation }: {
   return <form action={action} className="space-y-3">
     <input type="hidden" name="target" value={`goal:${goalId}`} />
     {allocation ? <input type="hidden" name="accountId" value={allocation.accountId} /> : <label className="block text-xs text-slate-400">Račun<select className={control} name="accountId" value={accountId} onChange={(event) => setAccountId(event.target.value)} required disabled={pending}>
-      {accounts.map((account) => <option value={account.id} key={account.id}>{account.name} · {account.currencyCode}</option>)}
+      {accounts.map((account) => <option value={account.id} key={account.id}>{account.name} · {account.currencyCode}{account.classification === "receivable" ? " · Potraživanje" : ""}</option>)}
     </select></label>}
     <label className="block text-xs text-slate-400">{allocation ? "Rezervisani iznos" : "Iznos koji izdvajaš"} ({selected?.currencyCode})<input className={control} name="amount" inputMode="decimal" placeholder="0,00" defaultValue={decimalInputValue(allocation?.amount)} required disabled={pending} /></label>
     {selected ? <p className="text-xs text-slate-500">{allocation ? "Dodatno slobodno na računu" : "Slobodno na računu"}: <Money amount={selected.free} currencyCode={selected.currencyCode} />. Iznos se čuva u valuti računa.</p> : null}

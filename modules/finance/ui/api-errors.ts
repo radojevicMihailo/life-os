@@ -46,7 +46,7 @@ const messages: Record<ApiErrorCode, string> = {
   currency_invalid: "Valuta nije ispravna.",
   currency_minor_unit_invalid: "Preciznost valute nije ispravna.",
   currency_not_found: "Valuta ne postoji.",
-  goal_account_must_be_asset: "Cilj mora biti vezan za imovinski račun.",
+  goal_account_must_be_asset: "Izabrani račun nije podržan za ovu namenu.",
   goal_currency_mismatch: "Valuta cilja mora odgovarati valuti računa.",
   goal_name_required: "Naziv cilja je obavezan.",
   goal_not_found: "Cilj ne postoji.",

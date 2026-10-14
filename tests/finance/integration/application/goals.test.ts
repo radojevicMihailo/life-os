@@ -64,6 +64,36 @@ describe("goal funds", () => {
     await archiveAccount(deps, { id: a.id });
     expect((await progress(first.id)).allocations[0].accountActive).toBe(false);
   });
+  it("allocates receivables alongside cash and tracks their available balance after repayment", async () => {
+    const receivable = await createAccount(deps, { name: `Receivable ${++sequence}`, classification: "receivable", subtype: "personal_receivable", currencyCode: "EUR" });
+    const eur = await cash("EUR", "1300");
+    await recordTransaction(deps, { fromAccountId: eur.id, receivableAccountId: receivable.id, amount: "1000", type: "receivable_out", counterparty: "Borrower" });
+    const fund = await goal();
+    const before = (await testDb.pool.query("select count(*) from finance_journal_postings")).rows[0].count;
+    await reserve(receivable.id, fund.id, "500");
+    await reserve(eur.id, fund.id, "300");
+    expect((await testDb.pool.query("select count(*) from finance_journal_postings")).rows[0].count).toBe(before);
+    expect(await progress(fund.id)).toMatchObject({ balance: "800", percentage: "80", underfunded: false });
+    expect((await getAccountPurposes(deps)).summaries[receivable.id]).toMatchObject({ reserved: "500", free: "500", deficit: "0" });
+    const second = await goal();
+    await expect(reserve(receivable.id, second.id, "501")).rejects.toMatchObject({ code: "account_purpose_insufficient_balance" });
+    await recordTransaction(deps, { type: "receivable_repayment", receivableAccountId: receivable.id, toAccountId: eur.id, amount: "600", counterparty: "Borrower" });
+    expect((await getAccountPurposes(deps)).summaries[receivable.id]).toMatchObject({ reserved: "500", free: "0", deficit: "100" });
+    expect(await progress(fund.id)).toMatchObject({ underfunded: true, allocations: expect.arrayContaining([expect.objectContaining({ accountId: receivable.id, accountDeficit: "100" })]) });
+    await reserve(receivable.id, fund.id, "400");
+    expect(await progress(fund.id)).toMatchObject({ balance: "700", underfunded: false });
+  });
+
+  it("does not allow a receivable account to fund a spending budget", async () => {
+    const receivable = await createAccount(deps, { name: `Receivable ${++sequence}`, classification: "receivable", subtype: "personal_receivable", currencyCode: "EUR" });
+    const eur = await cash("EUR", "100");
+    await recordTransaction(deps, { fromAccountId: eur.id, receivableAccountId: receivable.id, amount: "100", type: "receivable_out", counterparty: "Borrower" });
+    const category = await createCategory(deps, { name: `Budget ${++sequence}`, classification: "expense" });
+    await setBudgetLimit(deps, { categoryId: category.id, month: "2026-10", currencyCode: "EUR", amount: "100" });
+    const budget = (await testDb.pool.query("select id from finance_budget_limits where category_id=$1", [category.id])).rows[0];
+    await expect(setAccountPurpose(deps, { accountId: receivable.id, targetType: "budget", targetId: budget.id, amount: "50" })).rejects.toMatchObject({ code: "goal_account_must_be_asset" });
+  });
+
   it("keeps missing rates unknown, stale sources visible and manual overrides authoritative", async () => {
     const a = await cash("USD", "100"); const fund = await goal("HUF", "10000"); await reserve(a.id, fund.id, "100");
     expect(await progress(fund.id)).toMatchObject({ balance: null, percentage: null, complete: false });
