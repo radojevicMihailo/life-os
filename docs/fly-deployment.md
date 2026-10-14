@@ -1,8 +1,8 @@
 # Single-Machine Fly.io deployment
 
-This configuration runs Next.js and PostgreSQL 16 together on **one shared-cpu-1x Machine with 256MB RAM and one 1GB volume** in Ashburn (`iad`), Fly.io's lowest-priced compute region. There is no managed database or separate database Machine. PostgreSQL listens only on loopback. The web app requires a single access password supplied as a Fly secret. Use a unique randomly generated password of at least 24 characters and save it in a password manager. The browser session lasts 30 days after the last authenticated page visit and renews automatically while the app is used; changing the password invalidates existing sessions.
+This configuration runs Next.js and PostgreSQL 16 together on **one shared-cpu-1x Machine with 512MB RAM and one 1GB volume** in Ashburn (`iad`). There is no managed database or separate database Machine. PostgreSQL listens only on loopback. The web app requires a single access password supplied as a Fly secret. Use a unique randomly generated password of at least 24 characters and save it in a password manager. The browser session lasts 30 days after the last authenticated page visit and renews automatically while the app is used; changing the password invalidates existing sessions.
 
-The 256MB budget is deliberately tight: Node's old-generation heap is capped at 128MB and PostgreSQL uses 16MB shared buffers, 12 connections and one autovacuum worker. This is a starting configuration for light personal use, not a proven capacity guarantee. Observe real memory usage and database size. A Machine failure or deployment causes downtime; there is no replica. Never scale this design above one Machine: each volume would contain an independent database.
+The earlier 256MB configuration caused memory and I/O pressure with database connection timeouts on investment pages; 512MB restored normal page loading. Node's old-generation heap remains capped at 128MB and PostgreSQL uses 16MB shared buffers, 12 connections and one autovacuum worker. Production route bundles and background workers share one application connection pool. Observe real memory usage and database size. A Machine failure or deployment causes downtime; there is no replica. Never scale this design above one Machine: each volume would contain an independent database.
 
 ## First deployment
 
@@ -105,7 +105,7 @@ Create the recovery volume before deploying the recovery app and ensure only tha
 ```sh
 docker build --build-arg "DEPLOYMENT_VERSION=$(git rev-parse HEAD)" -t life-os-single .
 docker volume create life-os-smoke
-docker run --name life-os-smoke --memory=256m --cpus=1 -e LIFE_OS_ACCESS_PASSWORD=life-os-disposable-smoke-password-2026 -p 127.0.0.1:3000:3000 -v life-os-smoke:/data life-os-single
+docker run --name life-os-smoke --memory=512m --cpus=1 -e LIFE_OS_ACCESS_PASSWORD=life-os-disposable-smoke-password-2026 -p 127.0.0.1:3000:3000 -v life-os-smoke:/data life-os-single
 ```
 
 Run `node test/infra/deployment-skew.mjs` to build a disposable Next.js fixture with the repository config and verify deployment identity, rejection of unknown actions without mutation, and successful current actions. It requires a localhost listener and never accesses the application database.
