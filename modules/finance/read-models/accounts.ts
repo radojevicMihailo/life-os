@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 import type { ApplicationDependencies } from "../application/ports";
 import { valueNetWorthEur } from "../application/valuation";
@@ -6,6 +6,9 @@ import { toDisplayBalance, type AccountClassification } from "../domain/ledger";
 import type { EffectiveValuation } from "../domain/valuation";
 import {
   accounts,
+  accountPurposes,
+  goals,
+  investmentAccounts,
   journalPostings,
   journalTransactions,
 } from "../db/schema";
@@ -40,6 +43,7 @@ export interface AccountReadModelItem {
   eurEstimate: string | null;
   valuation: EffectiveValuation | null;
   isActive: boolean;
+  canDelete: boolean;
   recentActivity: Array<{
     amount: string;
     occurredAt: Date;
@@ -71,6 +75,12 @@ export async function listAccounts(
   return dependencies.unitOfWork.run(async (tx) => {
     const rows = await tx
       .select({
+        // Keep the outer ID qualified; Drizzle strips column prefixes in single-table selections.
+        canDelete: sql<boolean>`not ${accounts.isSystem}
+          and not exists(select 1 from ${journalPostings} where ${journalPostings.accountId} = ${accounts}.${sql.identifier("id")})
+          and not exists(select 1 from ${accountPurposes} where ${accountPurposes.accountId} = ${accounts}.${sql.identifier("id")})
+          and not exists(select 1 from ${goals} where ${goals.accountId} = ${accounts}.${sql.identifier("id")})
+          and not exists(select 1 from ${investmentAccounts} where ${investmentAccounts.cashAccountId} = ${accounts}.${sql.identifier("id")})`,
         classification: accounts.classification,
         currencyCode: accounts.currencyCode,
         id: accounts.id,
@@ -130,6 +140,7 @@ export async function listAccounts(
         eurEstimate: value?.eurAmount ?? null,
         id: row.id,
         isActive: row.isActive,
+        canDelete: row.canDelete,
         name: row.name,
         nativeBalance: value?.nativeAmount ?? "0",
         recentActivity: activity

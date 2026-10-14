@@ -1,0 +1,20 @@
+import {expect,test} from "@playwright/test";
+test.use({baseURL:process.env.LIFE_OS_E2E_URL??"http://127.0.0.1:3210",channel:process.env.LIFE_OS_E2E_CHANNEL||undefined,viewport:{width:390,height:844}});
+test("deletes an unused account only after confirmation",async({page})=>{
+ const name=`Račun za brisanje ${Date.now()}`;
+ await page.goto("/access");await page.getByLabel("Lozinka").fill(process.env.LIFE_OS_E2E_PASSWORD??"life-os-disposable-smoke-password-2026");
+ await page.getByRole("button",{name:"Prijavi se"}).click();await expect(page).toHaveURL("/");
+ await page.goto("/finance/accounts");
+ const create=page.locator("form").filter({has:page.getByRole("heading",{name:"Novi račun",exact:true})});
+ await create.getByLabel("Naziv računa").fill(name);await create.getByLabel("Podvrsta računa").fill("cash");
+ await create.getByRole("button",{name:"Kreiraj račun"}).click();
+ const account=page.locator("article").filter({has:page.getByRole("heading",{name,exact:true})});
+ await expect(account).toBeVisible();
+ page.once("dialog",dialog=>dialog.dismiss());
+ await account.getByRole("button",{name:`Obriši račun ${name}`,exact:true}).click();
+ await expect(account).toBeVisible();
+ page.once("dialog",dialog=>dialog.accept());
+ await account.getByRole("button",{name:`Obriši račun ${name}`,exact:true}).click();
+ await expect(account).toHaveCount(0);
+ await page.reload();await expect(account).toHaveCount(0);
+});

@@ -44,6 +44,8 @@ export type ApplicationErrorCode =
   | "account_purpose_currency_mismatch"
   | "account_purpose_insufficient_balance"
   | "account_classification_unsupported"
+  | "account_delete_in_use"
+  | "account_system_delete_forbidden"
   | "account_details_in_use"
   | "account_has_active_goals"
   | "account_inactive"

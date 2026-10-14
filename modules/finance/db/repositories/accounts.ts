@@ -221,6 +221,10 @@ export class AccountsRepository {
     return toAccountRecord(account, currency.minorUnit);
   }
 
+  async delete(id: string): Promise<void> {
+    await this.tx.delete(accounts).where(eq(accounts.id, id));
+  }
+
   async hasLinkedRecords(id: string): Promise<boolean> {
     for (const [table, column] of [
       [journalPostings, journalPostings.accountId],

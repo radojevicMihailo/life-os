@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 
 import {
-  archiveAccountAction, createAccountAction, restoreAccountAction, updateAccountAction,
+  archiveAccountAction, createAccountAction, deleteAccountAction, restoreAccountAction, updateAccountAction,
 } from "@/modules/finance/ui/actions/accounts";
 import { ActionMessage } from "@/modules/finance/ui/components/action-message";
 
@@ -56,5 +56,16 @@ export function AccountStatusForm({ id, name, isActive }: { id: string; name: st
       {isActive ? "Arhiviraj" : "Vrati račun"}
     </button>
     <ActionMessage state={state} success={isActive ? "Račun je arhiviran." : "Račun je ponovo aktivan."} />
+  </form>;
+}
+
+export function DeleteAccountForm({ id, name }: { id: string; name: string }) {
+  const [state, action, pending] = useActionState(deleteAccountAction, undefined);
+  return <form action={action} className="mt-3" onSubmit={(event) => {
+    if (!window.confirm(`Trajno obrisati račun „${name}“?`)) event.preventDefault();
+  }}>
+    <input name="id" type="hidden" value={id} />
+    <button aria-label={`Obriši račun ${name}`} className="min-h-11 rounded-xl border border-red-400/30 px-3 text-xs text-red-300" disabled={pending}>Obriši</button>
+    <ActionMessage state={state} success="Račun je obrisan." />
   </form>;
 }

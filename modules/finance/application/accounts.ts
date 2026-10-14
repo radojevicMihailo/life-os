@@ -107,6 +107,21 @@ export async function archiveAccount(
   });
 }
 
+export async function deleteAccount(
+  deps: ApplicationDependencies,
+  input: ArchiveAccountInput,
+): Promise<{ id: string }> {
+  return deps.unitOfWork.run(async (tx) => {
+    const repository = new AccountsRepository(tx);
+    const account = (await repository.lockByIds([input.id]))[0];
+    if (!account) applicationError("account_not_found");
+    if (account.isSystem) applicationError("account_system_delete_forbidden");
+    if (await repository.hasLinkedRecords(input.id)) applicationError("account_delete_in_use");
+    await repository.delete(input.id);
+    return { id: input.id };
+  });
+}
+
 export async function updateAccount(
   deps: ApplicationDependencies,
   input: UpdateAccountInput,

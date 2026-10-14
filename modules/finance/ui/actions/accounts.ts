@@ -1,6 +1,6 @@
 "use server";
 
-import { activateCurrency, archiveAccount, createAccount, restoreAccount, updateAccount } from "../../application/accounts";
+import { activateCurrency, archiveAccount, createAccount, deleteAccount, restoreAccount, updateAccount } from "../../application/accounts";
 import type { ActionResult } from "../forms/action-result";
 import { parseAccountForm, parseActivateCurrencyForm, parseArchiveAccountForm, parseUpdateAccountForm } from "../forms/account";
 import { executeAction } from "./result";
@@ -18,6 +18,11 @@ export async function archiveAccountAction(_previous: ActionResult<{ id: string 
     const result = await archiveAccount(mutationDependencies(), parseArchiveAccountForm(formData));
     return { id: result.id };
   }, { revalidate: ["/finance/accounts", "/finance/transactions", "/finance/goals", "/finance/investments", "/finance"] });
+}
+
+export async function deleteAccountAction(_previous: ActionResult<{ id: string }> | undefined, formData: FormData) {
+  return executeAction(async () => deleteAccount(mutationDependencies(), parseArchiveAccountForm(formData)),
+    { revalidate: ["/finance/accounts", "/finance/transactions", "/finance/goals", "/finance/investments", "/finance/settings", "/finance"] });
 }
 
 export async function updateAccountAction(_previous: ActionResult<{ id: string }> | undefined, formData: FormData) {
