@@ -68,14 +68,14 @@ export function activityPayloadSchema(
     subrows: z
       .array(
         z.object({
-          kind: z.enum(["exercise", "split", "sprint", "interval"]).default("exercise"),
+          kind: z.enum(["exercise", "split", "sprint", "interval", "cardio"]).default("exercise"),
           id: z.uuid().optional(),
           details: blockDetailsSchema.optional().nullable(),
           tagIds: z.array(z.uuid()).default([]),
           exerciseId: z.uuid().optional().nullable(),
           values: subrowValuesSchema,
           sortOrder: z.number().int().nonnegative(),
-        }),
+        }).refine(b => b.kind !== "cardio" || b.details != null, {path: ["details"], message: "Izaberi vrstu kardija."}),
       )
       .default([]),
   });

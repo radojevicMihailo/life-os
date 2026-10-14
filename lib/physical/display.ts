@@ -1,15 +1,17 @@
+import {cardioName} from "./cardio";
 import {intervalSeconds,type IntervalSegment} from "./intervals";
 import type {SetEntry,TrainingBlock} from "./types";
 import {secondsToHhmmss,secondsToMmSs} from "./formatDuration";
 import {computePace} from "./pace";
-export const blockKindLabels={split:"Trčanje",exercise:"Vežba",sprint:"Sprintovi",interval:"Intervali"};
+export const blockKindLabels={split:"Trčanje",exercise:"Vežba",sprint:"Sprintovi",interval:"Intervali",cardio:"Kardio"};
 export function describeBlock(block:TrainingBlock):string{
  const v=block.values;
+ if(block.kind==="cardio")return [cardioName(block.details),typeof v.duration==="number"&&v.duration>0?secondsToHhmmss(v.duration):null,typeof v.distance==="number"&&v.distance>0?`${new Intl.NumberFormat("sr-RS").format(v.distance)} km`:null,...([{key:"resistance",unit:"",label:"Otpor"},{key:"incline",unit:"%",label:"Nagib"},{key:"floors",unit:"",label:"Spratovi"},{key:"averageHeartRate",unit:"bpm",label:"Prosečan puls"},{key:"calories",unit:"kcal",label:"Kalorije"}] as const).flatMap(f=>typeof v[f.key]==="number"?[`${f.label}: ${v[f.key]}${f.unit?` ${f.unit}`:""}`]:[])].filter(Boolean).join(" · ");
  if(block.kind==="interval")return (Array.isArray(v.segments)?v.segments as IntervalSegment[]:[]).map((s,i)=>`${i+1}. ${s.label||"Deonica"} · ${s.distance??"—"} km · ${s.pace?`${secondsToMmSs(s.pace)} /km`:intervalSeconds(s)?secondsToMmSs(intervalSeconds(s)!):"—"}`).join("\n")||"Deonice još nisu unete";
  if(block.kind==="split"){
  const distance=typeof v.distance==="number"&&v.distance>0?v.distance:null,time=typeof v.duration==="number"&&v.duration>0?v.duration:null;
  const pace=distance&&time?computePace(distance,time):null;
- return [distance?`${new Intl.NumberFormat("sr-RS").format(distance)} km`:null,time?secondsToHhmmss(time):null,pace!=null?`${secondsToMmSs(pace)} /km`:typeof v.pace==="number"?`Zabeleženi tempo ${secondsToMmSs(v.pace)} /km`:null].filter(Boolean).join(" · ")||"Rezultat još nije unet";
+ return [block.details.runSurface==="treadmill"?"Traka":block.details.runSurface==="outdoor"?"Napolju":null,distance?`${new Intl.NumberFormat("sr-RS").format(distance)} km`:null,time?secondsToHhmmss(time):null,pace!=null?`${secondsToMmSs(pace)} /km`:typeof v.pace==="number"?`Zabeleženi tempo ${secondsToMmSs(v.pace)} /km`:null].filter(Boolean).join(" · ")||"Rezultat još nije unet";
  }
  if(block.kind==="sprint")return `${v.sprintReps??"—"} × ${[v.sprintDistance?`${v.sprintDistance} m`:null,v.sprintDuration?`${v.sprintDuration} s`:null].filter(Boolean).join(" / ")||"—"}${v.sprintRest!=null?` · pauza ${v.sprintRest} s`:""}`;
  const sets=Array.isArray(v.sets)?v.sets as SetEntry[]:[];

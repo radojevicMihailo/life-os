@@ -1,6 +1,6 @@
 import type { ActivityDraft, ActivityWrite, BlockDetails, BlockKind, EntryMode, StoredBlock, TrainingBlock } from "./types";
 export function emptyDetails(): BlockDetails { return { version:1,label:null,note:null,status:"pending",targets:{},linkNext:false,restSec:null,optional:false }; }
-export function newBlock(kind: BlockKind): TrainingBlock { return { rowKey:crypto.randomUUID(),kind,exerciseId:null,values:{},details:emptyDetails(),tagIds:[],sortOrder:0 }; }
+export function newBlock(kind: BlockKind): TrainingBlock { return { rowKey:crypto.randomUUID(),kind,exerciseId:null,values:{},details:{...emptyDetails(),...(kind==="cardio"?{cardioType:"stationary_bike" as const}:{})},tagIds:[],sortOrder:0 }; }
 export function adaptStoredBlock(row: StoredBlock): TrainingBlock { return { ...structuredClone(row),rowKey:crypto.randomUUID(),tagIds:[...(row.tagIds??[])],details:row.details?structuredClone(row.details):{...emptyDetails(),status:"done"} }; }
 function normalize(rows: TrainingBlock[], original: TrainingBlock[]): TrainingBlock[] {
  const links=new Set(original.flatMap((b,i)=>b.details.linkNext&&original[i+1]?[b.rowKey+":"+original[i+1].rowKey]:[]));
@@ -16,7 +16,8 @@ export function duplicateBlock(rows:TrainingBlock[],index:number):TrainingBlock[
  const next=[...rows.slice(0,index+1),copy,...rows.slice(index+1)];return normalize(next,rows);
 }
 export function inferEntryMode(rows:TrainingBlock[],fallback:EntryMode):EntryMode{
- const run=rows.some(b=>b.kind!=="exercise"),gym=rows.some(b=>b.kind==="exercise");return run&&gym?"mixed":run?"running":gym?"gym":fallback;
+ const modes=new Set(rows.map(b=>b.kind==="exercise"?"gym":b.kind==="cardio"?"cardio":"running"));
+ return modes.size>1?"mixed":modes.values().next().value??fallback;
 }
 export function toActivityWrite(draft:ActivityDraft):ActivityWrite{
  const {blocks,id,...parent}=draft;void id;

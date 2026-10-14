@@ -1,10 +1,19 @@
+import {cardioName} from "./cardio";
 import {intervalTotals,type IntervalSegment} from "./intervals";
 import type { SetEntry,Summary,TrainingBlock } from "./types";
 const positive=(v:unknown):number=>typeof v==="number"&&Number.isFinite(v)&&v>0?v:0;
 export function summarizeActivity(rows:TrainingBlock[]):Summary{
- const s:Summary={distanceKm:0,distanceComplete:true,activeRunSeconds:0,timeComplete:true,runPaceSeconds:null,exerciseCount:0,setCount:0};
+ const s:Summary={activeCardioSeconds:0,cardio:[],distanceKm:0,distanceComplete:true,activeRunSeconds:0,timeComplete:true,runPaceSeconds:null,exerciseCount:0,setCount:0};
  let runDistance=0,runTime=0,completeRuns=true;
  for(const b of rows){if(b.details.status!=="done")continue;
+ if(b.kind==="cardio"){
+ const durationSec=positive(b.values.duration),distanceKm=positive(b.values.distance),name=cardioName(b.details);
+ s.activeCardioSeconds+=durationSec;
+ const existing=s.cardio.find(c=>c.name===name);
+ if(existing){existing.durationSec+=durationSec;existing.distanceKm+=distanceKm;}
+ else s.cardio.push({name,durationSec,distanceKm});
+ continue;
+ }
  if(b.kind==="exercise"){if(b.exerciseId)s.exerciseCount++;s.setCount+=(Array.isArray(b.values.sets)?b.values.sets as SetEntry[]:[]).filter(x=>positive(x.reps)||positive(x.durationSec)).length;continue;}
  const intervals=b.kind==="interval"?intervalTotals(Array.isArray(b.values.segments)?b.values.segments as IntervalSegment[]:[]):null;
  const reps=b.kind==="sprint"?positive(b.values.sprintReps):1;

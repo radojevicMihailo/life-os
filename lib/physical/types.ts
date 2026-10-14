@@ -1,11 +1,12 @@
+import type {CardioType} from "./cardio";
 import type {IntervalSegment} from "./intervals";
-export type BlockKind = "exercise" | "split" | "sprint" | "interval";
-export type EntryMode = "running" | "gym" | "mixed";
+export type BlockKind = "exercise" | "split" | "sprint" | "interval" | "cardio";
+export type EntryMode = "running" | "gym" | "cardio" | "mixed";
 export type BlockStatus = "pending" | "done" | "skipped";
 export type NumericRange = { min: number; max: number };
 export type SetEntry = { weight?: number; reps?: number; durationSec?: number; bodyweight?: boolean; warmup?: boolean; perSide?: boolean };
 export type BlockTargets = { distanceKm?: NumericRange; durationSec?: NumericRange; repetitions?: NumericRange; sprintDistanceM?: NumericRange; sprintDurationSec?: NumericRange; restSec?: NumericRange; setCount?: NumericRange; reps?: NumericRange };
-export type BlockDetails = { version: 1; legacyActuals?: boolean; intervalTargets?: IntervalSegment[]; label: string | null; note: string | null; status: BlockStatus; targets: BlockTargets; linkNext: boolean; restSec: number | null; optional: boolean };
+export type BlockDetails = { version: 1; cardioType?: CardioType; cardioName?: string; runSurface?: "outdoor" | "treadmill"; legacyActuals?: boolean; intervalTargets?: IntervalSegment[]; label: string | null; note: string | null; status: BlockStatus; targets: BlockTargets; linkNext: boolean; restSec: number | null; optional: boolean };
 export type TrainingBlock = { id?: string; rowKey: string; kind: BlockKind; exerciseId: string | null; values: Record<string, unknown>; details: BlockDetails; tagIds: string[]; sortOrder: number };
 export type StoredBlock = Omit<TrainingBlock,"rowKey"|"details"|"tagIds"> & { id: string; details: BlockDetails | null; tagIds?: string[] };
 export type PlanBlock = Omit<TrainingBlock,"id"|"rowKey"|"details"> & { details: Omit<BlockDetails,"status"> };
@@ -16,6 +17,6 @@ export type TagPlacement = { scope: "session"|"block"; modes: EntryMode[]; kinds
 export type GroupConfig = { id: string; placement: TagPlacement | null };
 export type TagRef = { id: string; groupId: string };
 export type TagContext = { scope: "session"; mode: EntryMode } | { scope: "block"; kind: BlockKind };
-export type Summary = { distanceKm: number; distanceComplete: boolean; activeRunSeconds: number; timeComplete: boolean; runPaceSeconds: number | null; exerciseCount: number; setCount: number };
+export type Summary = { activeCardioSeconds: number; cardio: {name: string; durationSec: number; distanceKm: number}[]; distanceKm: number; distanceComplete: boolean; activeRunSeconds: number; timeComplete: boolean; runPaceSeconds: number | null; exerciseCount: number; setCount: number };
 
 export type SourceOption = { id:string; kind:"activity"|"plan"|"splitDay"; label:string; draft:ActivityDraft; previous?:ActivityDraft; conflicts:{groupId:string;tagIds:string[]}[] };

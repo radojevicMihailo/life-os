@@ -1,6 +1,7 @@
+import {cardioResultKeys} from "./cardio";
 import { emptyDetails } from "./blocks";
 import type { ActivityDraft,BlockTargets,PlanBlocks,SetEntry } from "./types";
-const actualKeys=new Set(["segments","sets","distance","duration","pace","sprintDistance","sprintDuration","sprintReps","sprintRest"]);
+const actualKeys=new Set([...cardioResultKeys,"segments","sets","distance","duration","pace","sprintDistance","sprintDuration","sprintReps","sprintRest"]);
 export function repeatActivity(source:ActivityDraft,today:Date):ActivityDraft{
  return {title:source.title,performedAt:new Date(today),values:{},comment:null,stravaUrl:null,tagIds:[...source.tagIds],blocks:source.blocks.map((b,sortOrder)=>({...structuredClone(b),id:undefined,rowKey:crypto.randomUUID(),sortOrder,values:b.kind==="interval"?{segments:((b.values.segments??[]) as import("./intervals").IntervalSegment[]).map(s=>({...s,distance:null,duration:null,pace:null}))}:{},details:{...structuredClone(b.details),status:"pending"}}))};
 }

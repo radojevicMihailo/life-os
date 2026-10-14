@@ -1,3 +1,4 @@
+import {secondsToHhmmss} from "@/lib/physical/formatDuration";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import type { ActivityListRow } from "@/lib/queries/physical";
@@ -20,7 +21,7 @@ export function ActivityList({
         const tagNames = r.tagIds
           .map((id) => tagById.get(id)?.name)
           .filter((n): n is string => Boolean(n));
-        const label = r.title || ({running:"Trčanje",gym:"Teretana",mixed:"Kombinovani trening"}[r.mode]);
+        const label = r.title || ({running:"Trčanje",gym:"Teretana",cardio:"Kardio",mixed:"Kombinovani trening"}[r.mode]);
         return (
           <li key={r.id}>
             <Card className="relative px-4 py-3 pr-24 hover:bg-accent">
@@ -39,7 +40,7 @@ export function ActivityList({
                   </div>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">{tagNames.join(" · ")}</p>
-                <p className="mt-2 text-sm">{[r.summary.distanceKm > 0 ? `${r.summary.distanceComplete ? "" : "Uneseno: "}${new Intl.NumberFormat("sr-RS").format(r.summary.distanceKm)} km` : null,r.summary.exerciseCount > 0 ? `${r.summary.exerciseCount} vežbi · ${r.summary.setCount} serija` : null].filter(Boolean).join(" · ")}</p>
+                <p className="mt-2 text-sm">{[...r.summary.cardio.map(c=>`${c.name} · ${secondsToHhmmss(c.durationSec)}${c.distanceKm>0?` · ${new Intl.NumberFormat("sr-RS").format(c.distanceKm)} km`:""}`),r.summary.distanceKm > 0 ? `${r.summary.distanceComplete ? "" : "Uneseno: "}${new Intl.NumberFormat("sr-RS").format(r.summary.distanceKm)} km` : null,r.summary.exerciseCount > 0 ? `${r.summary.exerciseCount} vežbi · ${r.summary.setCount} serija` : null].filter(Boolean).join(" · ")}</p>
                 {r.comment ? (
                   <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{r.comment}</p>
                 ) : null}

@@ -78,3 +78,23 @@ it("saves and edits ordered interval segments with the migrated database constra
  loaded=await loadActivity(database.db,id);expect(loaded?.subrows[0].values.segments).toEqual(segments);
  expect((await loadActivities(database.db)).find(a=>a.id===id)?.summary).toMatchObject({distanceKm:5,activeRunSeconds:1705});
 });
+
+it("saves and edits cardio and carries its type and goals into a reusable template",async()=>{
+ const {draftFromPlan}=await import("@/lib/physical/drafts");
+ const d=draft(),b=newBlock("cardio");b.details.status="done";b.values={duration:1800,distance:12.5,resistance:6,averageHeartRate:135,calories:240};d.blocks.push(b);
+ const id=await saveActivity(database.db,toActivityWrite(d));
+ let loaded=await loadActivity(database.db,id);
+ expect(loaded?.subrows[1]).toMatchObject({kind:"cardio",values:{duration:1800,resistance:6},details:{cardioType:"stationary_bike"}});
+ const row=(await loadActivities(database.db)).find(a=>a.id===id);
+ expect(row).toMatchObject({mode:"mixed",summary:{distanceKm:5,activeRunSeconds:1500,activeCardioSeconds:1800,runPaceSeconds:300}});
+ b.id=loaded!.subrows[1].id;b.values.duration=2100;
+ d.blocks[0].id=loaded!.subrows[0].id;
+ await saveActivity(database.db,toActivityWrite(d),id);
+ loaded=await loadActivity(database.db,id);expect(loaded?.subrows[1].values.duration).toBe(2100);
+ const plan=planFromActivity(d,true),planId=await saveWorkoutPlan(database.db,{name:"Trčanje i bajs",blocks:plan});
+ const [stored]=await database.db.select().from(workoutPlan).where(eq(workoutPlan.id,planId));
+ const repeated=draftFromPlan({name:stored.name,notes:stored.notes,tagIds:[],blocks:stored.blocks!},new Date());
+ expect(repeated.blocks[1]).toMatchObject({values:{},details:{status:"pending",cardioType:"stationary_bike",targets:{durationSec:{min:2100,max:2100}}}});
+ b.values.duration=0;await expect(saveActivity(database.db,toActivityWrite(d),id)).rejects.toThrow();
+ expect((await loadActivity(database.db,id))?.subrows[1].values.duration).toBe(2100);
+});
