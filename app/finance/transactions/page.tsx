@@ -5,12 +5,11 @@ import { TransactionAmounts } from "@/modules/finance/ui/components/transaction-
 import { loadReadModelRuntime } from "@/modules/finance/read-models/runtime";
 import { listTransactions } from "@/modules/finance/read-models/transactions";
 import { getMutationOptions } from "@/modules/finance/read-models/forms";
-import type { JournalSource, JournalType } from "@/modules/finance/domain/ledger";
+import type { JournalType } from "@/modules/finance/domain/ledger";
 import { TransactionForm } from "./transaction-form";
 import { CorrectionForm } from "./correction-form";
 
 const TYPES = ["income", "expense", "transfer", "foreign_exchange", "opening_balance", "correction", "receivable_out", "receivable_repayment", "investment_trade", "fee"] as const;
-const SOURCES = ["web", "shortcut", "seed", "system"] as const;
 
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -19,13 +18,11 @@ function first(value: string | string[] | undefined) {
 export default async function TransactionsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const typeValue = first(params.type);
-  const sourceValue = first(params.source);
   const filters = {
     accountId: first(params.accountId) || undefined,
     categoryId: first(params.categoryId) || undefined,
     dateFrom: first(params.dateFrom) || undefined,
     dateTo: first(params.dateTo) || undefined,
-    source: SOURCES.includes(sourceValue as JournalSource) ? sourceValue as JournalSource : undefined,
     type: TYPES.includes(typeValue as JournalType) ? typeValue as JournalType : undefined,
   };
   const { dependencies } = await loadReadModelRuntime();
@@ -38,14 +35,13 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     <>
       <PageHeader eyebrow="Promet" title="Transakcije">Hronološki pregled knjiženja sa filterima i jasnim izvornim iznosima.</PageHeader>
       <TransactionForm accounts={options.accounts} categories={options.categories} />
-      <form className="grid gap-3 rounded-3xl border border-white/10 bg-white/[0.03] p-4 sm:grid-cols-2 lg:grid-cols-6" method="get">
+      <form className="grid gap-3 rounded-3xl border border-white/10 bg-white/[0.03] p-4 sm:grid-cols-2 lg:grid-cols-5" method="get">
         <label className="text-xs text-slate-400">Od<Input className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.dateFrom} name="dateFrom" type="date" /></label>
         <label className="text-xs text-slate-400">Do<Input className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.dateTo} name="dateTo" type="date" /></label>
         <label className="text-xs text-slate-400">Tip<select className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.type ?? ""} name="type"><option value="">Svi tipovi</option>{TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label>
-        <label className="text-xs text-slate-400">Izvor<select className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.source ?? ""} name="source"><option value="">Svi izvori</option>{SOURCES.map((source) => <option key={source} value={source}>{source}</option>)}</select></label>
         <label className="text-xs text-slate-400">ID računa<input className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.accountId} name="accountId" /></label>
         <label className="text-xs text-slate-400">ID kategorije<input className="mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white" defaultValue={filters.categoryId} name="categoryId" /></label>
-        <button className="min-h-11 action-button rounded-xl px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:col-span-2 lg:col-span-6" type="submit">Primeni filtere</button>
+        <button className="min-h-11 action-button rounded-xl px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:col-span-2 lg:col-span-5" type="submit">Primeni filtere</button>
       </form>
       {transactions.items.length === 0 ? (
         <div className="mt-6"><EmptyState title="Nema transakcija za izabrane filtere" /></div>
