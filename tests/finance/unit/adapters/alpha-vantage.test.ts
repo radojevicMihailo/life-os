@@ -16,6 +16,13 @@ async function jsonFixture(name: string) {
 }
 
 describe("Alpha Vantage parser", () => {
+  it("recognizes the live XETRA region while excluding the Frankfurt listing", () => {
+    expect(parseAlphaVantageSymbolResolution({ bestMatches: [
+      { "1. symbol": "VWCE.FRK", "4. region": "Frankfurt", "8. currency": "EUR" },
+      { "1. symbol": "VWCE.DEX", "4. region": "XETRA", "8. currency": "EUR" },
+    ] }, { symbol: "VWCE", quoteCurrencyCode: "EUR", exchange: "Deutsche Börse/Xetra" }))
+      .toMatchObject({ providerId: "VWCE.DEX", currencyCode: "EUR" });
+  });
   it("rejects a quote for a different exchange-specific symbol", async () => {
     const payload = await jsonFixture("alpha-vantage-global-quote.json");
 
@@ -192,7 +199,10 @@ describe("Alpha Vantage HTTP adapter", () => {
     const client = new AlphaVantageClient({
       apiKey: "alpha-key",
       clock: { now: () => now },
-      fetch: async () => Response.json(payload),
+      fetch: async (input) => {
+        expect(new URL(String(input)).searchParams.get("keywords")).toBe("VWCE");
+        return Response.json(payload);
+      },
       signal: new AbortController().signal,
     });
 

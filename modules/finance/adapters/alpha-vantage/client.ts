@@ -45,7 +45,8 @@ export class AlphaVantageClient implements MarketQuoteProvider {
     }
     const response = await this.options.fetch(this.url({
       function: "SYMBOL_SEARCH",
-      keywords: input.isin ?? input.symbol,
+      // SYMBOL_SEARCH matches ticker/name keywords; the VWCE ISIN returns no match.
+      keywords: input.symbol,
     }), { signal: this.options.signal });
     if (!response.ok) throw new Error(`alpha_vantage_http_${response.status}`);
     return parseAlphaVantageSymbolResolution(await response.json(), input);

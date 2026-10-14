@@ -81,13 +81,13 @@ export function parseAlphaVantageSymbolResolution(
   const configuredExchange = input.exchange?.trim().toLocaleLowerCase("en-US");
   const listingIdentity = configuredExchange === "deutsche börse/xetra" ||
     configuredExchange === "xetra"
-    ? { suffix: ".DEX", region: "GERMANY" }
+    ? { suffix: ".DEX", regions: ["GERMANY", "XETRA"] }
     : undefined;
   if (!listingIdentity) throw new Error("alpha_vantage_exchange_mismatch");
   const candidates = symbolCandidates.filter((candidate) => {
     const providerId = String(candidate["1. symbol"] ?? "").toUpperCase();
     const region = String(candidate["4. region"] ?? "").toUpperCase();
-    return providerId.endsWith(listingIdentity.suffix) && region === listingIdentity.region;
+    return providerId.endsWith(listingIdentity.suffix) && listingIdentity.regions.includes(region);
   });
   if (candidates.length === 0) throw new Error("alpha_vantage_exchange_mismatch");
   if (candidates.length > 1) throw new Error("alpha_vantage_symbol_ambiguous");

@@ -15,7 +15,7 @@ describe("durable Alpha Vantage rolling daily allowance", () => {
     await migrateDatabase(testDb.db);
   }, TEST_DATABASE_HOOK_TIMEOUT_MS);
   beforeEach(async () => {
-    await testDb.pool.query("truncate finance_alpha_vantage_request_reservations, finance_provider_refresh_runs");
+    await testDb.pool.query("truncate finance_alpha_vantage_request_reservations, finance_provider_refresh_runs restart identity");
   });
   afterAll(async () => { await testDb?.close(); }, TEST_DATABASE_TEARDOWN_TIMEOUT_MS);
   afterEach(async () => {
@@ -42,7 +42,7 @@ describe("durable Alpha Vantage rolling daily allowance", () => {
     const makeClient = (pool: Pool) => new AlphaVantageClient({
       apiKey: "not-a-secret", apiUrl, clock: { now: () => new Date() },
       signal: new AbortController().signal,
-      reserveRequest: () => reserveAlphaVantageRequest(pool),
+      reserveRequest: () => reserveAlphaVantageRequest(pool, 0),
       fetch: async (input, init) => {
         // The reservation is committed and its transaction released before HTTP.
         const stored = await pool.query("select count(*)::int as count from finance_alpha_vantage_request_reservations");
@@ -91,6 +91,39 @@ describe("durable Alpha Vantage rolling daily allowance", () => {
     const closedPool = new Pool({ connectionString: testDb.connectionString });
     await closedPool.end();
     await expect(reserveAlphaVantageRequest(closedPool)).rejects.toThrow("alpha_vantage_request_budget_unavailable");
+  });
+
+  it("spaces real outgoing requests across independent pools without retaining a connection while waiting", async () => {
+    const other = new Pool({ connectionString: testDb.connectionString, max: 1 });
+    try {
+      const completed = await Promise.all([
+        reserveAlphaVantageRequest(testDb.pool),
+        reserveAlphaVantageRequest(other),
+        reserveAlphaVantageRequest(testDb.pool),
+      ]);
+      expect(completed).toEqual([true, true, true]);
+      const rows = await testDb.pool.query(`select extract(epoch from (reserved_at - lag(reserved_at) over (order by reserved_at))) * 1000 as gap
+        from finance_alpha_vantage_request_reservations order by reserved_at`);
+      expect(rows.rows.slice(1).every((row) => Number(row.gap) >= 1100)).toBe(true);
+      expect(other.totalCount).toBe(other.idleCount);
+    } finally { await other.end(); }
+  }, 10_000);
+
+  it("removes only the migration's synthetic reservations and preserves real requests", async () => {
+    await testDb.pool.query(`insert into finance_provider_refresh_runs
+      (id,provider,started_at,finished_at,status,attempted_count)
+      values ('bootstrap-history','alpha_vantage',now()-interval '2 hours',now()-interval '1 hour','failed',3)`);
+    await testDb.pool.query(`insert into finance_alpha_vantage_request_reservations(reserved_at)
+      select finished_at from finance_provider_refresh_runs cross join generate_series(1,25)`);
+    await testDb.pool.query("insert into finance_alpha_vantage_request_reservations default values");
+    const cleanup = await readFile(new URL("../../../../db/unified-migrations/0016_remove_synthetic_alpha_budget.sql", import.meta.url), "utf8");
+    await testDb.pool.query(cleanup);
+    expect((await testDb.pool.query("select id from finance_alpha_vantage_request_reservations")).rows).toEqual([{ id: "26" }]);
+    // Real reservations at the start of a fresh installation must never be reset.
+    await testDb.pool.query("truncate finance_alpha_vantage_request_reservations restart identity");
+    await testDb.pool.query("insert into finance_alpha_vantage_request_reservations select nextval('finance_alpha_vantage_request_reservations_id_seq'),clock_timestamp() from generate_series(1,25)");
+    await testDb.pool.query(cleanup);
+    expect((await testDb.pool.query("select count(*)::int count from finance_alpha_vantage_request_reservations")).rows[0].count).toBe(25);
   });
 
   it.each([
