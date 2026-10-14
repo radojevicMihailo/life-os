@@ -6,4 +6,5 @@ export const pool = cache.lifeOsPool ?? new Pool({
   connectionTimeoutMillis: 5000, idleTimeoutMillis: 10000,
   statement_timeout: 15000, query_timeout: 15000,
 });
-if (process.env.NODE_ENV !== "production") cache.lifeOsPool = pool;
+// Route bundles and background workers must share the same connection limit.
+cache.lifeOsPool = pool;

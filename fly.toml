@@ -39,4 +39,6 @@ kill_timeout = "30s"
 
 [[vm]]
   size = "shared-cpu-1x"
-  memory = "256mb"
+  # Next.js and PostgreSQL share this Machine; 256MB caused memory pressure
+  # and database connection timeouts while rendering investment pages.
+  memory = "512mb"
