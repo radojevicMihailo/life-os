@@ -37,6 +37,8 @@ export function CreateTaskDialog({
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [actionAt, setActionAt] = useState<Date | null>(null);
+  const [actionWithTime, setActionWithTime] = useState(false);
   const [dueAt, setDueAt] = useState<Date | null>(initial?.date ?? null);
   const [withTime, setWithTime] = useState(initial?.withTime ?? false);
   const [contextId, setContextId] = useState("none");
@@ -47,7 +49,7 @@ export function CreateTaskDialog({
     const trimmed = title.trim();
     if (!trimmed) return;
     startTransition(async () => {
-      const result = await createTask({ title: trimmed, priorityId: priorityId === "none" ? undefined : priorityId as typeof TASK_PRIORITIES[number]["id"], dueAt: dueAt ?? undefined, contextIds: contextId === "none" ? undefined : [contextId] });
+      const result = await createTask({ title: trimmed, priorityId: priorityId === "none" ? undefined : priorityId as typeof TASK_PRIORITIES[number]["id"], actionAt: actionAt ?? undefined, dueAt: dueAt ?? undefined, contextIds: contextId === "none" ? undefined : [contextId] });
       if (!result.ok) {
         toast.error(result.error);
         return;
@@ -60,7 +62,7 @@ export function CreateTaskDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>New task</DialogTitle>
         </DialogHeader>
@@ -83,8 +85,21 @@ export function CreateTaskDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label>Due</Label>
+            <Label htmlFor="calendar-task-action">Action date</Label>
             <DateField
+              id="calendar-task-action"
+              value={actionAt}
+              onChange={setActionAt}
+              withTime={actionWithTime}
+              onToggleTime={setActionWithTime}
+              disabled={pending}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="calendar-task-due">Due</Label>
+            <DateField
+              id="calendar-task-due"
+              disabled={pending}
               value={dueAt}
               onChange={setDueAt}
               withTime={withTime}

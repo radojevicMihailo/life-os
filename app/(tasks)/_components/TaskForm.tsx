@@ -148,7 +148,7 @@ export function TaskForm({
           </div>
           <div className="space-y-2 rounded-md border p-3 sm:col-span-2">
             <div className="flex items-center justify-between">
-              <Label>Action</Label>
+              <Label htmlFor="task-action">Action date</Label>
               {!showActionEnd ? (
                 <Button
                   type="button"
@@ -177,6 +177,7 @@ export function TaskForm({
               )}
             </div>
             <DateField
+              id="task-action"
               value={actionAt}
               onChange={(d, withTime) => {
                 setActionAt(d);
