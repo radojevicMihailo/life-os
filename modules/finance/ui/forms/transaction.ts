@@ -130,6 +130,9 @@ export function parseTransactionForm(
       const fromAmount = optionalText(raw.fromAmount);
       const toAmount = optionalText(raw.toAmount);
       const effectiveRate = optionalText(raw.effectiveRate);
+      const feeAmount = optionalText(raw.feeAmount) ? normalizeSerbianDecimalField("feeAmount", raw.feeAmount, { allowZero: true }) : undefined;
+      const hasFee = feeAmount !== undefined && !/^0(?:\.0+)?$/.test(feeAmount);
+      if (hasFee && !optionalText(raw.feeCategoryId)) formValidationError({ feeCategoryId: "Izaberite kategoriju naknade." });
       if (sameCurrencyAmount && (fromAmount || toAmount || effectiveRate)) {
         formValidationError({ amount: "Koristite ili isti-valutni iznos ili devizna polja." });
       }
@@ -145,10 +148,10 @@ export function parseTransactionForm(
         ...(fromAmount ? { fromAmount: normalizeSerbianDecimalField("fromAmount", fromAmount) } : {}),
         ...(toAmount ? { toAmount: normalizeSerbianDecimalField("toAmount", toAmount) } : {}),
         ...(effectiveRate ? { effectiveRate: normalizeSerbianDecimalField("effectiveRate", effectiveRate) } : {}),
-        ...(optionalText(raw.feeAmount) && optionalText(raw.feeCategoryId)
+        ...(hasFee
           ? {
               fee: {
-                amount: normalizeSerbianDecimalField("feeAmount", raw.feeAmount),
+                amount: feeAmount!,
                 categoryId: parseField("feeCategoryId", identifier, raw.feeCategoryId),
               },
             }
@@ -168,6 +171,7 @@ export function parseCorrectionForm(input: FormData | Record<string, unknown>) {
       description: raw.replacementDescription,
     }),
     source: "web" as const,
+    ...(/^\d{4}-\d{2}-\d{2}$/.test(optionalText(raw.occurredAt) ?? "") ? { preserveTimeOnSameDate: true } : {}),
     ...(optionalText(raw.correctionDescription)
       ? { description: optionalText(raw.correctionDescription) }
       : {}),

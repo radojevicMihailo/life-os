@@ -9,7 +9,7 @@ import type { JournalType } from "@/modules/finance/domain/ledger";
 import { TransactionForm } from "./transaction-form";
 import { CorrectionForm } from "./correction-form";
 
-const TYPES = ["income", "expense", "transfer", "foreign_exchange", "opening_balance", "correction", "receivable_out", "receivable_repayment", "investment_trade", "fee"] as const;
+const TYPES = ["income", "expense", "transfer", "foreign_exchange", "opening_balance", "receivable_out", "receivable_repayment", "investment_trade", "fee"] as const;
 
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -23,7 +23,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     categoryId: first(params.categoryId) || undefined,
     dateFrom: first(params.dateFrom) || undefined,
     dateTo: first(params.dateTo) || undefined,
-    type: TYPES.includes(typeValue as JournalType) ? typeValue as JournalType : undefined,
+    type: TYPES.includes(typeValue as (typeof TYPES)[number]) ? typeValue as JournalType : undefined,
   };
   const { dependencies } = await loadReadModelRuntime();
   const [transactions, options] = await Promise.all([
@@ -48,9 +48,9 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
       ) : (
         <section className="mt-6 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
           <div className="divide-y divide-white/10 md:hidden">
-            {transactions.items.map((transaction) => <article className="p-4" key={transaction.id}><div className="flex items-start justify-between gap-3"><div><p className="font-medium">{transaction.description ?? transaction.type}</p><p className="mt-1 text-xs text-slate-500">{transaction.occurredAt.toLocaleDateString("sr-Latn-RS", { timeZone: "Europe/Belgrade" })}</p></div><TransactionAmounts amounts={transaction.nativeAmounts} /></div><p className="mt-3 text-xs text-slate-400">{[...transaction.accountNames, ...transaction.categoryNames].join(" · ") || "Bez dimenzija"}{transaction.corrected ? " · Ispravljeno" : ""}</p>{transaction.correctionDraft && !transaction.corrected ? <CorrectionForm transaction={{ ...transaction, correctionDraft: transaction.correctionDraft }} /> : null}</article>)}
+            {transactions.items.map((transaction) => <article className="p-4" key={transaction.id}><div className="flex items-start justify-between gap-3"><div><p className="font-medium">{transaction.description ?? transaction.type}</p><p className="mt-1 text-xs text-slate-500">{transaction.occurredAt.toLocaleDateString("sr-Latn-RS", { timeZone: "Europe/Belgrade" })}</p></div><TransactionAmounts amounts={transaction.nativeAmounts} /></div><p className="mt-3 text-xs text-slate-400">{[...transaction.accountNames, ...transaction.categoryNames].join(" · ") || "Bez dimenzija"}{transaction.corrected ? " · Ispravljeno" : ""}</p>{transaction.correctionDraft ? <CorrectionForm accounts={options.accounts} categories={options.categories} transaction={{ ...transaction, correctionDraft: transaction.correctionDraft }} /> : null}</article>)}
           </div>
-          <div className="hidden overflow-x-auto md:block"><table className="w-full text-left text-sm"><thead className="bg-white/[0.04] text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-4">Datum</th><th className="px-5 py-4">Opis</th><th className="px-5 py-4">Račun / kategorija</th><th className="px-5 py-4 text-right">Iznos</th></tr></thead><tbody className="divide-y divide-white/10">{transactions.items.map((transaction) => <tr key={transaction.id}><td className="whitespace-nowrap px-5 py-4">{transaction.occurredAt.toLocaleDateString("sr-Latn-RS", { timeZone: "Europe/Belgrade" })}</td><td className="px-5 py-4"><p className="font-medium">{transaction.description ?? transaction.type}</p>{transaction.corrected ? <p className="text-xs text-amber-200">Ispravljeno</p> : null}{transaction.correctionDraft && !transaction.corrected ? <CorrectionForm transaction={{ ...transaction, correctionDraft: transaction.correctionDraft }} /> : null}</td><td className="px-5 py-4 text-slate-400">{[...transaction.accountNames, ...transaction.categoryNames].join(" · ")}</td><td className="px-5 py-4 text-right"><TransactionAmounts amounts={transaction.nativeAmounts} /></td></tr>)}</tbody></table></div>
+          <div className="hidden overflow-x-auto md:block"><table className="w-full text-left text-sm"><thead className="bg-white/[0.04] text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-4">Datum</th><th className="px-5 py-4">Opis</th><th className="px-5 py-4">Račun / kategorija</th><th className="px-5 py-4 text-right">Iznos</th></tr></thead><tbody className="divide-y divide-white/10">{transactions.items.map((transaction) => <tr key={transaction.id}><td className="whitespace-nowrap px-5 py-4">{transaction.occurredAt.toLocaleDateString("sr-Latn-RS", { timeZone: "Europe/Belgrade" })}</td><td className="px-5 py-4"><p className="font-medium">{transaction.description ?? transaction.type}</p>{transaction.corrected ? <p className="text-xs text-amber-200">Ispravljeno</p> : null}{transaction.correctionDraft ? <CorrectionForm accounts={options.accounts} categories={options.categories} transaction={{ ...transaction, correctionDraft: transaction.correctionDraft }} /> : null}</td><td className="px-5 py-4 text-slate-400">{[...transaction.accountNames, ...transaction.categoryNames].join(" · ")}</td><td className="px-5 py-4 text-right"><TransactionAmounts amounts={transaction.nativeAmounts} /></td></tr>)}</tbody></table></div>
         </section>
       )}
     </>

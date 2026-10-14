@@ -284,6 +284,10 @@ export async function resolveInstrument(
   }
   if (!providerId) applicationError("investment_provider_resolution_failed");
   const quoteResult = await provider.fetchQuotes([{ instrumentId: id, providerId, quoteCurrencyCode }]);
+  if (quoteResult.failures?.some((failure) =>
+    failure.providerId === providerId && failure.error === "alpha_vantage_request_budget_exhausted")) {
+    throw new Error("alpha_vantage_request_budget_exhausted");
+  }
   const quote = quoteResult.quotes[0];
   if (
     quoteResult.quotes.length !== 1 ||

@@ -5,6 +5,8 @@ import { CoinGeckoClient } from "../adapters/coingecko/client";
 import { NbsClient } from "../adapters/nbs/client";
 import { env } from "../config/env";
 import { unitOfWork } from "../db/unit-of-work";
+import { pool } from "@/db/pool";
+import { reserveAlphaVantageRequest } from "../db/alpha-vantage-budget";
 import { refreshDailyValuations, type MarketQuoteProvider } from "./valuation";
 import type { ApplicationDependencies } from "./ports";
 import { serializeValuationRefresh, type RefreshScope } from "./refresh-scheduler";
@@ -24,6 +26,7 @@ async function performRefresh(scope: RefreshScope | "all") {
   if (scope !== "crypto" && env.ALPHA_VANTAGE_API_KEY) {
     marketQuoteProviders.push(new AlphaVantageClient({
       apiKey: env.ALPHA_VANTAGE_API_KEY, clock: application.clock, fetch,
+      reserveRequest: () => reserveAlphaVantageRequest(pool),
       get signal() { return AbortSignal.timeout(env.PROVIDER_TIMEOUT_MS); },
     }));
   }

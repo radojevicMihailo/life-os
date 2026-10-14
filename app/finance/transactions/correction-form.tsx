@@ -1,71 +1,25 @@
 "use client";
 
-import { useActionState, useState } from "react";
-
-import type { TransactionCorrectionDraft } from "@/modules/finance/read-models/transactions";
-import { correctTransactionAction } from "@/modules/finance/ui/actions/transactions";
+import { useActionState } from "react";
+import { deleteTransactionAction } from "@/modules/finance/ui/actions/transactions";
 import { ActionMessage } from "@/modules/finance/ui/components/action-message";
+import { TransactionForm, type EditableTransaction } from "./transaction-form";
 
-const control = "mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-white";
+type Option = { id: string; name: string; classification: string; currencyCode?: string; isActive: boolean };
 
-type CorrectableTransaction = {
-  id: string;
-  type: string;
-  description: string | null;
-  correctionDraft: TransactionCorrectionDraft;
-};
-
-function PreservedDimensions({ draft }: { draft: TransactionCorrectionDraft }) {
-  switch (draft.operation) {
-    case "expense":
-    case "income":
-      return <><input name="accountId" type="hidden" value={draft.accountId} /><input name="categoryId" type="hidden" value={draft.categoryId} /></>;
-    case "opening_balance":
-      return <input name="accountId" type="hidden" value={draft.accountId} />;
-    case "transfer":
-      return <><input name="fromAccountId" type="hidden" value={draft.fromAccountId} /><input name="toAccountId" type="hidden" value={draft.toAccountId} /></>;
-    case "receivable_out":
-      return <><input name="fromAccountId" type="hidden" value={draft.fromAccountId} /><input name="receivableAccountId" type="hidden" value={draft.receivableAccountId} /></>;
-    case "receivable_repayment":
-      return <><input name="receivableAccountId" type="hidden" value={draft.receivableAccountId} /><input name="toAccountId" type="hidden" value={draft.toAccountId} /></>;
-  }
-}
-
-function AmountFields({ draft }: { draft: TransactionCorrectionDraft }) {
-  const foreign = draft.operation === "transfer" && "fromAmount" in draft;
-  const [conversionMethod, setConversionMethod] = useState<"toAmount" | "effectiveRate">("toAmount");
-  if (foreign) {
-    return <>
-      <label className="text-xs text-slate-400">Ispravljeni izvorni iznos<input className={control} defaultValue={draft.fromAmount} inputMode="decimal" name="fromAmount" required /></label>
-      <label className="text-xs text-slate-400">Način konverzije<select className={control} onChange={(event) => setConversionMethod(event.target.value as "toAmount" | "effectiveRate")} value={conversionMethod}><option value="toAmount">Odredišni iznos</option><option value="effectiveRate">Efektivni kurs</option></select></label>
-      {conversionMethod === "toAmount"
-        ? <label className="text-xs text-slate-400">Ispravljeni odredišni iznos<input className={control} defaultValue={draft.toAmount} inputMode="decimal" name="toAmount" required /></label>
-        : <label className="text-xs text-slate-400">Ispravljeni efektivni kurs<input className={control} defaultValue={draft.effectiveRate} inputMode="decimal" name="effectiveRate" required /></label>}
-    </>;
-  }
-  const amount = "amount" in draft ? draft.amount : "";
-  return <label className="text-xs text-slate-400">Ispravljeni iznos<input className={control} defaultValue={amount} inputMode="decimal" name="correctedAmount" required /></label>;
-}
-
-export function CorrectionForm({ transaction }: { transaction: CorrectableTransaction }) {
-  const [state, action, pending] = useActionState(correctTransactionAction, undefined);
-  const { correctionDraft: draft } = transaction;
-  return (
-    <details className="mt-3 text-left">
-      <summary className="cursor-pointer text-xs font-medium text-blue-200">Ispravi {transaction.description ?? transaction.type}</summary>
-      <form action={action} className="mt-3 grid gap-2 rounded-xl bg-slate-950/70 p-3">
-        <input name="originalId" type="hidden" value={transaction.id} />
-        <input name="operation" type="hidden" value={draft.operation} />
-        <PreservedDimensions draft={draft} />
-        <AmountFields draft={draft} />
-        {(draft.operation === "receivable_out" || draft.operation === "receivable_repayment" || (draft.operation === "opening_balance" && draft.counterparty))
-          ? <label className="text-xs text-slate-400">Druga strana<input className={control} defaultValue={draft.counterparty} name="counterparty" required /></label>
-          : null}
-        <label className="text-xs text-slate-400">Novi opis transakcije<input className={control} defaultValue={transaction.description ?? ""} name="replacementDescription" /></label>
-        <label className="text-xs text-slate-400">Razlog / opis storna<input className={control} name="correctionDescription" /></label>
-        <button className="min-h-11 rounded-xl border border-blue-400/30 px-3 text-sm text-blue-100" disabled={pending}>Sačuvaj ispravku</button>
-        <ActionMessage state={state} success="Ispravka je sačuvana." />
-      </form>
+export function CorrectionForm({ transaction, accounts, categories }: { transaction: EditableTransaction; accounts: Option[]; categories: Option[] }) {
+  const [state, action, pending] = useActionState(deleteTransactionAction, undefined);
+  return <div className="mt-3 space-y-2 text-left">
+    <details>
+      <summary className="min-h-10 cursor-pointer py-2 text-xs font-medium text-blue-200">Izmeni transakciju</summary>
+      <TransactionForm transaction={transaction} accounts={accounts} categories={categories} />
     </details>
-  );
+    <form action={action} onSubmit={(event) => {
+      if (!window.confirm("Obrisati ovu transakciju? Njen uticaj na saldo i budžete biće uklonjen.")) event.preventDefault();
+    }}>
+      <input name="id" type="hidden" value={transaction.id} />
+      <button className="min-h-10 rounded-xl border border-red-400/30 px-3 text-xs text-red-300" disabled={pending}>Obriši transakciju</button>
+      <ActionMessage state={state} success="Transakcija je obrisana." />
+    </form>
+  </div>;
 }

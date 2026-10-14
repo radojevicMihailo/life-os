@@ -22,6 +22,7 @@ export class AlphaVantageClient implements MarketQuoteProvider {
     fetch: typeof fetch;
     clock: { now(): Date };
     signal: AbortSignal;
+    reserveRequest?: () => Promise<boolean>;
   }) {}
 
   private url(params: Record<string, string>) {
@@ -38,6 +39,9 @@ export class AlphaVantageClient implements MarketQuoteProvider {
     if (budget) {
       if (budget.remaining <= 0) throw new Error("provider_request_budget_exhausted");
       budget.remaining -= 1;
+    }
+    if (this.options.reserveRequest && !await this.options.reserveRequest()) {
+      throw new Error("alpha_vantage_request_budget_exhausted");
     }
     const response = await this.options.fetch(this.url({
       function: "SYMBOL_SEARCH",
@@ -58,9 +62,15 @@ export class AlphaVantageClient implements MarketQuoteProvider {
     if (budget) budget.remaining -= selected.length;
     const quotes = [];
     const failures: Array<{ providerId: string; error: string }> = [];
+    const skippedProviderIds = requests.slice(available).map((request) => request.providerId);
 
     for (const request of selected) {
       try {
+        if (this.options.reserveRequest && !await this.options.reserveRequest()) {
+          skippedProviderIds.push(request.providerId);
+          failures.push({ providerId: request.providerId, error: "alpha_vantage_request_budget_exhausted" });
+          continue;
+        }
         const response = await this.options.fetch(this.url({
           function: "GLOBAL_QUOTE",
           symbol: request.providerId,
@@ -86,7 +96,7 @@ export class AlphaVantageClient implements MarketQuoteProvider {
 
     return {
       quotes,
-      skippedProviderIds: requests.slice(available).map((request) => request.providerId),
+      skippedProviderIds,
       ...(failures.length > 0 ? { failures } : {}),
     };
   }

@@ -71,6 +71,60 @@ describe("Alpha Vantage parser", () => {
 });
 
 describe("Alpha Vantage HTTP adapter", () => {
+  it("retains a successful quote when the next symbol exhausts the daily allowance", async () => {
+    let outgoing = 0;
+    const client = new AlphaVantageClient({
+      apiKey: "alpha-key", clock: { now: () => now }, signal: new AbortController().signal,
+      reserveRequest: async () => outgoing < 1,
+      fetch: async () => {
+        outgoing += 1;
+        return Response.json({ "Global Quote": {
+          "01. symbol": "GOOD", "05. price": "10", "07. latest trading day": "2026-08-28",
+        } });
+      },
+    });
+    const result = await client.fetchQuotes(["GOOD", "DENIED"].map((symbol) => ({
+      instrumentId: symbol, providerId: symbol, quoteCurrencyCode: "USD",
+    })));
+    expect(result.quotes).toHaveLength(1);
+    expect(result.quotes[0]).toMatchObject({ providerId: "GOOD", price: "10" });
+    expect(result.skippedProviderIds).toEqual(["DENIED"]);
+    expect(result.failures).toEqual([{ providerId: "DENIED", error: "alpha_vantage_request_budget_exhausted" }]);
+    expect(outgoing).toBe(1);
+  });
+
+  it("skips exhausted daily reservations for quotes and rejects symbol searches without HTTP", async () => {
+    let calls = 0;
+    const client = new AlphaVantageClient({
+      apiKey: "alpha-key", clock: { now: () => now },
+      signal: new AbortController().signal,
+      reserveRequest: async () => false,
+      fetch: async () => { calls += 1; return Response.json({}); },
+    });
+    expect(await client.fetchQuotes([{
+      instrumentId: "instrument-test", providerId: "TEST", quoteCurrencyCode: "USD",
+    }])).toEqual({ quotes: [], skippedProviderIds: ["TEST"], failures: [{ providerId: "TEST", error: "alpha_vantage_request_budget_exhausted" }] });
+    await expect(client.resolveSymbol({
+      instrumentId: "instrument-test", symbol: "TEST", quoteCurrencyCode: "USD", isin: null, exchange: null,
+    })).rejects.toThrow("alpha_vantage_request_budget_exhausted");
+    expect(calls).toBe(0);
+  });
+
+  it("fails closed if reserving the durable allowance fails", async () => {
+    let calls = 0;
+    const client = new AlphaVantageClient({
+      apiKey: "alpha-key", clock: { now: () => now },
+      signal: new AbortController().signal,
+      reserveRequest: async () => { throw new Error("budget_database_unavailable"); },
+      fetch: async () => { calls += 1; return Response.json({}); },
+    });
+    const result = await client.fetchQuotes([{
+      instrumentId: "instrument-test", providerId: "TEST", quoteCurrencyCode: "USD",
+    }]);
+    expect(result.failures).toEqual([{ providerId: "TEST", error: "budget_database_unavailable" }]);
+    expect(calls).toBe(0);
+  });
+
   it("sends requests to an explicitly configured endpoint", async () => {
     const urls: URL[] = [];
     const client = new AlphaVantageClient({

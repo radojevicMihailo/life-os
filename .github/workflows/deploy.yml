@@ -35,4 +35,4 @@ jobs:
         with:
           version: "0.4.108"
       - name: Deploy single Machine
-        run: flyctl deploy --remote-only --app "$FLY_APP_NAME" --ha=false --strategy immediate
+        run: flyctl deploy --remote-only --app "$FLY_APP_NAME" --ha=false --strategy immediate --build-arg "DEPLOYMENT_VERSION=$GITHUB_SHA"

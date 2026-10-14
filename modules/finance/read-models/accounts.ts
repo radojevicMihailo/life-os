@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 
 import type { ApplicationDependencies } from "../application/ports";
 import { valueNetWorthEur } from "../application/valuation";
@@ -113,6 +113,8 @@ export async function listAccounts(
             and(
               inArray(journalPostings.accountId, accountIds),
               eq(journalTransactions.status, "posted"),
+              isNull(journalTransactions.correctedById),
+              ne(journalTransactions.type, "correction"),
             ),
           )
           .orderBy(

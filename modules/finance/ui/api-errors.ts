@@ -10,6 +10,7 @@ import { DomainError, type DomainErrorCode } from "../domain/errors";
 export type ApiErrorCode =
   | ApplicationErrorCode
   | DomainErrorCode
+  | "alpha_vantage_request_budget_exhausted"
   | "idempotency_conflict"
   | "idempotency_key_required"
   | "internal_error"
@@ -24,6 +25,7 @@ export interface ApiErrorBody {
 }
 
 const messages: Record<ApiErrorCode, string> = {
+  alpha_vantage_request_budget_exhausted: "Dostignut je Alpha Vantage limit od 25 zahteva u 24 sata. Pokušajte kasnije, kada se oslobodi dnevni limit.",
   account_purpose_target_invalid: "Izabrani cilj ili budžet nije dostupan.",
   account_purpose_currency_mismatch: "Valuta namene mora odgovarati valuti računa.",
   account_purpose_insufficient_balance: "Nema dovoljno slobodnog novca na računu za ovu namenu.",
@@ -112,6 +114,9 @@ export function apiError(code: ApiErrorCode, status: number) {
 }
 
 export function mapApiError(error: unknown) {
+  if (error instanceof Error && error.message === "alpha_vantage_request_budget_exhausted") {
+    return apiError("alpha_vantage_request_budget_exhausted", 429);
+  }
   if (error instanceof ZodError) {
     return apiError("validation_error", 400);
   }

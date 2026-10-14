@@ -4,25 +4,27 @@ import { AlphaVantageClient } from "../../adapters/alpha-vantage/client";
 import { CoinGeckoClient } from "../../adapters/coingecko/client";
 import { buyInvestment, createInvestmentAccount, recordDividend, recordInvestmentFee, recordOpeningLot, resolveInstrument, sellInvestment } from "../../application/investments";
 import { env } from "../../config/env";
+import { pool } from "@/db/pool";
+import { reserveAlphaVantageRequest } from "../../db/alpha-vantage-budget";
 import type { ActionResult } from "../forms/action-result";
 import { parseInstrumentResolutionForm, parseInvestmentAccountForm, parseInvestmentActivityForm, parseOpeningLotForm } from "../forms/investment";
 import { executeAction } from "./result";
 import { mutationDependencies } from "./runtime";
 
 function providerFor(name: "alpha_vantage" | "coingecko") {
-  const controller = new AbortController();
-  setTimeout(() => controller.abort(), env.PROVIDER_TIMEOUT_MS);
-  const common = { clock: { now: () => new Date() }, fetch, signal: controller.signal };
+  const common = { clock: { now: () => new Date() }, fetch };
   if (name === "alpha_vantage") {
     if (!env.ALPHA_VANTAGE_API_KEY) throw new Error("alpha_vantage_api_key_required");
     return new AlphaVantageClient({
       ...common,
+      get signal() { return AbortSignal.timeout(env.PROVIDER_TIMEOUT_MS); },
       apiKey: env.ALPHA_VANTAGE_API_KEY,
+      reserveRequest: () => reserveAlphaVantageRequest(pool),
       ...(env.ALPHA_VANTAGE_API_URL ? { apiUrl: env.ALPHA_VANTAGE_API_URL } : {}),
     });
   }
   if (!env.COINGECKO_API_KEY) throw new Error("coingecko_api_key_required");
-  return new CoinGeckoClient({ ...common, apiKey: env.COINGECKO_API_KEY });
+  return new CoinGeckoClient({ ...common, get signal() { return AbortSignal.timeout(env.PROVIDER_TIMEOUT_MS); }, apiKey: env.COINGECKO_API_KEY });
 }
 
 export async function createInvestmentAccountAction(_previous: ActionResult<{ id: string }> | undefined, formData: FormData) {

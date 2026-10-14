@@ -6,6 +6,8 @@ RUN corepack enable && corepack prepare pnpm@10.24.0 --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .
+ARG DEPLOYMENT_VERSION
+ENV DEPLOYMENT_VERSION=${DEPLOYMENT_VERSION}
 # Placeholder only: build must never need access to a live database.
 RUN DATABASE_URL=postgresql://build:build@127.0.0.1:5432/build pnpm build
 # Scripts execute outside Next's output tracing. Install only their pg dependency.

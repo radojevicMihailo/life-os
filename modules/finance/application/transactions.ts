@@ -112,6 +112,7 @@ export type RecordTransactionInput =
 export interface CorrectTransactionInput {
   originalId: string;
   replacement: RecordTransactionInput;
+  preserveTimeOnSameDate?: boolean;
   occurredAt?: Date;
   source?: JournalSource;
   description?: string | null;
@@ -919,7 +920,7 @@ export async function correctTransaction(
       applicationError("investment_journal_correction_unsupported");
     }
 
-    if (original.type === "correction" || original.correctionOfId) {
+    if (original.type === "correction") {
       applicationError("journal_reversal_cannot_be_corrected");
     }
 
@@ -930,7 +931,7 @@ export async function correctTransaction(
     const reversalDraft = reverseJournal(journalDraftFromPersisted(original), {
       id: deps.ids.nextId("journalTransaction"),
       source: input.source ?? "web",
-      occurredAt: input.occurredAt ?? now,
+      occurredAt: original.occurredAt,
       description:
         normalizeOptionalText(input.description) ??
         `Reversal of ${original.id}`,
@@ -954,10 +955,16 @@ export async function correctTransaction(
         id: reversalDraft.id,
       },
     );
+    let replacementDate = input.replacement.occurredAt ?? input.occurredAt ?? original.occurredAt;
+    if (input.preserveTimeOnSameDate &&
+        replacementDate.toLocaleDateString("sv-SE", { timeZone: "Europe/Belgrade" }) ===
+        original.occurredAt.toLocaleDateString("sv-SE", { timeZone: "Europe/Belgrade" })) {
+      replacementDate = original.occurredAt;
+    }
     const replacementBuild = await buildRecordTransaction(
       {
         ...input.replacement,
-        occurredAt: input.replacement.occurredAt ?? input.occurredAt ?? now,
+        occurredAt: replacementDate,
         source: input.replacement.source ?? input.source ?? "web",
       },
       repositories,
@@ -994,6 +1001,32 @@ export async function correctTransaction(
       replacement: replacementSummary,
       affectedBalances,
     };
+  });
+}
+
+export async function deleteTransaction(deps: ApplicationDependencies, input: { id: string }) {
+  return deps.unitOfWork.run(async (tx) => {
+    const ledger = new LedgerRepository(tx);
+    const original = await ledger.lockJournal(input.id);
+    if (original.type === "correction") applicationError("journal_reversal_cannot_be_corrected");
+    if (original.correctedById) applicationError("journal_already_corrected");
+    if (original.status !== "posted") applicationError("journal_not_found");
+    if (await new InvestmentsRepository(tx).hasJournalLink(original.id)) {
+      applicationError("investment_journal_correction_unsupported");
+    }
+    const draft = reverseJournal(journalDraftFromPersisted(original), {
+      id: deps.ids.nextId("journalTransaction"), source: "web",
+      occurredAt: original.occurredAt, description: "Obrisana transakcija",
+    });
+    await lockBudgetCategories(tx, budgetCategoryIdsFromDraft(draft));
+    const userAccountIds = original.postings.filter((posting) => !posting.account.isSystem).map((posting) => posting.account.id);
+    await new AccountsRepository(tx).lockByIds(userAccountIds);
+    const reversal = await persistTransactionBuild(deps, ledger, { draft, userAccountIds }, { id: draft.id });
+    // Marking the original hides it from active lists; its immutable postings and
+    // balanced reversal remain available for exports and auditing.
+    await ledger.updateCorrectedBy(original.id, reversal.id);
+    await recomputeBudgetSeriesForDrafts(deps, tx, [draft]);
+    return { id: original.id };
   });
 }
 

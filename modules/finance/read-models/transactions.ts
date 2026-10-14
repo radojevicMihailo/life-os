@@ -7,6 +7,8 @@ import {
   gte,
   inArray,
   lt,
+  isNull,
+  ne,
   sql,
 } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -58,8 +60,8 @@ export interface TransactionReadModelItem {
 export type TransactionCorrectionDraft =
   | { operation: "expense" | "income"; accountId: string; amount: string; categoryId: string }
   | { operation: "opening_balance"; accountId: string; amount: string; counterparty?: string }
-  | { operation: "transfer"; fromAccountId: string; toAccountId: string; amount: string }
-  | { operation: "transfer"; fromAccountId: string; toAccountId: string; fromAmount: string; toAmount: string; effectiveRate: string }
+  | { operation: "transfer"; fromAccountId: string; toAccountId: string; amount: string; feeAmount?: string; feeCategoryId?: string }
+  | { operation: "transfer"; fromAccountId: string; toAccountId: string; fromAmount: string; toAmount: string; effectiveRate: string; feeAmount?: string; feeCategoryId?: string }
   | { operation: "receivable_out"; fromAccountId: string; receivableAccountId: string; amount: string; counterparty: string }
   | { operation: "receivable_repayment"; receivableAccountId: string; toAccountId: string; amount: string; counterparty: string };
 
@@ -138,10 +140,12 @@ function correctionDraft(type: JournalType, postings: CorrectionPosting[]): Tran
     const from = user.find((posting) => new Decimal(posting.amount).isNegative());
     const to = user.find((posting) => new Decimal(posting.amount).isPositive());
     if (!from || !to) return null;
+    const fee = postings.find((posting) => posting.accountClassification === "expense" && posting.categoryId);
+    const feeFields = fee ? { feeAmount: positiveAmount(fee), feeCategoryId: fee.categoryId! } : {};
     if (type === "transfer") {
-      return { operation: "transfer", fromAccountId: from.accountId, toAccountId: to.accountId, amount: positiveAmount(from) };
+      return { operation: "transfer", fromAccountId: from.accountId, toAccountId: to.accountId, amount: positiveAmount(to), ...feeFields };
     }
-    const fromAmount = positiveAmount(from);
+    const fromAmount = canonical(new Decimal(positiveAmount(from)).minus(fee ? positiveAmount(fee) : "0"));
     const toAmount = positiveAmount(to);
     return {
       operation: "transfer",
@@ -150,6 +154,7 @@ function correctionDraft(type: JournalType, postings: CorrectionPosting[]): Tran
       fromAmount,
       toAmount,
       effectiveRate: canonical(new Decimal(toAmount).div(fromAmount)),
+      ...feeFields,
     };
   }
   if (type === "receivable_out") {
@@ -184,7 +189,7 @@ export async function listTransactions(
       "category_filter_posting",
     );
     const limit = normalizedLimit(filters.limit);
-    const conditions = [eq(journalTransactions.status, "posted")];
+    const conditions = [eq(journalTransactions.status, "posted"), isNull(journalTransactions.correctedById), ne(journalTransactions.type, "correction")];
 
     if (filters.type) conditions.push(eq(journalTransactions.type, filters.type));
     if (filters.source) {

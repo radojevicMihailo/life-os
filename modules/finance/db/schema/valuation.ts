@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   check,
+  bigserial,
   index,
   integer,
   jsonb,
@@ -14,6 +15,16 @@ import {
 
 import { currencies } from "./catalog";
 import { instruments } from "./investments";
+
+export const alphaVantageRequestReservations = pgTable(
+  "finance_alpha_vantage_request_reservations",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    reservedAt: timestamp("reserved_at", { withTimezone: true })
+      .notNull().default(sql`clock_timestamp()`),
+  },
+  (table) => [index("finance_alpha_vantage_request_reservations_reserved_at_idx").on(table.reservedAt)],
+);
 
 export const providerRecordStatus = pgEnum("finance_provider_record_status", [
   "valid",

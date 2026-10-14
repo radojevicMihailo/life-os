@@ -1,9 +1,11 @@
 export function ErrorPanel({
   message = "Podaci trenutno nisu dostupni.",
   onRetry,
+  retryLabel = "Pokušaj ponovo",
 }: {
   message?: string;
   onRetry?: () => void;
+  retryLabel?: string;
 }) {
   return (
     <section
@@ -19,7 +21,7 @@ export function ErrorPanel({
           onClick={onRetry}
           type="button"
         >
-          Pokušaj ponovo
+          {retryLabel}
         </button>
       ) : null}
     </section>

@@ -33,7 +33,7 @@ LIFE_OS_ACCESS_PASSWORD=$(openssl rand -base64 36)
 printf 'Save this password in your password manager: %s\n' "$LIFE_OS_ACCESS_PASSWORD"
 printf 'LIFE_OS_ACCESS_PASSWORD=%s\n' "$LIFE_OS_ACCESS_PASSWORD" | fly secrets import --stage --app "$LIFE_OS_APP"
 unset LIFE_OS_ACCESS_PASSWORD
-fly deploy --app "$LIFE_OS_APP" --ha=false --strategy immediate
+fly deploy --app "$LIFE_OS_APP" --ha=false --strategy immediate --build-arg "DEPLOYMENT_VERSION=$(git rev-parse HEAD)"
 fly machine list --app "$LIFE_OS_APP"
 fly volumes list --app "$LIFE_OS_APP"
 fly checks list --app "$LIFE_OS_APP"
@@ -61,12 +61,14 @@ fly tokens create deploy --app "$LIFE_OS_APP" --expiry 8760h --name github-actio
 Run these commands while signed in to Fly and GitHub. The token is scoped to this Fly app, lasts one year, and is stored only as a GitHub Actions secret. Rotate it before expiry. The workflow builds remotely, keeps the single-Machine deployment flags below, and can also be started manually from GitHub Actions. A push to `main` that adds the workflow triggers its first deployment. Inspect the run in GitHub Actions and verify the Fly health checks afterward.
 
 ```sh
-fly deploy --app "$LIFE_OS_APP" --ha=false --strategy immediate
+fly deploy --app "$LIFE_OS_APP" --ha=false --strategy immediate --build-arg "DEPLOYMENT_VERSION=$(git rev-parse HEAD)"
 fly logs --app "$LIFE_OS_APP"
 fly status --app "$LIFE_OS_APP"
 fly ssh console --app "$LIFE_OS_APP" -C 'df -h /data'
 fly ssh console --app "$LIFE_OS_APP" -C 'gosu postgres psql -d life_os -c "SELECT pg_size_pretty(pg_database_size(current_database()));"'
 ```
+
+The workflow passes the Git commit SHA as `DEPLOYMENT_VERSION` at build time. Next.js embeds this deployment ID in the standalone server and browser assets so navigation across deployments can refresh the page. Manual deployments must pass the same build argument as shown above. When a finance form references a Server Action missing from the new build, the server rejects it before execution and the error panel offers **Osveži aplikaciju**. This performs a full reload; the rejected submission is not replayed. Re-enter and submit the form after refreshing. A tab loaded before this recovery UI was deployed still needs a manual browser refresh.
 
 Take an off-Machine backup before deployments that change the schema. Keep old image references for code rollback, but do not assume old code is compatible with a newer schema. Do not downgrade PostgreSQL or erase `PG_VERSION`; a major version upgrade needs an explicit export/restore procedure. A missing password on an existing volume fails startup rather than silently rotating credentials.
 
@@ -101,10 +103,12 @@ Create the recovery volume before deploying the recovery app and ensure only tha
 ## Local image verification
 
 ```sh
-docker build -t life-os-single .
+docker build --build-arg "DEPLOYMENT_VERSION=$(git rev-parse HEAD)" -t life-os-single .
 docker volume create life-os-smoke
 docker run --name life-os-smoke --memory=256m --cpus=1 -e LIFE_OS_ACCESS_PASSWORD=life-os-disposable-smoke-password-2026 -p 127.0.0.1:3000:3000 -v life-os-smoke:/data life-os-single
 ```
+
+Run `node test/infra/deployment-skew.mjs` to build a disposable Next.js fixture with the repository config and verify deployment identity, rejection of unknown actions without mutation, and successful current actions. It requires a localhost listener and never accesses the application database.
 
 For an automated disposable test of health, backups, restart persistence and database-exit supervision, run `bash test/infra/smoke.sh life-os-single` after building the image. It creates and removes its own container and volume.
 
