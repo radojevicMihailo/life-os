@@ -1,3 +1,5 @@
+import { parseTransactionForm, parseCorrectionForm } from "@/modules/finance/ui/forms/transaction";
+import { listTransactions } from "@/modules/finance/read-models/transactions";
 import Decimal from "decimal.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -10,6 +12,7 @@ import {
   createCategory,
 } from "@/modules/finance/application/categories";
 import {
+  correctTransaction,
   getNativeBalances,
   recordTransaction,
 } from "@/modules/finance/application/transactions";
@@ -612,6 +615,23 @@ describe("transaction application service", () => {
         internalBalance: "250.00",
       }),
     ]);
+  });
+
+  it("posts and corrects a receivable opening balance with its debtor", async () => {
+    const receivable = await createAccount(deps, { classification: "receivable", currencyCode: "EUR", name: "Initial receivable", subtype: "personal_receivable" });
+    const input = parseTransactionForm({ operation: "opening_balance", accountId: receivable.id, amount: "1.000,00", counterparty: "Ana" });
+    const result = await recordTransaction(deps, input);
+    expect(await postingRows(testDb, result.id)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ accountId: receivable.id, amount: "1000.00", counterparty: "Ana" }),
+    ]));
+    expect(await postingsSumByCurrency(testDb, result.id)).toEqual([{ currencyCode: "EUR", total: "0.000000000000000000" }]);
+    const transactions = await listTransactions(deps, { type: "opening_balance" });
+    const draft = transactions.items.find((item) => item.id === result.id)?.correctionDraft;
+    expect(draft).toMatchObject({ operation: "opening_balance", accountId: receivable.id, counterparty: "Ana" });
+    await correctTransaction(deps, parseCorrectionForm({ ...draft, originalId: result.id, correctedAmount: "900,00" }));
+    expect(await getNativeBalances(deps, { accountIds: [receivable.id] })).toEqual(expect.arrayContaining([
+      expect.objectContaining({ accountId: receivable.id, displayBalance: "900.00" }),
+    ]));
   });
 
   it("posts same-currency transfer fees in the source currency", async () => {

@@ -82,6 +82,7 @@ export type OpeningBalanceTransactionInput = CommonTransactionInput & {
   type: "opening_balance";
   accountId: string;
   amount: string;
+  counterparty?: string | null;
 };
 
 export type ReceivableOutTransactionInput = CommonTransactionInput & {
@@ -514,7 +515,7 @@ async function buildOpeningBalance(
     }),
     type: "opening_balance",
     postings: [
-      posting(account, amount),
+      posting(account, amount, { counterparty: normalizeOptionalText(input.counterparty) }),
       posting(equity, negate(amount, accountCurrency(equity))),
     ],
   };

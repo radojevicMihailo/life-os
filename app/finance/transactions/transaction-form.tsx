@@ -14,6 +14,7 @@ const input = "mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-9
 export function TransactionForm({ accounts, categories }: { accounts: Option[]; categories: Option[] }) {
   const [state, action, pending] = useActionState(createTransactionAction, undefined);
   const [operation, setOperation] = useState("expense");
+  const [accountId, setAccountId] = useState("");
   const [fromAccountId, setFromAccountId] = useState("");
   const [toAccountId, setToAccountId] = useState("");
   const [conversionMethod, setConversionMethod] = useState<"toAmount" | "effectiveRate">("toAmount");
@@ -21,6 +22,7 @@ export function TransactionForm({ accounts, categories }: { accounts: Option[]; 
   const activeCategories = categories.filter((category) => category.isActive);
   const standard = ["income", "expense", "opening_balance", "credit_card_purchase"].includes(operation);
   const transfer = ["transfer", "credit_card_repayment"].includes(operation);
+  const openingReceivable = operation === "opening_balance" && activeAccounts.find((account) => account.id === accountId)?.classification === "receivable";
   const receivable = ["receivable_out", "receivable_repayment"].includes(operation);
   const fromCurrency = activeAccounts.find((account) => account.id === fromAccountId)?.currencyCode;
   const toCurrency = activeAccounts.find((account) => account.id === toAccountId)?.currencyCode;
@@ -35,7 +37,7 @@ export function TransactionForm({ accounts, categories }: { accounts: Option[]; 
         <label className="text-xs text-slate-400">Operacija<select className={input} name="operation" onChange={(event) => setOperation(event.target.value)} value={operation}>{[
           ["expense", "Trošak"], ["income", "Prihod"], ["transfer", "Prenos / menjačnica"], ["opening_balance", "Početno stanje"], ["credit_card_purchase", "Kupovina karticom"], ["credit_card_repayment", "Otplata kartice"], ["receivable_out", "Pozajmica"], ["receivable_repayment", "Vraćena pozajmica"],
         ].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-        {standard ? <label className="text-xs text-slate-400">Račun<select className={input} name="accountId" required {...fieldErrorProps(state, "accountId")}><option value="">Izaberi</option>{activeAccounts.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}</select></label> : null}
+        {standard ? <label className="text-xs text-slate-400">Račun<select className={input} name="accountId" value={accountId} onChange={(event) => setAccountId(event.target.value)} required {...fieldErrorProps(state, "accountId")}><option value="">Izaberi</option>{activeAccounts.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}</select></label> : null}
         {transfer || operation === "receivable_out" ? <label className="text-xs text-slate-400">Račun sa kog se plaća<select className={input} name="fromAccountId" onChange={(event) => setFromAccountId(event.target.value)} required value={fromAccountId} {...fieldErrorProps(state, "fromAccountId")}><option value="">Izaberi</option>{activeAccounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currencyCode}</option>)}</select></label> : null}
         {transfer || operation === "receivable_repayment" ? <label className="text-xs text-slate-400">Odredišni račun<select className={input} name="toAccountId" onChange={(event) => setToAccountId(event.target.value)} required value={toAccountId} {...fieldErrorProps(state, "toAccountId")}><option value="">Izaberi</option>{activeAccounts.map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currencyCode}</option>)}</select></label> : null}
         {receivable ? <label className="text-xs text-slate-400">Račun potraživanja<select className={input} name="receivableAccountId" required {...fieldErrorProps(state, "receivableAccountId")}><option value="">Izaberi</option>{activeAccounts.filter((account) => account.classification === "receivable").map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}</select></label> : null}
@@ -50,7 +52,7 @@ export function TransactionForm({ accounts, categories }: { accounts: Option[]; 
             ? <label className="text-xs text-slate-400">Odredišni iznos ({toCurrency})<input className={input} inputMode="decimal" name="toAmount" required {...fieldErrorProps(state, "toAmount")} /></label>
             : <label className="text-xs text-slate-400">Efektivni kurs ({toCurrency}/{fromCurrency})<input className={input} inputMode="decimal" name="effectiveRate" required {...fieldErrorProps(state, "effectiveRate")} /></label>}
         </> : null}
-        {receivable ? <label className="text-xs text-slate-400">Druga strana<input className={input} name="counterparty" required {...fieldErrorProps(state, "counterparty")} /></label> : null}
+        {receivable || openingReceivable ? <label className="text-xs text-slate-400">Druga strana<input className={input} name="counterparty" placeholder="Ime osobe ili firme koja ti duguje" required {...fieldErrorProps(state, "counterparty")} /></label> : null}
         <label className="text-xs text-slate-400">Datum i vreme<Input className={input} name="occurredAt" type="datetime-local" /></label>
         <label className="text-xs text-slate-400 sm:col-span-2">Opis<input className={input} name="description" /></label>
       </div>

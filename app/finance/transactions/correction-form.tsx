@@ -58,7 +58,7 @@ export function CorrectionForm({ transaction }: { transaction: CorrectableTransa
         <input name="operation" type="hidden" value={draft.operation} />
         <PreservedDimensions draft={draft} />
         <AmountFields draft={draft} />
-        {(draft.operation === "receivable_out" || draft.operation === "receivable_repayment")
+        {(draft.operation === "receivable_out" || draft.operation === "receivable_repayment" || (draft.operation === "opening_balance" && draft.counterparty))
           ? <label className="text-xs text-slate-400">Druga strana<input className={control} defaultValue={draft.counterparty} name="counterparty" required /></label>
           : null}
         <label className="text-xs text-slate-400">Novi opis transakcije<input className={control} defaultValue={transaction.description ?? ""} name="replacementDescription" /></label>

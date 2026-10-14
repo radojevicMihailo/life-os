@@ -57,7 +57,7 @@ export interface TransactionReadModelItem {
 
 export type TransactionCorrectionDraft =
   | { operation: "expense" | "income"; accountId: string; amount: string; categoryId: string }
-  | { operation: "opening_balance"; accountId: string; amount: string }
+  | { operation: "opening_balance"; accountId: string; amount: string; counterparty?: string }
   | { operation: "transfer"; fromAccountId: string; toAccountId: string; amount: string }
   | { operation: "transfer"; fromAccountId: string; toAccountId: string; fromAmount: string; toAmount: string; effectiveRate: string }
   | { operation: "receivable_out"; fromAccountId: string; receivableAccountId: string; amount: string; counterparty: string }
@@ -132,7 +132,7 @@ function correctionDraft(type: JournalType, postings: CorrectionPosting[]): Tran
     return { operation: type, accountId: user[0].accountId, amount: positiveAmount(user[0]), categoryId };
   }
   if (type === "opening_balance" && user[0]) {
-    return { operation: type, accountId: user[0].accountId, amount: positiveAmount(user[0]) };
+    return { operation: type, accountId: user[0].accountId, amount: positiveAmount(user[0]), ...(user[0].counterparty ? { counterparty: user[0].counterparty } : {}) };
   }
   if (type === "transfer" || type === "foreign_exchange") {
     const from = user.find((posting) => new Decimal(posting.amount).isNegative());

@@ -5,6 +5,13 @@ import { parseCorrectionForm, parseTransactionForm } from "@/modules/finance/ui/
 import { parseShortcutRequest } from "@/modules/finance/application/shortcut";
 
 describe("Serbian transaction form boundary", () => {
+  it("preserves the debtor for a receivable opening balance and its correction", () => {
+    const fields = { operation: "opening_balance", accountId: "receivable-1", amount: "1.000,00", counterparty: "  Ana  " };
+    expect(parseTransactionForm(fields)).toMatchObject({ type: "opening_balance", amount: "1000", counterparty: "Ana" });
+    expect(parseCorrectionForm({ ...fields, originalId: "journal-1", correctedAmount: "900,00" }).replacement)
+      .toMatchObject({ type: "opening_balance", amount: "900", counterparty: "Ana" });
+  });
+
   it("normalizes decimal commas before handing an expense to the application", () => {
     expect(parseTransactionForm({
       operation: "expense",

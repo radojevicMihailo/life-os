@@ -95,7 +95,10 @@ export function parseTransactionForm(
         amount: amount(),
       };
     case "opening_balance":
-      return { ...common, type: selected, accountId: id("accountId"), amount: amount() };
+      return {
+        ...common, type: selected, accountId: id("accountId"), amount: amount(),
+        ...(optionalText(raw.counterparty) ? { counterparty: parseField("counterparty", z.string().trim().min(1).max(200), raw.counterparty) } : {}),
+      };
     case "credit_card_repayment":
       return {
         ...common,
