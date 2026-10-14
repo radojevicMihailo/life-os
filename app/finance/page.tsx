@@ -116,7 +116,7 @@ export default async function DashboardPage() {
                 <li className="flex flex-wrap items-center justify-between gap-3 py-4" key={transaction.id}>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{transaction.description ?? transaction.type}</p>
-                    <p className="mt-1 text-xs text-slate-500">{transaction.occurredAt.toLocaleDateString("sr-Latn-RS")} · {transaction.source}</p>
+                    <p className="mt-1 text-xs text-slate-500">{transaction.occurredAt.toLocaleDateString("sr-Latn-RS", { timeZone: "Europe/Belgrade" })} · {transaction.source}</p>
                   </div>
                   <TransactionAmounts amounts={transaction.nativeAmounts} />
                 </li>
