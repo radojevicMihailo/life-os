@@ -339,7 +339,7 @@ async function finishRun(
 export async function refreshDailyValuations(
   deps: ApplicationDependencies,
   providers: {
-    fxRateProvider: FxRateProvider;
+    fxRateProvider?: FxRateProvider;
     marketQuoteProviders: MarketQuoteProvider[];
   },
 ) {
@@ -354,44 +354,46 @@ export async function refreshDailyValuations(
   let failedCount = 0;
   const runs = [];
 
-  const fxRunId = await createRun(deps, providers.fxRateProvider.provider, targets.currencies.length);
-  const fxErrors: string[] = [];
-  let fxRunSucceeded = 0;
-  let fxRunFailed = 0;
-  try {
-    const rates = await providers.fxRateProvider.fetchRates(targets.currencies);
-    const byCurrency = new Map(rates.map((rate) => [rate.baseCurrencyCode, rate]));
-    for (const currencyCode of targets.currencies) {
-      const rate = byCurrency.get(currencyCode);
-      if (!rate) {
-        fxRunFailed += 1;
-        fxErrors.push(`${currencyCode}:missing`);
-        continue;
+  if (providers.fxRateProvider) {
+    const fxRunId = await createRun(deps, providers.fxRateProvider.provider, targets.currencies.length);
+    const fxErrors: string[] = [];
+    let fxRunSucceeded = 0;
+    let fxRunFailed = 0;
+    try {
+      const rates = await providers.fxRateProvider.fetchRates(targets.currencies);
+      const byCurrency = new Map(rates.map((rate) => [rate.baseCurrencyCode, rate]));
+      for (const currencyCode of targets.currencies) {
+        const rate = byCurrency.get(currencyCode);
+        if (!rate) {
+          fxRunFailed += 1;
+          fxErrors.push(`${currencyCode}:missing`);
+          continue;
+        }
+        try {
+          const normalized = { ...rate, rate: Rate.parse(rate.rate).value };
+          await deps.unitOfWork.run((tx) => new ValuationRepository(tx).insertExchangeRate(
+            deps.ids.nextId("exchangeRate"), normalized,
+          ));
+          fxRunSucceeded += 1;
+        } catch (error) {
+          fxRunFailed += 1;
+          fxErrors.push(`${currencyCode}:${error instanceof Error ? error.message : "invalid"}`);
+        }
       }
-      try {
-        const normalized = { ...rate, rate: Rate.parse(rate.rate).value };
-        await deps.unitOfWork.run((tx) => new ValuationRepository(tx).insertExchangeRate(
-          deps.ids.nextId("exchangeRate"), normalized,
-        ));
-        fxRunSucceeded += 1;
-      } catch (error) {
-        fxRunFailed += 1;
-        fxErrors.push(`${currencyCode}:${error instanceof Error ? error.message : "invalid"}`);
-      }
+    } catch (error) {
+      fxRunFailed = targets.currencies.length || 1;
+      fxErrors.push(error instanceof Error ? error.message : "provider_error");
     }
-  } catch (error) {
-    fxRunFailed = targets.currencies.length || 1;
-    fxErrors.push(error instanceof Error ? error.message : "provider_error");
+    succeededCount += fxRunSucceeded;
+    failedCount += fxRunFailed;
+    await finishRun(deps, {
+      id: fxRunId,
+      succeededCount: fxRunSucceeded,
+      failedCount: fxRunFailed,
+      errors: fxErrors,
+    });
+    runs.push(fxRunId);
   }
-  succeededCount += fxRunSucceeded;
-  failedCount += fxRunFailed;
-  await finishRun(deps, {
-    id: fxRunId,
-    succeededCount: fxRunSucceeded,
-    failedCount: fxRunFailed,
-    errors: fxErrors,
-  });
-  runs.push(fxRunId);
 
   for (const provider of providers.marketQuoteProviders) {
     const providerTargets = targets.quotes

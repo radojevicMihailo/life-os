@@ -39,3 +39,12 @@ it("serves the push worker and app icons without an access session", () => {
     expect(response.headers.get("x-middleware-next")).toBe("1");
   }
 });
+
+
+it("lets only the refresh GET reach its own bearer authentication without a session", () => {
+  const refresh = proxy(new NextRequest("https://life-os.example/api/finance/daily-refresh"));
+  expect(refresh.headers.get("x-middleware-next")).toBe("1");
+  for (const [path, method] of [["/api/finance/daily-refresh", "POST"], ["/api/finance/transactions", "GET"]]) {
+    expect(proxy(new NextRequest(`https://life-os.example${path}`, { method })).status).toBe(401);
+  }
+});

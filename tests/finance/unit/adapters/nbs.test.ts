@@ -26,6 +26,11 @@ describe("NBS middle-rate parser", () => {
     ]);
   });
 
+  it("decodes numeric HTML entities used by the live NBS heading", async () => {
+    const html = (await fixture()).replace("FORMIRANA NA DAN", "&#x424;&#x41E;&#x420;&#x41C;&#x418;&#x420;&#x410;&#x41D;&#x410; &#x41D;&#x410; &#x414;&#x410;&#x41D;");
+    expect(parseNbsMiddleRateHtml(html, now)).toHaveLength(3);
+  });
+
   it("rejects non-positive rates and implausible formation dates", async () => {
     const html = await fixture();
 

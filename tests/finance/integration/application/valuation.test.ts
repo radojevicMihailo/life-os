@@ -181,6 +181,20 @@ describe("valuation application service", () => {
     expect(result.missingConversions).toContain("HUF");
   });
 
+  it("refreshes an active fiat currency before it has an account", async () => {
+    const targets = await testDb.db.transaction((tx) => new ValuationRepository(tx).listFxTargetCurrencies());
+    expect(targets).toContain("HUF");
+    expect(targets).not.toContain("BTC");
+    expect(targets).not.toContain("ETH");
+  });
+
+  it("can refresh crypto quotes without calling or recording an FX refresh", async () => {
+    const result = await refreshDailyValuations(makeDeps(testDb), { marketQuoteProviders: [] });
+    expect(result).toEqual({ failedCount: 0, succeededCount: 0, runIds: [] });
+    const runs = await testDb.pool.query("select * from finance_provider_refresh_runs");
+    expect(runs.rows).toEqual([]);
+  });
+
   it("fetches outside transactions and an invalid refresh cannot erase the last valid rate", async () => {
     let transactionOpen = false;
     const base = makeDeps(testDb);
@@ -216,7 +230,7 @@ describe("valuation application service", () => {
       marketQuoteProviders: [],
     });
 
-    expect(refresh).toMatchObject({ failedCount: 2, succeededCount: 0 });
+    expect(refresh).toMatchObject({ failedCount: 3, succeededCount: 0 });
     const rates = await testDb.pool.query<{ id: string; rate: string }>(
       "select id, rate::text from finance_exchange_rates order by provider_timestamp",
     );
@@ -225,7 +239,7 @@ describe("valuation application service", () => {
     }]);
     await expect(testDb.pool.query(
       "select status, failed_count from finance_provider_refresh_runs where provider = 'nbs'",
-    )).resolves.toMatchObject({ rows: [{ status: "failed", failed_count: 2 }] });
+    )).resolves.toMatchObject({ rows: [{ status: "failed", failed_count: 3 }] });
   });
 
   it("reuses position performance and keeps manual market quotes effective until cleared", async () => {

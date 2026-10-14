@@ -31,6 +31,11 @@ function assertPlausible(timestamp: Date, now: Date) {
 }
 
 export function parseNbsMiddleRateHtml(payload: string, now: Date): NbsMiddleRate[] {
+  // The public NBS page encodes its Cyrillic formation heading as numeric entities.
+  payload = payload.replace(/&#(?:x([0-9a-f]+)|(\d+));/gi, (entity, hex, digits) => {
+    const codePoint = hex ? Number.parseInt(hex, 16) : Number.parseInt(digits, 10);
+    return codePoint <= 0x10ffff ? String.fromCodePoint(codePoint) : entity;
+  });
   const dateMatch = /(?:FORMIRANA\s+NA\s+DAN|ФОРМИРАНА\s+НА\s+ДАН)\s+(\d{1,2})\.(\d{1,2})\.(\d{4})/iu.exec(payload);
   if (!dateMatch) throw new Error("nbs_timestamp_invalid");
 

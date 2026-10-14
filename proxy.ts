@@ -6,6 +6,8 @@ export function proxy(request: NextRequest) {
   if (pathname.startsWith("/_next/") || ["/favicon.ico", "/icon.svg", "/icon-192.png", "/icon-512.png", "/icon-maskable-512.png", "/apple-icon.png", "/manifest.webmanifest", "/sw.js"].includes(pathname)) {
     return NextResponse.next();
   }
+  // This route validates its own Bearer CRON_SECRET; it does not use browser sessions.
+  if (pathname === "/api/finance/daily-refresh" && request.method === "GET") return NextResponse.next();
   if (pathname === "/api/health" && request.method === "GET") return NextResponse.next();
   if (pathname === "/access" && (request.method === "GET" || request.method === "HEAD")) return NextResponse.next();
   if (pathname === "/api/access/login" && request.method === "POST") return NextResponse.next();

@@ -17,6 +17,7 @@ import type {
 import type { DbTx } from "../client";
 import {
   accounts,
+  currencies,
   exchangeRates,
   goals,
   instruments,
@@ -212,6 +213,8 @@ export class ValuationRepository {
   }
 
   async listFxTargetCurrencies() {
+    const activeRows = await this.tx.select({ code: currencies.code })
+      .from(currencies).where(eq(currencies.isActive, true));
     const accountRows = await this.tx.selectDistinct({ code: accounts.currencyCode })
       .from(accounts)
       .where(inArray(accounts.classification, ["asset", "liability", "receivable"]));
@@ -220,7 +223,7 @@ export class ValuationRepository {
       .where(eq(instruments.isActive, true));
     const goalRows = await this.tx.selectDistinct({ code: goals.targetCurrencyCode })
       .from(goals).where(eq(goals.isActive, true));
-    return [...new Set([...accountRows, ...instrumentRows, ...goalRows].map((row) => row.code))]
+    return [...new Set([...activeRows, ...accountRows, ...instrumentRows, ...goalRows].map((row) => row.code))]
       .filter((code) => code !== "EUR" && code !== "BTC" && code !== "ETH")
       .sort();
   }
