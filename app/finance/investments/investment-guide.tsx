@@ -20,8 +20,8 @@ export function InvestmentGuide() {
         <div className="min-h-0 space-y-6 overflow-y-auto overscroll-contain pr-2 text-sm leading-6 text-slate-300">
           <section>
             <h2 className="mb-2 font-semibold text-white">1. Pripremi novčani i investicioni račun</h2>
-            <p>U Finansije → Računi prvo dodaj novčani račun koji predstavlja gotovinu kod brokera, u valuti u kojoj trguješ. Ako već postoji, koristi njega. Novac koji prebacuješ sa banke brokeru evidentiraj kao transfer između računa.</p>
-            <p className="mt-2">Na ovoj stranici, u „Investicioni račun”, unesi naziv portfolija (npr. „Moj broker — EUR”) i pod „Novčani račun brokera” izaberi odgovarajući račun. Kupovina, prodaja, dividenda i naknada automatski menjaju njegov novčani saldo.</p>
+            <p>U Finansije → Računi prvo dodaj novčani račun za gotovinu povezanu sa investicijama, u valuti u kojoj trguješ. Ako već postoji, koristi njega. Za unos početnih pozicija taj račun može imati saldo 0. Stvarne prenose novca između svojih računa evidentiraj kao transfer.</p>
+            <p className="mt-2">Na ovoj stranici, u „Investicioni račun”, unesi naziv portfolija (npr. „Moj broker — EUR”) i pod „Povezani novčani račun” izaberi odgovarajući račun. Kupovina, prodaja, dividenda i naknada automatski menjaju njegov novčani saldo.</p>
             <p className="mt-2">Valuta trgovine mora biti ista kao valuta povezanog novčanog računa. Za trgovine u drugoj valuti koristi investicioni račun povezan sa novčanim računom u toj valuti.</p>
           </section>
           <section>
@@ -37,7 +37,7 @@ export function InvestmentGuide() {
           </section>
           <section>
             <h2 className="mb-2 font-semibold text-white">3. Unesi ono što već poseduješ — Početne pozicije</h2>
-            <p>Ovaj deo koristi za ulaganja koja si imao pre početka vođenja evidencije. Početni lot dodaje količinu i nabavnu osnovicu, bez skidanja novca sa računa brokera. Istu kupovinu nemoj ponovo unositi kroz investicionu aktivnost.</p>
+            <p>Ovaj deo koristi za ulaganja koja si imao pre početka vođenja evidencije. Početni lot dodaje količinu i nabavnu osnovicu, bez skidanja novca sa povezanog novčanog računa. Istu kupovinu nemoj ponovo unositi kroz investicionu aktivnost.</p>
             <dl className="mt-2 space-y-2">
               <div><dt className="font-medium text-slate-100">Investicioni račun i početna količina</dt><dd>Izaberi portfolio u kojem držiš instrument i unesi broj jedinica koje još poseduješ.</dd></div>
               <div><dt className="font-medium text-slate-100">Datum i cena sticanja</dt><dd>Unesi datum originalne kupovine i cenu po jednoj jedinici, bez naknade. Ovo nije današnja tržišna cena niti ukupan iznos kupovine.</dd></div>
