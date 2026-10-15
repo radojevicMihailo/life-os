@@ -25,7 +25,7 @@ export function FinancePrivacy({ children }: { children: ReactNode }) {
   const { hidden } = useContext(PrivacyContext);
   return <div data-finance-private={hidden ? "true" : "false"}>
     <div className="mb-4 flex justify-end"><FinancePrivacyToggle /></div>
-    {hidden ? <p role="status" className="mb-4 text-xs text-muted-foreground">Finansijski iznosi su sakriveni. Unos, izmena i izvoz su skriveni dok ponovo ne prikažeš iznose.</p> : null}
+    {hidden ? <p role="status" className="mb-4 text-xs text-muted-foreground">Finansijski iznosi su sakriveni. Novu transakciju možeš uneti bez prikazivanja postojećih iznosa. Za izmenu postojećih podataka i izvoz prikaži iznose.</p> : null}
     {children}
   </div>;
 }

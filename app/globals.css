@@ -240,7 +240,7 @@ html[data-density="compact"] main .rounded-2xl { border-radius: 0.8rem; }
   main .sticky.bottom-0 { bottom: calc(5rem + env(safe-area-inset-bottom)); z-index: 10; }
 }
 
-/* Keep prefilled amounts and export actions out of screen sharing and the accessibility tree. */
-[data-finance-private="true"] form {
+/* Protect saved values in editors and exports, while allowing blank transaction entry and filters. */
+[data-finance-private="true"] form:not([data-finance-entry="true"]):not([method="get"]) {
   display: none !important;
 }

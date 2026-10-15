@@ -37,7 +37,7 @@ export function TransactionForm({ accounts, categories, transaction }: { account
   const sameCurrencyTransfer = operation === "transfer" && transferAccountsSelected && fromCurrency === toCurrency;
 
   return (
-    <form action={action} className="mb-6 rounded-3xl border border-border bg-card p-4 sm:p-5">
+    <form action={action} data-finance-entry={transaction ? undefined : "true"} className="mb-6 rounded-3xl border border-border bg-card p-4 sm:p-5">
       <h2 className="text-lg font-semibold">{transaction ? "Izmeni transakciju" : "Nova transakcija"}</h2>
       {transaction ? <input name="originalId" type="hidden" value={transaction.id} /> : null}
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
