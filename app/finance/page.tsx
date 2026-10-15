@@ -1,3 +1,4 @@
+import { FinancialValue } from "@/modules/finance/ui/components/finance-privacy";
 import { GoalProgress } from "@/modules/finance/ui/components/goal-progress";
 import { EmptyState } from "@/modules/finance/ui/components/empty-state";
 import { Money } from "@/modules/finance/ui/components/money";
@@ -29,7 +30,7 @@ function MetricCard({
           <Money amount={amount} currencyCode="EUR" label={label} />
         )}
       </p>
-      <p className="mt-2 text-xs leading-5 text-slate-500">{detail}</p>
+      <p className="mt-2 text-xs leading-5 text-slate-500"><FinancialValue>{detail}</FinancialValue></p>
     </article>
   );
 }
@@ -77,7 +78,7 @@ export default async function DashboardPage() {
                     <Money amount={budget.remainingAmount} currencyCode={budget.currencyCode} label={`Preostalo za ${budget.categoryName}`} />
                   </div>
                   <p className="mt-2 text-xs text-slate-400">
-                    Preneto {budget.carryInAmount} · Potrošeno {budget.spendingAmount} {budget.currencyCode}
+                    Preneto <Money amount={budget.carryInAmount} currencyCode={budget.currencyCode} /> · Potrošeno <Money amount={budget.spendingAmount} currencyCode={budget.currencyCode} />
                   </p>
                 </li>
               ))}

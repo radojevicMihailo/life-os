@@ -226,3 +226,8 @@ select:not([aria-hidden="true"])[aria-invalid="true"],
 [data-slot="select-trigger"][aria-invalid="true"] {
   border-color: var(--destructive);
 }
+
+/* Keep prefilled amounts and export actions out of screen sharing and the accessibility tree. */
+[data-finance-private="true"] form {
+  display: none !important;
+}

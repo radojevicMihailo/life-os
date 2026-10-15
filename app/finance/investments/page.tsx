@@ -1,3 +1,4 @@
+import { FinancialValue } from "@/modules/finance/ui/components/finance-privacy";
 import { cookies } from "next/headers";
 import { EmptyState } from "@/modules/finance/ui/components/empty-state";
 import { Money } from "@/modules/finance/ui/components/money";
@@ -114,7 +115,7 @@ export default async function InvestmentsPage() {
                 <dl className="mt-5 grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <dt className="text-xs text-slate-500">Količina</dt>
-                    <dd className="mt-1 tabular-nums">{position.quantity}</dd>
+                    <dd className="mt-1 tabular-nums"><FinancialValue>{position.quantity}</FinancialValue></dd>
                   </div>
                   <div>
                     <dt className="text-xs text-slate-500">Tržišna vrednost</dt>
@@ -166,9 +167,9 @@ export default async function InvestmentsPage() {
                 <li className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm" key={lot.id}>
                   <div className="flex justify-between gap-3">
                     <span>{lot.acquiredAt.toLocaleDateString("sr-Latn-RS")}</span>
-                    <span className="tabular-nums">{lot.remainingQuantity} / {lot.quantity}</span>
+                    <FinancialValue className="tabular-nums">{lot.remainingQuantity} / {lot.quantity}</FinancialValue>
                   </div>
-                  <p className="mt-2 text-xs text-slate-500">Osnovica {lot.costAmount} + naknada {lot.feeAmount} {lot.costCurrencyCode}</p>
+                  <p className="mt-2 text-xs text-slate-500">Osnovica <Money amount={lot.costAmount} currencyCode={lot.costCurrencyCode} /> + naknada <Money amount={lot.feeAmount} currencyCode={lot.costCurrencyCode} /></p>
                 </li>
               ))}
             </ul>
@@ -189,10 +190,10 @@ export default async function InvestmentsPage() {
                     <p className="font-medium">{item.symbol} · {item.type}</p>
                     <p className="mt-1 text-xs text-slate-500">{item.occurredAt.toLocaleDateString("sr-Latn-RS")} · {item.accountName}</p>
                   </div>
-                  <div className="text-right tabular-nums">
+                  <div className="text-right tabular-nums"><FinancialValue>
                     {item.grossAmount ?? item.feeAmount ?? item.quantity ?? "—"}{" "}
                     {item.grossAmount || item.feeAmount ? item.tradeCurrencyCode : ""}
-                  </div>
+                  </FinancialValue></div>
                   <InvestmentCorrectionForm activity={item} accounts={options.investmentAccounts} instruments={options.instruments} currencies={options.currencies} />
                 </li>
               ))}

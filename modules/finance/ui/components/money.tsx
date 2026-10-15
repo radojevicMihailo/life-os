@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import { FinancialValue } from "./finance-privacy";
 import { cryptoCurrencyMinorUnits } from "../../domain/money";
 
 export interface MoneyProps {
@@ -50,12 +51,12 @@ export function Money({
   const accessibleLabel = `${label ?? "Iznos"}: ${amount} ${currencyCode}`;
 
   return (
-    <span
+    <FinancialValue
       aria-label={accessibleLabel}
       className={className ?? "tabular-nums"}
       title={`${amount} ${currencyCode}`}
     >
       {formatMoney(amount, currencyCode, minorUnit)}
-    </span>
+    </FinancialValue>
   );
 }

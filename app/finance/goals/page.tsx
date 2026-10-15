@@ -1,3 +1,4 @@
+import { FinancialValue } from "@/modules/finance/ui/components/finance-privacy";
 import Link from "next/link";
 import { Plus, Wallet } from "lucide-react";
 import { EmptyState } from "@/modules/finance/ui/components/empty-state";
@@ -41,8 +42,8 @@ export default async function GoalsPage() {
               </div>
               {allocation.currencyCode !== goal.currencyCode ? <div className="mt-2 space-y-2 text-xs text-slate-400">
                 <p>{allocation.convertedAmount === null ? "Nedostaje kurs za protivvrednost." : <>≈ <Money amount={allocation.convertedAmount} currencyCode={goal.currencyCode} label="Protivvrednost u valuti cilja" /></>}</p>
-                {allocation.valuation.sourceToEur ? <p>Kurs: 1 {allocation.currencyCode} = {new Intl.NumberFormat("sr-Latn-RS", { maximumFractionDigits: 8 }).format(Number(allocation.valuation.sourceToEur.value))} EUR</p> : null}
-                {allocation.valuation.targetToEur ? <p>Kurs: 1 {goal.currencyCode} = {new Intl.NumberFormat("sr-Latn-RS", { maximumFractionDigits: 8 }).format(Number(allocation.valuation.targetToEur.value))} EUR</p> : null}
+                {allocation.valuation.sourceToEur ? <p>Kurs: 1 {allocation.currencyCode} = <FinancialValue>{new Intl.NumberFormat("sr-Latn-RS", { maximumFractionDigits: 8 }).format(Number(allocation.valuation.sourceToEur.value))}</FinancialValue> EUR</p> : null}
+                {allocation.valuation.targetToEur ? <p>Kurs: 1 {goal.currencyCode} = <FinancialValue>{new Intl.NumberFormat("sr-Latn-RS", { maximumFractionDigits: 8 }).format(Number(allocation.valuation.targetToEur.value))}</FinancialValue> EUR</p> : null}
                 <div className="flex flex-wrap gap-2">{allocation.valuation.sourceToEur ? <SourceBadge metadata={allocation.valuation.sourceToEur} /> : null}{allocation.valuation.targetToEur ? <SourceBadge metadata={allocation.valuation.targetToEur} /> : null}</div>
                 {allocation.valuation.missingCurrencies.length ? <p className="text-amber-300">Unesi kurs za {allocation.valuation.missingCurrencies.join(", ")} u <Link className="underline" href="/finance/settings">finansijskim podešavanjima</Link>.</p> : null}
                 {allocation.valuation.stale ? <p className="text-amber-300">Procena koristi zastareo kurs.</p> : null}
