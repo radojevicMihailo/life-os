@@ -28,7 +28,7 @@ export function TaskContextsEditor({
   }
 
   if (allContexts.length === 0) {
-    return <p className="text-sm text-muted-foreground">No contexts created yet.</p>;
+    return <p className="text-sm text-muted-foreground">Još nema konteksta.</p>;
   }
 
   return (

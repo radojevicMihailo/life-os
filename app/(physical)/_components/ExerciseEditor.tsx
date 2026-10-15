@@ -54,7 +54,7 @@ export function ExerciseEditor({
   }
 
   function archive(ex: Exercise) {
-    if (!confirm(`Archive "${ex.name}"? It hides from selectors but past entries keep it.`)) return;
+    if (!confirm(`Arhivirati vežbu „${ex.name}“? Neće se nuditi pri novom unosu, a ostaje sačuvana u prethodnim treninzima.`)) return;
     startTransition(async () => {
       const result = await archiveExercise(ex.id);
       if (!result.ok) toast.error(result.error);
@@ -74,7 +74,7 @@ export function ExerciseEditor({
       .filter((s) => s.items.length > 0),
   ];
   const ungrouped = byGroup.get(null) ?? [];
-  if (ungrouped.length > 0) sections.push({ id: null, name: "Ungrouped", items: ungrouped });
+  if (ungrouped.length > 0) sections.push({ id: null, name: "Bez grupe", items: ungrouped });
 
   function renderRow(ex: Exercise) {
     return (
@@ -89,7 +89,7 @@ export function ExerciseEditor({
         <Select value={ex.groupId ?? NO_GROUP} onValueChange={(v) => setGroup(ex, v)}>
           <SelectTrigger className="max-w-[10rem]"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value={NO_GROUP}>No group</SelectItem>
+            <SelectItem value={NO_GROUP}>Bez grupe</SelectItem>
             {groups.map((g) => (
               <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
             ))}
@@ -111,18 +111,18 @@ export function ExerciseEditor({
         </div>
       ))}
       <div className="flex flex-wrap gap-2">
-        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="New exercise" className="max-w-xs" />
+        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nova vežba" className="max-w-xs" />
         <Select value={groupId} onValueChange={setGroupId}>
-          <SelectTrigger className="max-w-[10rem]"><SelectValue placeholder="Group" /></SelectTrigger>
+          <SelectTrigger className="max-w-[10rem]"><SelectValue placeholder="Grupa" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value={NO_GROUP}>No group</SelectItem>
+            <SelectItem value={NO_GROUP}>Bez grupe</SelectItem>
             {groups.map((g) => (
               <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Button size="sm" onClick={submit} disabled={pending || !name.trim()}>
-          <Plus className="mr-2 h-4 w-4" /> Add exercise
+          <Plus className="mr-2 h-4 w-4" /> Dodaj vežbu
         </Button>
       </div>
     </div>

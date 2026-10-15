@@ -1,5 +1,6 @@
 import "server-only";
-import { and, asc, desc, eq, inArray, isNull, ne, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, isNull, ne, or, sql, type SQL } from "drizzle-orm";
+import { literalSearchPattern } from "@/lib/search";
 import { db } from "@/db";
 import { context, priority, project, task, taskContext } from "@/db/schema/tasks";
 import type { TaskStatus } from "@/db/schema/tasks";
@@ -14,6 +15,9 @@ export type TaskFilters = {
   priorityId?: string;
   parentTaskId?: string | null;
   sort?: TaskSort;
+  query?: string;
+  limit?: number;
+  offset?: number;
 };
 
 const SMART_RANK = sql`${priority.rank} ASC NULLS LAST`;
@@ -22,19 +26,23 @@ const DUE_ASC_NULLS_LAST = sql`${task.dueAt} ASC NULLS LAST`;
 function orderClauses(sort: TaskSort): SQL[] {
   switch (sort) {
     case "due":
-      return [DUE_ASC_NULLS_LAST, desc(task.createdAt)];
+      return [DUE_ASC_NULLS_LAST, desc(task.createdAt), asc(task.id)];
     case "created":
-      return [desc(task.createdAt)];
+      return [desc(task.createdAt), asc(task.id)];
     case "title":
-      return [asc(task.title)];
+      return [asc(task.title), asc(task.id)];
     case "smart":
     default:
-      return [SMART_RANK, DUE_ASC_NULLS_LAST, desc(task.createdAt)];
+      return [SMART_RANK, DUE_ASC_NULLS_LAST, desc(task.createdAt), asc(task.id)];
   }
 }
 
 export async function fetchTasks(filters: TaskFilters = {}): Promise<TaskWithMeta[]> {
   const conditions: SQL[] = [];
+  if (filters.query?.trim()) {
+    const pattern = literalSearchPattern(filters.query);
+    conditions.push(or(ilike(task.title, pattern), ilike(task.notes, pattern))!);
+  }
 
   const status = filters.status ?? "active";
   if (status === "active") {
@@ -65,7 +73,7 @@ export async function fetchTasks(filters: TaskFilters = {}): Promise<TaskWithMet
 
   const sort = filters.sort ?? "smart";
 
-  const rows = await db
+  const query = db
     .select({
       task,
       projectName: project.name,
@@ -77,6 +85,7 @@ export async function fetchTasks(filters: TaskFilters = {}): Promise<TaskWithMet
     .leftJoin(priority, eq(task.priorityId, priority.id))
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(...orderClauses(sort));
+  const rows = await (filters.limit ? query.limit(Math.min(501, Math.max(1, filters.limit))).offset(filters.offset ?? 0) : query);
 
   if (rows.length === 0) return [];
 

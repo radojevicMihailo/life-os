@@ -14,10 +14,10 @@ export function ErrorPanel({
       role="alert"
     >
       <h2 className="font-semibold">Nešto nije uspelo</h2>
-      <p className="mt-2 text-sm leading-6 text-rose-100/80">{message}</p>
+      <p className="mt-2 text-sm leading-6 text-rose-700 dark:text-rose-100/80">{message}</p>
       {onRetry ? (
         <button
-          className="mt-4 min-h-11 rounded-xl border border-rose-100/30 px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="mt-4 min-h-11 rounded-xl border border-rose-100/30 px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           onClick={onRetry}
           type="button"
         >

@@ -11,6 +11,7 @@ import { MealCard } from "./MealCard";
 import { TargetsBar } from "./TargetsBar";
 
 export async function DayView({ date }: { date: string }) {
+  const targetsPromise = getMealTargets();
   const meals = await db
     .select()
     .from(meal)
@@ -33,7 +34,7 @@ export async function DayView({ date }: { date: string }) {
   }
 
   const totals = dayTotals(Array.from(byMeal.values()));
-  const targets = await getMealTargets();
+  const targets = await targetsPromise;
   const day = parseISO(date);
   const prev = format(addDays(day, -1), "yyyy-MM-dd");
   const next = format(addDays(day, 1), "yyyy-MM-dd");

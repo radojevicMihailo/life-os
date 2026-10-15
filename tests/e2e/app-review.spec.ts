@@ -31,7 +31,7 @@ test("task date picker supports calendar selection, time, and narrow screens ins
   page.on("pageerror", (error) => errors.push(error.message));
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/tasks");
-  await page.getByRole("button", { name: "New task", exact: true }).click();
+  await page.getByRole("button", { name: "Novi zadatak", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("combobox").filter({ hasText: "Izaberite datum" }).first().click();
   await page.getByRole("button", { name: "Danas", exact: true }).click();

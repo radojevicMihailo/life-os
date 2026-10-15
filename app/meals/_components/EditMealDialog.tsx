@@ -101,16 +101,16 @@ export function EditMealDialog({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Edit meal</DialogTitle>
+          <DialogTitle>Izmeni obrok</DialogTitle>
         </DialogHeader>
         <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
-              <Label>Name</Label>
+              <Label>Naziv</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <Label>Time (optional)</Label>
+              <Label>Vreme (opciono)</Label>
               <Input
                 type="time"
                 value={time}
@@ -137,10 +137,10 @@ export function EditMealDialog({
         </div>
         <DialogFooter className="justify-between">
           <Button variant="destructive" onClick={remove} disabled={pending}>
-            Delete
+            Obriši
           </Button>
           <Button onClick={submit} disabled={pending || items.length === 0}>
-            {pending ? "Saving…" : "Save"}
+            {pending ? "Čuvanje…" : "Sačuvaj"}
           </Button>
         </DialogFooter>
       </DialogContent>

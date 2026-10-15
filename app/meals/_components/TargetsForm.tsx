@@ -15,10 +15,10 @@ type Targets = {
 };
 
 const FIELDS: { key: keyof Targets; label: string; unit: string }[] = [
-  { key: "kcal", label: "Daily kcal", unit: "kcal" },
-  { key: "protein", label: "Daily protein", unit: "g" },
-  { key: "carbs", label: "Daily carbs", unit: "g" },
-  { key: "fat", label: "Daily fat", unit: "g" },
+  { key: "kcal", label: "Dnevne kalorije", unit: "kcal" },
+  { key: "protein", label: "Dnevni proteini", unit: "g" },
+  { key: "carbs", label: "Dnevni ugljeni hidrati", unit: "g" },
+  { key: "fat", label: "Dnevne masti", unit: "g" },
 ];
 
 export function TargetsForm({ initial }: { initial: Targets }) {
@@ -78,7 +78,7 @@ export function TargetsForm({ initial }: { initial: Targets }) {
       ))}</div>
       {error && <div className="text-sm text-red-600">{error}</div>}
       <Button type="submit" disabled={pending}>
-        {pending ? "Saving…" : "Save"}
+        {pending ? "Čuvanje…" : "Sačuvaj"}
       </Button>
     </form>
   );

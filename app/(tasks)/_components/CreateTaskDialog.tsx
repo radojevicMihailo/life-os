@@ -54,7 +54,7 @@ export function CreateTaskDialog({
         toast.error(result.error);
         return;
       }
-      toast.success("Task created");
+      toast.success("Zadatak je dodat");
       onOpenChange(false);
       router.refresh();
     });
@@ -64,7 +64,7 @@ export function CreateTaskDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New task</DialogTitle>
+          <DialogTitle>Novi zadatak</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={(e) => {
@@ -74,18 +74,18 @@ export function CreateTaskDialog({
           className="space-y-4"
         >
           <div className="space-y-2">
-            <Label htmlFor="new-task-title">Title</Label>
+            <Label htmlFor="new-task-title">Naslov</Label>
             <Input
               id="new-task-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="What needs doing?"
+              placeholder="Šta treba uraditi?"
               autoFocus
               disabled={pending}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="calendar-task-action">Action date</Label>
+            <Label htmlFor="calendar-task-action">Termin rada</Label>
             <DateField
               id="calendar-task-action"
               value={actionAt}
@@ -96,7 +96,7 @@ export function CreateTaskDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="calendar-task-due">Due</Label>
+            <Label htmlFor="calendar-task-due">Rok</Label>
             <DateField
               id="calendar-task-due"
               disabled={pending}
@@ -126,7 +126,7 @@ export function CreateTaskDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={pending || !title.trim()}>
-              Create
+              Dodaj
             </Button>
           </DialogFooter>
         </form>

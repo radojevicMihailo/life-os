@@ -125,7 +125,7 @@ export function TaskDetailEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Action date</Label>
+        <Label>Termin rada</Label>
         <DateField
           disabled={pending}
           value={actionAt}
@@ -164,7 +164,7 @@ export function TaskDetailEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Due date</Label>
+        <Label>Rok</Label>
         <DateField
           disabled={pending}
           value={dueAt}
@@ -195,13 +195,13 @@ export function TaskDetailEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Project</Label>
+        <Label>Projekat</Label>
         <Select value={projectId ?? "none"} onValueChange={changeProject}>
           <SelectTrigger className="w-full" disabled={pending}>
-            <SelectValue placeholder="None" />
+            <SelectValue placeholder="Bez izbora" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">None</SelectItem>
+            <SelectItem value="none">Bez izbora</SelectItem>
             {projects.map((p) => (
               <SelectItem key={p.id} value={p.id}>
                 {p.name}

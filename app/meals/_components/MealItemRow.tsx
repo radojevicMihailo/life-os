@@ -30,9 +30,9 @@ export function MealItemRow({
       <div className="min-w-40 flex-1">
         <div className="font-medium text-base">{item.name}</div>
         <div className="text-sm text-muted-foreground">
-          {Math.round(item.kcalPer100g * factor)} kcal · P
-          {(item.proteinPer100g * factor).toFixed(1)} · C
-          {(item.carbsPer100g * factor).toFixed(1)} · F
+          {Math.round(item.kcalPer100g * factor)} kcal · Proteini{" "}
+          {(item.proteinPer100g * factor).toFixed(1)} · Ugljeni hidrati{" "}
+          {(item.carbsPer100g * factor).toFixed(1)} · Masti{" "}
           {(item.fatPer100g * factor).toFixed(1)}
         </div>
       </div>

@@ -26,7 +26,7 @@ export function ApplyTemplateButton({ templateId }: { templateId: string }) {
   return (
     <div className="flex items-center gap-2">
       <Button size="sm" onClick={applyToday} disabled={pending}>
-        {pending ? "Adding…" : "Add to today"}
+        {pending ? "Dodavanje…" : "Dodaj za danas"}
       </Button>
       {error && <span className="text-sm text-red-600">{error}</span>}
     </div>

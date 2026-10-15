@@ -40,7 +40,7 @@ export function CalendarGrid({
 
   return (
     <div className="grid grid-cols-7 gap-1">
-      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+      {["Pon", "Uto", "Sre", "Čet", "Pet", "Sub", "Ned"].map((d) => (
         <div key={d} className="text-xs text-muted-foreground text-center pb-1">
           {d}
         </div>

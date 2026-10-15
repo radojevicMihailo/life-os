@@ -5,6 +5,7 @@ import { PomodoroBadge } from "@/components/pomodoro-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SettingsLink } from "@/components/settings-link";
 import { LogoutButton } from "@/components/logout-button";
+import { SearchButton } from "@/components/command-palette";
 
 export function Sidebar() {
   return (
@@ -15,6 +16,7 @@ export function Sidebar() {
           <span>Life OS<small className="block text-[0.65rem] font-normal tracking-normal text-muted-foreground">Bolji ja. Svaki dan.</small></span>
         </Link>
       </div>
+      <div className="px-3 pb-4"><SearchButton /></div>
       <nav className="flex-1 overflow-y-auto px-3 pb-4" aria-label="Glavna navigacija">
         <NavTree />
       </nav>

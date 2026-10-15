@@ -14,7 +14,7 @@ export function ThemeToggle() {
     <Button
       variant="ghost"
       size="icon-sm"
-      aria-label="Toggle theme"
+      aria-label="Promeni temu"
       onClick={() => setTheme(isDark ? "light" : "dark")}
     >
       {mounted && isDark ? <Sun /> : <Moon />}

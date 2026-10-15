@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function WorkoutPlansPage() {
   const rows = await getWorkoutPlans();
   return (
-    <div className="mx-auto max-w-3xl px-6 py-8 space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6">
       <Link href="/plans" className="inline-flex items-center text-sm text-muted-foreground hover:underline">
         <ChevronLeft className="h-4 w-4" /> Plans
       </Link>

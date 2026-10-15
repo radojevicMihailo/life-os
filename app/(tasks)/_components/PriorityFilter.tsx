@@ -16,6 +16,8 @@ export function PriorityFilter({
 
   function withParam(value: string | null): string {
     const next = new URLSearchParams(params.toString());
+    next.delete("limit");
+    next.delete("page");
     if (value) next.set("priority", value);
     else next.delete("priority");
     const q = next.toString();
@@ -26,9 +28,9 @@ export function PriorityFilter({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-xs uppercase tracking-wide text-muted-foreground">Priority:</span>
+      <span className="text-xs uppercase tracking-wide text-muted-foreground">Prioritet:</span>
       <Link href={withParam(null)}>
-        <Badge variant={active ? "outline" : "default"}>Any</Badge>
+        <Badge variant={active ? "outline" : "default"}>Svi</Badge>
       </Link>
       {priorities.map((p) => (
         <Link key={p.id} href={withParam(p.id)}>

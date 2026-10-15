@@ -140,7 +140,7 @@ export function TaskRow({ task }: { task: TaskWithMeta }) {
         </DropdownMenuContent>
       </DropdownMenu>
       {action && (
-        <Badge variant="outline" className="gap-1 text-xs" title="Action date">
+        <Badge variant="outline" className="gap-1 text-xs" title="Termin rada">
           <PlayCircle className="h-3 w-3" />
           {formatDateRange(action, actionEnd)}
         </Badge>
@@ -149,7 +149,7 @@ export function TaskRow({ task }: { task: TaskWithMeta }) {
         <Badge
           variant="outline"
           className={`gap-1 text-xs ${overdue ? "border-red-500 text-red-600" : ""}`}
-          title="Due date"
+          title="Rok"
         >
           <Calendar className="h-3 w-3" />
           {formatTaskDate(due)}

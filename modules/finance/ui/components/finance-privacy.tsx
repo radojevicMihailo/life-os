@@ -25,7 +25,7 @@ export function FinancePrivacy({ children }: { children: ReactNode }) {
   const { hidden } = useContext(PrivacyContext);
   return <div data-finance-private={hidden ? "true" : "false"}>
     <div className="mb-4 flex justify-end"><FinancePrivacyToggle /></div>
-    {hidden ? <p role="status" className="mb-4 text-xs text-slate-400">Finansijski iznosi su sakriveni. Unos, izmena i izvoz su skriveni dok ponovo ne prikažeš iznose.</p> : null}
+    {hidden ? <p role="status" className="mb-4 text-xs text-muted-foreground">Finansijski iznosi su sakriveni. Unos, izmena i izvoz su skriveni dok ponovo ne prikažeš iznose.</p> : null}
     {children}
   </div>;
 }
@@ -38,5 +38,5 @@ export function FinancialValue({ children, className, title, "aria-label": ariaL
 }
 
 export function FinancialDetail({ children }: { children: ReactNode }) {
-  return useContext(PrivacyContext).hidden ? <p className="text-xs text-slate-500">••••</p> : children;
+  return useContext(PrivacyContext).hidden ? <p className="text-xs text-muted-foreground">••••</p> : children;
 }

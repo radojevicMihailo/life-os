@@ -28,11 +28,11 @@ export function NoteListRow({ note }: { note: NoteListItem }) {
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
       <div className="min-w-0 space-y-1">
         <div className="flex items-center gap-2">
-          <span className="truncate font-medium">{note.title || "Untitled"}</span>
+          <span className="truncate font-medium">{note.title || "Bez naslova"}</span>
           <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
             {noteKindLabel[note.kind]}
           </span>
-          {note.categoryName ? <span className="shrink-0 rounded bg-violet-500/15 px-2 py-1 text-xs text-violet-100">{note.categoryName}</span> : null}
+          {note.categoryName ? <span className="shrink-0 rounded bg-primary/10 px-2 py-1 text-xs text-primary">{note.categoryName}</span> : null}
         </div>
         {snippet ? <p className="truncate text-sm text-muted-foreground">{snippet}</p> : null}
       </div>

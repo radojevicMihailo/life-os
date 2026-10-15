@@ -80,7 +80,7 @@ export function FoodPicker({ onPick }: { onPick: (f: PickedFood) => void }) {
   return (
     <div className="space-y-2">
       <Input
-        placeholder="Search food…"
+        placeholder="Pretraži namirnice…"
         value={q}
         onChange={(e) => setQ(e.target.value)}
       />
@@ -112,7 +112,7 @@ export function FoodPicker({ onPick }: { onPick: (f: PickedFood) => void }) {
             onClick={offSearch}
             disabled={pending}
           >
-            Search OpenFoodFacts
+            Pretraži OpenFoodFacts
           </Button>
           {offError && <span className="text-red-600">{offError}</span>}
         </div>

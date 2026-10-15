@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +20,17 @@ import { FoodPicker, type PickedFood } from "./FoodPicker";
 import { MealItemRow, type DraftItem } from "./MealItemRow";
 
 export function AddMealDialog({ date }: { date: string }) {
-  const [open, setOpen] = useState(false);
+  const params = useSearchParams();
+  const pathname = usePathname();
+  const [localOpen, setLocalOpen] = useState(false);
+  const open = localOpen || params.get("new") === "1";
+  function setOpen(value: boolean) {
+    setLocalOpen(value);
+    if (!value && params.has("new")) {
+      const next = new URLSearchParams(params.toString()); next.delete("new");
+      router.replace(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
+    }
+  }
   const [name, setName] = useState("");
   const [time, setTime] = useState("");
   const [items, setItems] = useState<DraftItem[]>([]);
@@ -84,20 +95,20 @@ export function AddMealDialog({ date }: { date: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Add meal</Button>
+        <Button>Dodaj obrok</Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add meal</DialogTitle>
+          <DialogTitle>Dodaj obrok</DialogTitle>
         </DialogHeader>
         <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
-              <Label>Name</Label>
+              <Label>Naziv</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <Label>Time (optional)</Label>
+              <Label>Vreme (opciono)</Label>
               <Input
                 type="time"
                 value={time}
@@ -121,7 +132,7 @@ export function AddMealDialog({ date }: { date: string }) {
           </div>
           <div className="space-y-2"><Label>Dodaj namirnicu</Label><FoodPicker onPick={addPick} /></div>
           <div className="text-sm text-muted-foreground">
-            Total: {Math.round(totals.kcal)} kcal · P{totals.protein.toFixed(1)}
+            Ukupno: {Math.round(totals.kcal)} kcal · P{totals.protein.toFixed(1)}
             · C{totals.carbs.toFixed(1)} · F{totals.fat.toFixed(1)}
           </div>
           {error && <div className="text-sm text-red-600">{error}</div>}
@@ -131,7 +142,7 @@ export function AddMealDialog({ date }: { date: string }) {
             onClick={submit}
             disabled={pending || items.length === 0 || !name.trim()}
           >
-            {pending ? "Saving…" : "Save meal"}
+            {pending ? "Čuvanje…" : "Sačuvaj obrok"}
           </Button>
         </DialogFooter>
       </DialogContent>

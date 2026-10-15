@@ -61,7 +61,7 @@ export function MealCard({ meal }: { meal: MealRow }) {
         </div>
         <EditMealDialog
           initial={initial}
-          trigger={<Button variant="ghost" size="sm">Edit</Button>}
+          trigger={<Button variant="ghost" size="sm">Izmeni</Button>}
         />
       </div>
       <ul className="text-sm space-y-1">
@@ -82,8 +82,8 @@ export function MealCard({ meal }: { meal: MealRow }) {
         })}
       </ul>
       <div className="text-sm font-medium text-right">
-        {Math.round(totals.kcal)} kcal · P{totals.protein.toFixed(1)} · C
-        {totals.carbs.toFixed(1)} · F{totals.fat.toFixed(1)}
+        {Math.round(totals.kcal)} kcal · Proteini {totals.protein.toFixed(1)} · Ugljeni hidrati{" "}
+        {totals.carbs.toFixed(1)} · Masti {totals.fat.toFixed(1)}
       </div>
     </div>
   );

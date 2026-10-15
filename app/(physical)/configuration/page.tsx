@@ -21,7 +21,7 @@ export default async function ConfigurationPage() {
   const editorSections = tagSections.map((s) => ({ group: s.group, tags: s.tags }));
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-6 py-8 space-y-8">
+    <div className="mx-auto w-full max-w-5xl space-y-8">
       <div>
         <h1 className="text-2xl font-semibold">Konfiguracija</h1>
         <p className="text-sm text-muted-foreground">

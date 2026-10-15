@@ -84,7 +84,7 @@ export function ProjectDetailEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Start date</Label>
+        <Label>Datum početka</Label>
         <DateField
           value={startAt}
           withTime={startWithTime}
@@ -97,7 +97,7 @@ export function ProjectDetailEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Due date</Label>
+        <Label>Rok</Label>
         <DateField
           value={dueAt}
           withTime={dueWithTime}

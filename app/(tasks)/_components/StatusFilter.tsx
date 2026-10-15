@@ -6,13 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { taskStatusColors } from "@/lib/status-colors";
 
 const statuses = [
-  { key: "active", label: "Active" },
-  { key: "backlog", label: "Backlog" },
-  { key: "in_progress", label: "In progress" },
-  { key: "waiting_for", label: "Waiting for" },
-  { key: "done", label: "Done" },
-  { key: "canceled", label: "Canceled" },
-  { key: "all", label: "All" },
+  { key: "active", label: "Aktivno" },
+  { key: "backlog", label: "Na čekanju" },
+  { key: "in_progress", label: "U toku" },
+  { key: "waiting_for", label: "Čeka odgovor" },
+  { key: "done", label: "Završeno" },
+  { key: "canceled", label: "Otkazano" },
+  { key: "all", label: "Sve" },
 ] as const;
 
 export function StatusFilter() {
@@ -21,6 +21,8 @@ export function StatusFilter() {
 
   function withParam(value: string): string {
     const next = new URLSearchParams(params.toString());
+    next.delete("limit");
+    next.delete("page");
     if (value === "active") next.delete("status");
     else next.set("status", value);
     const q = next.toString();

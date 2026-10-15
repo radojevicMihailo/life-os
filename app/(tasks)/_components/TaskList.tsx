@@ -27,7 +27,7 @@ export function TaskList({
   if (filtered.length === 0) {
     return (
       <div className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
-        {query.trim() ? "No tasks match your search." : "No tasks yet. Add one above."}
+        {query.trim() ? "Nema zadataka za ovu pretragu." : "Još nema zadataka. Dodaj prvi iznad."}
       </div>
     );
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Flame, Pencil } from "lucide-react";
@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { Habit } from "@/db/schema/habits";
+import { saveHabitCount } from "@/lib/habits/save-count";
 import { upsertLog } from "../_actions/logs";
 
 export function HabitTodayRow({
@@ -15,20 +16,33 @@ export function HabitTodayRow({
   isoToday,
   count,
   streak,
+  showStreak = true,
 }: {
   habit: Habit;
   isoToday: string;
   count: number | undefined;
   streak: number;
+  showStreak?: boolean;
 }) {
   const [pending, startTransition] = useTransition();
   const [local, setLocal] = useState<number>(count ?? 0);
 
+  const confirmed = useRef(count ?? 0);
+  const saving = useRef(false);
+  const [error, setError] = useState<string | null>(null);
+
   function save(next: number) {
+    if (saving.current) return;
+    saving.current = true;
+    setError(null);
     setLocal(next);
     startTransition(async () => {
-      const r = await upsertLog({ habitId: habit.id, date: isoToday, count: next });
-      if (!r.ok) toast.error(r.error);
+      const result = await saveHabitCount(confirmed.current, next, () => upsertLog({ habitId: habit.id, date: isoToday, count: next }));
+      confirmed.current = result.count;
+      setLocal(result.count);
+      setError(result.error);
+      saving.current = false;
+      if (result.error) toast.error(result.error);
     });
   }
 
@@ -46,6 +60,7 @@ export function HabitTodayRow({
       <div className="flex min-w-0 flex-1 items-center gap-2">
         {habit.kind === "binary" ? (
           <Checkbox
+            aria-label={`Označi naviku: ${habit.title}`}
             checked={done}
             disabled={pending}
             onCheckedChange={(v) => save(v ? 1 : 0)}
@@ -64,6 +79,7 @@ export function HabitTodayRow({
       {habit.kind === "count" && (
         <div className="flex items-center gap-1.5 text-xs">
           <Input
+            aria-label={`Broj za naviku: ${habit.title}`}
             type="number"
             min={0}
             className="h-8 w-20"
@@ -71,7 +87,7 @@ export function HabitTodayRow({
             disabled={pending}
             onChange={(e) => setLocal(Number(e.target.value) || 0)}
             onBlur={() => {
-              if (local !== (count ?? 0)) save(local);
+              if (local !== confirmed.current) save(local);
             }}
           />
           <span className="text-muted-foreground tabular-nums">
@@ -81,16 +97,18 @@ export function HabitTodayRow({
         </div>
       )}
 
-      <div
+      {showStreak && <div
         className="flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs"
-        title="Current streak"
+        title="Trenutni niz"
       >
         <Flame className="h-3 w-3 text-orange-500" />
         <span className="tabular-nums">{streak}</span>
-      </div>
+      </div>}
+
+      {error && <p role="alert" className="w-full text-xs text-destructive">{error}</p>}
 
       <Button asChild size="icon" variant="ghost" className="h-7 w-7">
-        <Link href={`/habits/${habit.id}/edit`} aria-label="Edit habit">
+        <Link href={`/habits/${habit.id}/edit`} aria-label="Uredi naviku">
           <Pencil className="h-3.5 w-3.5" />
         </Link>
       </Button>

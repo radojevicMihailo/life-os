@@ -1,28 +1,11 @@
-export function belgradeDayKey(date: Date): string {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Europe/Belgrade", year: "numeric", month: "2-digit", day: "2-digit",
-  }).formatToParts(date);
-  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
-  return `${value("year")}-${value("month")}-${value("day")}`;
-}
-
-export function belgradeDayBounds(dayKey: string): { start: Date; end: Date } {
-  const midnight = (key: string) => {
-    const utcMidnight = new Date(`${key}T00:00:00Z`);
-    const localHour = Number(new Intl.DateTimeFormat("en-US", {
-      timeZone: "Europe/Belgrade", hour: "2-digit", hourCycle: "h23",
-    }).format(utcMidnight));
-    return new Date(utcMidnight.getTime() - localHour * 60 * 60 * 1000);
-  };
-  const nextDay = new Date(`${dayKey}T00:00:00Z`);
-  nextDay.setUTCDate(nextDay.getUTCDate() + 1);
-  return { start: midnight(dayKey), end: midnight(nextDay.toISOString().slice(0, 10)) };
-}
+import { belgradeDayKey, belgradeDayBounds } from "@/lib/day";
+export { belgradeDayKey, belgradeDayBounds } from "@/lib/day";
 
 export type HomePlanItem = {
   id: string;
   title: string;
   startsAt: string;
+  endsAt?: string;
   href: string;
   source: "task" | "google";
   allDay: boolean;
@@ -31,13 +14,13 @@ export type HomePlanItem = {
 
 export function assembleTodayPlan(
   dayKey: string,
-  tasks: { id: string; title: string; actionAt: Date }[],
+  tasks: { id: string; title: string; actionAt: Date; actionEndAt?: Date | null }[],
   events: { id: string; title: string; dateISO: string; endISO?: string; hasTime: boolean }[],
 ): HomePlanItem[] {
   const { start, end } = belgradeDayBounds(dayKey);
   const items: HomePlanItem[] = [
     ...tasks.filter((item) => belgradeDayKey(item.actionAt) === dayKey).map((item) => ({
-      id: `task:${item.id}`, title: item.title, startsAt: item.actionAt.toISOString(),
+      id: `task:${item.id}`, title: item.title, startsAt: item.actionAt.toISOString(), endsAt: item.actionEndAt?.toISOString(),
       href: `/tasks/${item.id}`, source: "task" as const, allDay: false, ongoing: false,
     })),
     ...events.filter((item) => {
@@ -50,7 +33,7 @@ export function assembleTodayPlan(
       const eventEnd = item.endISO ? new Date(item.endISO).getTime() : eventStart + 1;
       return eventStart < end.getTime() && eventEnd > start.getTime();
     }).map((item) => ({
-      id: `google:${item.id}`, title: item.title, startsAt: item.dateISO,
+      id: `google:${item.id}`, title: item.title, startsAt: item.dateISO, endsAt: item.endISO,
       href: "/calendar", source: "google" as const, allDay: !item.hasTime,
       ongoing: item.hasTime && new Date(item.dateISO).getTime() < start.getTime(),
     })),
@@ -60,4 +43,11 @@ export function assembleTodayPlan(
     if (a.ongoing !== b.ongoing) return a.ongoing ? -1 : 1;
     return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
   });
+}
+
+export function nextPlanItem(items: HomePlanItem[], now: Date): HomePlanItem | undefined {
+  return items.filter((item) => !item.allDay && (
+    new Date(item.startsAt).getTime() >= now.getTime() ||
+    (item.endsAt !== undefined && new Date(item.endsAt).getTime() > now.getTime())
+  )).sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())[0];
 }

@@ -7,6 +7,18 @@ export interface SourceMetadata {
   stale: boolean;
 }
 
+const sourceLabels: Record<string, string> = {
+  identity: "Ista valuta",
+  alpha_vantage: "Alpha Vantage",
+  coingecko: "CoinGecko",
+  nbs: "Narodna banka Srbije",
+  manual: "Ručni unos",
+};
+
+export function sourceLabel(source: string) {
+  return sourceLabels[source] ?? "Spoljni izvor";
+}
+
 export function SourceBadge({ metadata }: { metadata: SourceMetadata }) {
   const state = metadata.manual
     ? "Ručno"
@@ -14,10 +26,10 @@ export function SourceBadge({ metadata }: { metadata: SourceMetadata }) {
       ? "Zastarelo"
       : "Aktuelno";
   const stateClass = metadata.manual
-    ? "border-amber-300/30 bg-amber-300/10 text-amber-100"
+    ? "border-amber-300/30 bg-amber-300/10 text-amber-800 dark:text-amber-100"
     : metadata.stale
-      ? "border-rose-300/30 bg-rose-300/10 text-rose-100"
-      : "border-emerald-300/30 bg-emerald-300/10 text-emerald-100";
+      ? "border-rose-300/30 bg-rose-300/10 text-rose-700 dark:text-rose-100"
+      : "border-emerald-300/30 bg-emerald-300/10 text-emerald-800 dark:text-emerald-100";
 
   return (
     <span
@@ -26,7 +38,7 @@ export function SourceBadge({ metadata }: { metadata: SourceMetadata }) {
     >
       <span>{state}</span>
       <span aria-hidden="true">·</span>
-      <span>{metadata.source}</span>
+      <span>{sourceLabel(metadata.source)}</span>
       <span aria-hidden="true">·</span>
       <time dateTime={metadata.effectiveAt.toISOString()}>
         {metadata.effectiveAt.toLocaleDateString("sr-Latn-RS", {

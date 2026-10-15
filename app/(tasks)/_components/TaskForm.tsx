@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, X } from "lucide-react";
 import {
@@ -42,15 +43,28 @@ export function TaskForm({
   priorities,
   contexts = [],
   defaultProjectId,
-  label = "New task",
+  label = "Novi zadatak",
+  initiallyOpen = false,
 }: {
   projects: ProjectOption[];
   priorities: PriorityOption[];
   contexts?: ContextOption[];
   defaultProjectId?: string;
   label?: string;
+  initiallyOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [localOpen, setLocalOpen] = useState(initiallyOpen);
+  const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const open = localOpen || params.get("new") === "1";
+  function setOpen(value: boolean) {
+    setLocalOpen(value);
+    if (!value && params.has("new")) {
+      const next = new URLSearchParams(params.toString()); next.delete("new");
+      router.replace(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
+    }
+  }
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [projectId, setProjectId] = useState<string | undefined>(defaultProjectId);
@@ -128,7 +142,7 @@ export function TaskForm({
           className="grid grid-cols-1 sm:grid-cols-2 gap-4"
         >
           <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="task-title">Title</Label>
+            <Label htmlFor="task-title">Naslov</Label>
             <Input
               id="task-title"
               value={title}
@@ -138,7 +152,7 @@ export function TaskForm({
             />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="task-notes">Notes</Label>
+            <Label htmlFor="task-notes">Napomene</Label>
             <Textarea
               id="task-notes"
               value={notes}
@@ -148,7 +162,7 @@ export function TaskForm({
           </div>
           <div className="space-y-2 rounded-md border p-3 sm:col-span-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="task-action">Action date</Label>
+              <Label htmlFor="task-action">Termin rada</Label>
               {!showActionEnd ? (
                 <Button
                   type="button"
@@ -197,7 +211,7 @@ export function TaskForm({
             )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="task-due">Due</Label>
+            <Label htmlFor="task-due">Rok</Label>
             <DateField
               value={dueAt}
               onChange={setDueAt}
@@ -222,16 +236,16 @@ export function TaskForm({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label>Priority</Label>
+            <Label>Prioritet</Label>
             <Select
               value={priorityId ?? "none"}
               onValueChange={(v) => setPriorityId(v === "none" ? undefined : v)}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="None" />
+                <SelectValue placeholder="Bez izbora" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="none">Bez izbora</SelectItem>
                 {priorities.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {taskPriorityLabel(p.name)}
@@ -241,16 +255,16 @@ export function TaskForm({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label>Project</Label>
+            <Label>Projekat</Label>
             <Select
               value={projectId ?? "none"}
               onValueChange={(v) => setProjectId(v === "none" ? undefined : v)}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="None" />
+                <SelectValue placeholder="Bez izbora" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="none">Bez izbora</SelectItem>
                 {projects.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
@@ -284,7 +298,7 @@ export function TaskForm({
           </div>
           <DialogFooter className="sm:col-span-2">
             <Button type="submit" disabled={pending || !title.trim()}>
-              Create
+              Dodaj
             </Button>
           </DialogFooter>
         </form>

@@ -7,6 +7,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { PomodoroProvider } from "@/lib/pomodoro/context";
 import { ThemeProvider } from "@/components/theme-provider";
+import { CommandPalette } from "@/components/command-palette";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { AppearanceProvider } from "@/components/appearance-settings";
 
 export const dynamic = "force-dynamic";
 
@@ -39,11 +42,14 @@ export default function RootLayout({
                 <Sidebar />
                 <div className="flex min-w-0 flex-1 flex-col">
                   <MobileNav />
-                  <main className="mx-auto w-full max-w-[1660px] flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+                  <main id="main-content" className="mx-auto w-full max-w-[1660px] flex-1 p-4 pb-28 sm:p-6 sm:pb-28 md:pb-6 lg:p-8">{children}</main>
                 </div>
               </div>
               <Toaster richColors position="top-right" />
               <KeyboardShortcuts />
+              <CommandPalette />
+              <MobileBottomNav />
+              <AppearanceProvider />
             </FinancePrivacyProvider>
           </PomodoroProvider>
         </ThemeProvider>

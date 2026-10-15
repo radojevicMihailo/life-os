@@ -18,7 +18,7 @@ export function TransactionAmounts({
           className="flex flex-wrap items-baseline justify-end gap-x-2"
           key={`${value.accountName}-${value.currencyCode}-${value.amount}`}
         >
-          <span className="text-slate-400">{value.accountName}:</span>
+          <span className="text-muted-foreground">{value.accountName}:</span>
           <Money
             amount={value.amount}
             currencyCode={value.currencyCode}

@@ -75,7 +75,7 @@ export function ProjectForm() {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New project</DialogTitle>
+          <DialogTitle>Novi projekat</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={(e) => {
@@ -85,7 +85,7 @@ export function ProjectForm() {
           className="space-y-4"
         >
           <div className="space-y-1.5">
-            <Label htmlFor="project-name">Name</Label>
+            <Label htmlFor="project-name">Naziv</Label>
             <Input
               id="project-name"
               value={name}
@@ -111,7 +111,7 @@ export function ProjectForm() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Start</Label>
+              <Label>Početak</Label>
               <DateField
                 value={startAt}
                 onChange={setStartAt}
@@ -120,7 +120,7 @@ export function ProjectForm() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Due</Label>
+              <Label>Rok</Label>
               <DateField
                 value={dueAt}
                 onChange={setDueAt}
@@ -131,7 +131,7 @@ export function ProjectForm() {
           </div>
           <DialogFooter>
             <Button type="submit" disabled={pending || !name.trim()}>
-              Create
+              Dodaj
             </Button>
           </DialogFooter>
         </form>

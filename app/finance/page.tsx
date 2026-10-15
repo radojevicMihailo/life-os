@@ -23,17 +23,17 @@ function MetricCard({
   return (
     <article
       aria-describedby="valuation-sources"
-      className="min-w-0 rounded-3xl border border-white/10 bg-white/[0.04] p-5"
+      className="min-w-0 rounded-3xl border border-border bg-muted/50 p-5"
     >
-      <p className="text-sm text-slate-400">{label}</p>
-      <p className="mt-3 break-words text-2xl font-semibold text-white">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="mt-3 break-words text-2xl font-semibold text-foreground">
         {amount === null ? (
           "Nedostupno"
         ) : (
           <Money amount={amount} currencyCode="EUR" label={label} />
         )}
       </p>
-      <p className="mt-2 text-xs leading-5 text-slate-500"><FinancialValue>{detail}</FinancialValue></p>
+      <p className="mt-2 text-xs leading-5 text-muted-foreground"><FinancialValue>{detail}</FinancialValue></p>
     </article>
   );
 }
@@ -66,32 +66,32 @@ export default async function DashboardPage() {
       </section>
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <section className="min-w-0 rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+        <section className="min-w-0 rounded-3xl border border-border bg-card p-5 sm:p-6">
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-lg font-semibold">Budžeti ovog meseca</h2>
-            <span className="text-xs text-slate-500">{dashboard.budgets.length} kategorija</span>
+            <span className="text-xs text-muted-foreground">{dashboard.budgets.length} kategorija</span>
           </div>
           {dashboard.budgets.length === 0 ? (
             <div className="mt-5"><EmptyState title="Nema budžeta za ovaj mesec" /></div>
           ) : (
             <ul className="mt-5 space-y-4">
               {dashboard.budgets.slice(0, 5).map((budget) => (
-                <li className="rounded-2xl bg-slate-900/70 p-4" key={budget.categoryId}>
+                <li className="rounded-2xl bg-background/70 p-4" key={budget.categoryId}>
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <p className="font-medium">{budget.categoryName}</p>
                     <Money amount={budget.remainingAmount} currencyCode={budget.currencyCode} label={`Preostalo za ${budget.categoryName}`} />
                   </div>
-                  <p className="mt-2 text-xs text-slate-400">
+                  <p className="mt-2 text-xs text-muted-foreground">
                     Preneto <Money amount={budget.carryInAmount} currencyCode={budget.currencyCode} /> · Potrošeno <Money amount={budget.spendingAmount} currencyCode={budget.currencyCode} />
                   </p>
-                  {budget.projection.alerts.length ? <p className="mt-2 text-xs text-amber-300">Proveri tempo i projekciju potrošnje u budžetima.</p> : null}
+                  {budget.projection.alerts.length ? <p className="mt-2 text-xs text-amber-800 dark:text-amber-300">Proveri tempo i projekciju potrošnje u budžetima.</p> : null}
                 </li>
               ))}
             </ul>
           )}
         </section>
 
-        <section className="min-w-0 rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+        <section className="min-w-0 rounded-3xl border border-border bg-card p-5 sm:p-6">
           <h2 className="text-lg font-semibold">Ciljevi</h2>
           {dashboard.goals.length === 0 ? (
             <div className="mt-5"><EmptyState title="Još nema aktivnih ciljeva" /></div>
@@ -112,17 +112,17 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <section className="min-w-0 rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+        <section className="min-w-0 rounded-3xl border border-border bg-card p-5 sm:p-6">
           <h2 className="text-lg font-semibold">Nedavne transakcije</h2>
           {dashboard.recentTransactions.length === 0 ? (
             <div className="mt-5"><EmptyState title="Još nema transakcija" /></div>
           ) : (
-            <ul className="mt-4 divide-y divide-white/10">
+            <ul className="mt-4 divide-y divide-border">
               {dashboard.recentTransactions.map((transaction) => (
                 <li className="flex flex-wrap items-center justify-between gap-3 py-4" key={transaction.id}>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{transaction.description ?? transactionTypeLabels[transaction.type]}</p>
-                    <p className="mt-1 text-xs text-slate-500">{transaction.occurredAt.toLocaleDateString("sr-Latn-RS", { timeZone: "Europe/Belgrade" })} · {transactionSourceLabels[transaction.source]}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{transaction.occurredAt.toLocaleDateString("sr-Latn-RS", { timeZone: "Europe/Belgrade" })} · {transactionSourceLabels[transaction.source]}</p>
                   </div>
                   <TransactionAmounts amounts={transaction.nativeAmounts} />
                 </li>
@@ -131,16 +131,16 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        <section className="min-w-0 rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:p-6" id="valuation-sources">
+        <section className="min-w-0 rounded-3xl border border-border bg-card p-5 sm:p-6" id="valuation-sources">
           <h2 className="text-lg font-semibold">Poverenje u procenu</h2>
           {dashboard.valuationSources.length === 0 ? (
-            <p className="mt-4 text-sm leading-6 text-slate-400">Sve prikazane vrednosti su već u EUR ili trenutno nema podataka za konverziju.</p>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">Sve prikazane vrednosti su već u EUR ili trenutno nema podataka za konverziju.</p>
           ) : (
             <ul className="mt-4 space-y-3">
               {dashboard.valuationSources.map((source) => (
                 <li className="flex flex-wrap items-center justify-between gap-3" key={`${source.source}-${source.effectiveAt.toISOString()}-${source.value}`}>
                   <SourceBadge metadata={source} />
-                  <time className="text-xs text-slate-500" dateTime={source.effectiveAt.toISOString()}>{source.effectiveAt.toLocaleString("sr-Latn-RS")}</time>
+                  <time className="text-xs text-muted-foreground" dateTime={source.effectiveAt.toISOString()}>{source.effectiveAt.toLocaleString("sr-Latn-RS")}</time>
                 </li>
               ))}
             </ul>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type { TaskSort } from "@/lib/tasks-query";
 import { TaskList, type TaskListView } from "./TaskList";
 import { TasksToolbar } from "./TasksToolbar";
@@ -10,17 +9,17 @@ export function TasksTriageShell({
   tasks,
   view,
   sort,
+  query = "",
 }: {
   tasks: TaskWithMeta[];
   view: TaskListView;
   sort: TaskSort;
+  query?: string;
 }) {
-  const [query, setQuery] = useState("");
-
   return (
     <div className="space-y-4">
-      <TasksToolbar view={view} sort={sort} query={query} onQueryChange={setQuery} />
-      <TaskList tasks={tasks} view={view} query={query} />
+      <TasksToolbar key={query} view={view} sort={sort} query={query} />
+      <TaskList tasks={tasks} view={view} />
     </div>
   );
 }

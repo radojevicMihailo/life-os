@@ -164,7 +164,7 @@ export function GoogleCalendarButton({ initialConnected }: { initialConnected: b
                   </div>
                 ))}
                 {state.calendars.length === 0 && (
-                  <p className="text-muted-foreground">No calendars returned.</p>
+                  <p className="text-muted-foreground">Nema dostupnih kalendara.</p>
                 )}
               </div>
               <div className="mt-3 flex justify-end gap-2">

@@ -1,4 +1,4 @@
-import {isoDate} from "@/lib/habits/date";
+import { belgradeDayKey } from "@/lib/day";
 import {isCompleted} from "@/lib/habits/schedule";
 import Link from "next/link";
 import { asc, isNotNull, isNull } from "drizzle-orm";
@@ -17,7 +17,7 @@ export default async function ManageHabitsPage() {
     .where(isNull(habit.archivedAt))
     .orderBy(asc(habit.sortOrder), asc(habit.createdAt));
 
-  const todayIso = isoDate(new Date());
+  const todayIso = belgradeDayKey(new Date());
   const active = current.filter(h => !isCompleted(h, todayIso));
   const completed = current.filter(h => isCompleted(h, todayIso));
 

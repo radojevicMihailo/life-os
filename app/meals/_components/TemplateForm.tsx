@@ -74,7 +74,7 @@ export function TemplateForm({
   return (
     <div className="max-w-3xl space-y-6 rounded-3xl border border-border bg-card p-5 sm:p-7">
       <div className="space-y-1">
-        <Label>Name</Label>
+        <Label>Naziv</Label>
         <Input value={name} onChange={(e) => setName(e.target.value)} />
       </div>
       <div className="space-y-2">
@@ -93,11 +93,11 @@ export function TemplateForm({
       {error && <div className="text-sm text-red-600">{error}</div>}
       <div className="flex gap-2">
         <Button onClick={submit} disabled={pending || items.length === 0 || !name.trim()}>
-          {pending ? "Saving…" : "Save"}
+          {pending ? "Čuvanje…" : "Sačuvaj"}
         </Button>
         {mode.kind === "edit" && (
           <Button variant="destructive" onClick={remove} disabled={pending}>
-            Delete
+            Obriši
           </Button>
         )}
       </div>

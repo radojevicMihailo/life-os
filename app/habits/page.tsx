@@ -1,3 +1,4 @@
+import { belgradeCalendarDate } from "@/lib/day";
 import Link from "next/link";
 import { and, inArray, isNull, lte } from "drizzle-orm";
 import { Plus } from "lucide-react";
@@ -19,7 +20,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function HabitsPage() {
-  const today = new Date();
+  const today = belgradeCalendarDate();
   const todayIso = isoDate(today);
   const days = lastNDays(7, today);
 
@@ -43,6 +44,11 @@ export default async function HabitsPage() {
   const historyByHabit = new Map<string, HabitLog[]>();
   for (const h of habits) historyByHabit.set(h.id, []);
   for (const log of historyLogs) historyByHabit.get(log.habitId)?.push(log);
+
+  const statistics = new Map(habits.map((h) => {
+    const logs = buildLogMap(historyByHabit.get(h.id) ?? []);
+    return [h.id, { logs, current: currentStreak(h, logs, today), best: bestStreak(h, logs, today), pct30: completionPct30d(h, logs, today) }];
+  }));
 
   const active = habits.filter(h => !isCompleted(h, todayIso));
   const completed = habits.filter(h => isCompleted(h, todayIso));
@@ -80,14 +86,14 @@ export default async function HabitsPage() {
               <p className="text-sm text-muted-foreground">Danas nema planiranih navika.</p>
             ) : (
               scheduledToday.map((h) => {
-                const map = buildLogMap(historyByHabit.get(h.id) ?? []);
+                const stats = statistics.get(h.id)!;
                 return (
                   <HabitTodayRow
-                    key={h.id}
+                    key={`${h.id}:${todayIso}:${stats.logs.get(todayIso) ?? 0}`}
                     habit={h}
                     isoToday={todayIso}
-                    count={map.get(todayIso)}
-                    streak={currentStreak(h, map, today)}
+                    count={stats.logs.get(todayIso)}
+                    streak={stats.current}
                   />
                 );
               })
@@ -102,7 +108,7 @@ export default async function HabitsPage() {
                   key={h.id}
                   habit={h}
                   days={days}
-                  logs={buildLogMap(historyByHabit.get(h.id) ?? [])}
+                  logs={statistics.get(h.id)!.logs}
                 />
               ))}
             </div>
@@ -112,14 +118,14 @@ export default async function HabitsPage() {
             <h3 className="text-sm font-semibold text-muted-foreground">Statistika</h3>
             <div className="space-y-1.5">
               {active.map((h) => {
-                const map = buildLogMap(historyByHabit.get(h.id) ?? []);
+                const stats = statistics.get(h.id)!;
                 return (
                   <HabitStatsCard
                     key={h.id}
                     habit={h}
-                    current={currentStreak(h, map, today)}
-                    best={bestStreak(h, map, today)}
-                    pct30={completionPct30d(h, map, today)}
+                    current={stats.current}
+                    best={stats.best}
+                    pct30={stats.pct30}
                   />
                 );
               })}
@@ -130,8 +136,8 @@ export default async function HabitsPage() {
             <h2 id="completed-habits" className="text-xl font-semibold">Završene navike · {completed.length}</h2>
             <p className="text-sm text-muted-foreground">Rezultati se računaju samo od početka do završetka navike. Procenat prikazuje poslednjih 30 dana njenog trajanja.</p>
             {completed.length === 0 ? <p className="text-sm text-muted-foreground">Nema završenih navika.</p> : completed.map(h => {
-              const map = buildLogMap(historyByHabit.get(h.id) ?? []);
-              return <HabitStatsCard key={h.id} habit={h} current={currentStreak(h, map, today)} best={bestStreak(h, map, today)} pct30={completionPct30d(h, map, today)} completed />;
+              const stats = statistics.get(h.id)!;
+              return <HabitStatsCard key={h.id} habit={h} current={stats.current} best={stats.best} pct30={stats.pct30} completed />;
             })}
           </section>
         </>

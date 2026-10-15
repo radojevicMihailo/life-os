@@ -31,7 +31,7 @@ export function KeyboardShortcuts() {
         if (gTimer.current) clearTimeout(gTimer.current);
         if (target) {
           e.preventDefault();
-          router.push(target);
+          if (window.dispatchEvent(new CustomEvent("life-os:before-navigate", { cancelable: true, detail: { href: target } }))) router.push(target);
         }
         return;
       }

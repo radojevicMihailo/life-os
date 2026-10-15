@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { asc, desc, eq, inArray, isNull, or } from "drizzle-orm";
 import { db } from "@/db";
 import { loadActivity, loadActivities } from "@/lib/physical/repository";
@@ -34,19 +35,19 @@ import {
   type WorkoutPlanExercise,
 } from "@/db/schema/physical";
 
-export async function getTagGroups(): Promise<ActivityTagGroup[]> {
+export const getTagGroups = cache(async (): Promise<ActivityTagGroup[]> => {
   return db
     .select()
     .from(activityTagGroup)
     .orderBy(asc(activityTagGroup.sortOrder), asc(activityTagGroup.name));
-}
+});
 
-export async function getTags(): Promise<ActivityTag[]> {
+export const getTags = cache(async (): Promise<ActivityTag[]> => {
   return db
     .select()
     .from(activityTag)
     .orderBy(asc(activityTag.sortOrder), asc(activityTag.name));
-}
+});
 
 export type TagGroupWithTags = { group: ActivityTagGroup; tags: ActivityTag[] };
 
@@ -61,12 +62,12 @@ export async function getTagGroupsWithTags(): Promise<TagGroupWithTags[]> {
   return groups.map((g) => ({ group: g, tags: byGroup.get(g.id) ?? [] }));
 }
 
-export async function getExerciseGroups(): Promise<ExerciseGroup[]> {
+export const getExerciseGroups = cache(async (): Promise<ExerciseGroup[]> => {
   return db
     .select()
     .from(exerciseGroup)
     .orderBy(asc(exerciseGroup.sortOrder), asc(exerciseGroup.name));
-}
+});
 
 export async function getExercises(includeIds: string[] = []): Promise<Exercise[]> {
   return db
@@ -81,7 +82,7 @@ export type AllFields = {
   subrowFields: PhysicalField[];
 };
 
-export async function getAllFields(): Promise<AllFields> {
+export const getAllFields = cache(async (): Promise<AllFields> => {
   const rows = await db
     .select()
     .from(physicalField)
@@ -90,7 +91,7 @@ export async function getAllFields(): Promise<AllFields> {
     topFields: rows.filter((f) => f.scope === "top"),
     subrowFields: rows.filter((f) => f.scope === "subrow"),
   };
-}
+});
 
 export type ActivityListFilters = {
   tagId?: string;

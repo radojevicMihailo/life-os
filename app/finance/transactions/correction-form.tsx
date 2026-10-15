@@ -11,7 +11,7 @@ export function CorrectionForm({ transaction, accounts, categories }: { transact
   const [state, action, pending] = useActionState(deleteTransactionAction, undefined);
   return <div className="mt-3 space-y-2 text-left">
     <details>
-      <summary className="min-h-10 cursor-pointer py-2 text-xs font-medium text-blue-200">Izmeni transakciju</summary>
+      <summary className="min-h-10 cursor-pointer py-2 text-xs font-medium text-blue-700 dark:text-blue-200">Izmeni transakciju</summary>
       <TransactionForm transaction={transaction} accounts={accounts} categories={categories} />
     </details>
     <form action={action} onSubmit={(event) => {

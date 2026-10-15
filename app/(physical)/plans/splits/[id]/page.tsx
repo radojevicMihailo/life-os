@@ -21,7 +21,7 @@ export default async function EditSplitPage({
   if (!data) notFound();
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8 space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6">
       <Link href="/plans/splits" className="inline-flex items-center text-sm text-muted-foreground hover:underline">
         <ChevronLeft className="h-4 w-4" /> Splits
       </Link>

@@ -73,6 +73,18 @@ describe("financial display components", () => {
     expect(html).toContain('dateTime="2026-08-30T10:00:00.000Z"');
   });
 
+  it.each([
+    ["identity", "Ista valuta"],
+    ["alpha_vantage", "Alpha Vantage"],
+    ["coingecko", "CoinGecko"],
+    ["nbs", "Narodna banka Srbije"],
+    ["manual", "Ručni unos"],
+  ])("shows a helpful source label for %s and keeps technical metadata in the tooltip", (source, label) => {
+    const html = renderToStaticMarkup(<SourceBadge metadata={{ source, ageMs: 0, manual: false, stale: false, effectiveAt: new Date("2026-10-15T10:00:00Z") }} />);
+    expect(html).toContain(`>${label}</span>`);
+    expect(html).toContain(`title="${source};`);
+  });
+
   it("renders all seven finance destinations as accessible links", () => {
     const html = renderToStaticMarkup(<AppNav />);
 

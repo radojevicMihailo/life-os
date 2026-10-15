@@ -24,8 +24,12 @@ export function HabitWeekGrid({
     if (habit.kind !== "binary") return;
     const next = (current ?? 0) >= 1 ? 0 : 1;
     startTransition(async () => {
-      const r = await upsertLog({ habitId: habit.id, date: iso, count: next });
-      if (!r.ok) toast.error(r.error);
+      try {
+        const r = await upsertLog({ habitId: habit.id, date: iso, count: next });
+        if (!r.ok) toast.error(r.error);
+      } catch {
+        toast.error("Čuvanje nije uspelo. Proveri vezu i pokušaj ponovo.");
+      }
     });
   }
 

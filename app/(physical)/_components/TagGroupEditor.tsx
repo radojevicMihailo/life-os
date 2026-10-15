@@ -37,7 +37,7 @@ export function TagGroupEditor({ sections }: { sections: Section[] }) {
   }
 
   function removeGroup(g: ActivityTagGroup) {
-    if (!confirm(`Remove tag group "${g.name}"? All tags inside are deleted too.`)) return;
+    if (!confirm(`Ukloniti grupu oznaka „${g.name}“? Sve oznake u njoj biće obrisane.`)) return;
     startTransition(async () => {
       const result = await removeTagGroup(g.id);
       if (!result.ok) toast.error(result.error);
@@ -64,11 +64,11 @@ export function TagGroupEditor({ sections }: { sections: Section[] }) {
         <Input
           value={groupName}
           onChange={(e) => setGroupName(e.target.value)}
-          placeholder="New tag group (e.g. Intent)"
+          placeholder="Nova grupa oznaka (npr. Namena)"
           className="max-w-xs"
         />
         <Button size="sm" onClick={submitGroup} disabled={pending || !groupName.trim()}>
-          <Plus className="mr-2 h-4 w-4" /> Add group
+          <Plus className="mr-2 h-4 w-4" /> Dodaj grupu
         </Button>
       </div>
     </div>
@@ -115,7 +115,7 @@ function TagGroupCard({
   }
 
   function deleteTag(t: ActivityTag) {
-    if (!confirm(`Remove tag "${t.name}"?`)) return;
+    if (!confirm(`Ukloniti oznaku „${t.name}“?`)) return;
     startTransition(async () => {
       const result = await removeTag(t.id);
       if (!result.ok) toast.error(result.error);
@@ -137,7 +137,7 @@ function TagGroupCard({
           variant="ghost"
           onClick={() => onRemoveGroup(group)}
           disabled={busy}
-          title="Remove group"
+          title="Ukloni grupu"
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -163,11 +163,11 @@ function TagGroupCard({
         <Input
           value={tagName}
           onChange={(e) => setTagName(e.target.value)}
-          placeholder="New tag"
+          placeholder="Nova oznaka"
           className="flex-1 min-w-0"
         />
         <Button size="sm" onClick={submitTag} disabled={busy || !tagName.trim()}>
-          <Plus className="mr-2 h-4 w-4" /> Add
+          <Plus className="mr-2 h-4 w-4" /> Dodaj
         </Button>
       </div>
     </Card>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dialog as DialogPrimitive } from "radix-ui";
@@ -17,13 +17,18 @@ export function MobileNav() {
   const [drawer, setDrawer] = useState({ pathname, open: false });
   const open = drawer.pathname === pathname && drawer.open;
   const setOpen = (nextOpen: boolean) => setDrawer({ pathname, open: nextOpen });
+  useEffect(() => {
+    const show = () => setDrawer({ pathname, open: true });
+    window.addEventListener("life-os:mobile-menu", show);
+    return () => window.removeEventListener("life-os:mobile-menu", show);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-sidebar-border bg-sidebar/95 px-4 text-sidebar-foreground backdrop-blur-xl md:hidden">
       <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
         <DialogPrimitive.Trigger
           className="flex size-10 items-center justify-center rounded-xl transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          aria-label="Open navigation"
+          aria-label="Otvori navigaciju"
         >
           <Menu className="size-5" />
         </DialogPrimitive.Trigger>
@@ -42,7 +47,7 @@ export function MobileNav() {
               </DialogPrimitive.Title>
               <DialogPrimitive.Close
                 className="flex size-8 items-center justify-center rounded-md transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                aria-label="Close navigation"
+                aria-label="Zatvori navigaciju"
               >
                 <X className="size-5" />
               </DialogPrimitive.Close>

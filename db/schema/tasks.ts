@@ -29,11 +29,11 @@ export const taskStatusEnum = pgEnum("task_status", [
 export type TaskStatus = (typeof taskStatusEnum.enumValues)[number];
 
 export const taskStatusLabel: Record<TaskStatus, string> = {
-  backlog: "Backlog",
-  in_progress: "In progress",
-  waiting_for: "Waiting for",
-  canceled: "Canceled",
-  done: "Done",
+  backlog: "Na čekanju",
+  in_progress: "U toku",
+  waiting_for: "Čeka odgovor",
+  canceled: "Otkazano",
+  done: "Završeno",
 };
 
 export const projectStatusEnum = pgEnum("project_status", [
@@ -47,11 +47,11 @@ export const projectStatusEnum = pgEnum("project_status", [
 export type ProjectStatus = (typeof projectStatusEnum.enumValues)[number];
 
 export const projectStatusLabel: Record<ProjectStatus, string> = {
-  planning: "Planning",
-  active: "Active",
-  on_hold: "On hold",
-  completed: "Completed",
-  canceled: "Canceled",
+  planning: "Planiranje",
+  active: "Aktivno",
+  on_hold: "Pauzirano",
+  completed: "Završeno",
+  canceled: "Otkazano",
 };
 
 export const project = pgTable("projects", {

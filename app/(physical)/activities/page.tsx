@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function ActivitiesPage() {
   const [tags, rows] = await Promise.all([getTags(), getActivities({})]);
   return (
-    <div className="mx-auto w-full max-w-3xl px-6 py-8 space-y-6">
+    <div className="mx-auto w-full max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Aktivnosti</h1>

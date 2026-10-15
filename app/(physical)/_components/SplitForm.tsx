@@ -126,35 +126,35 @@ export function SplitForm({
         toast.error(result.error);
         return;
       }
-      toast.success(initial?.id ? "Split updated" : "Split created");
+      toast.success(initial?.id ? "Ciklus treninga je izmenjen" : "Ciklus treninga je kreiran");
       router.push("/plans/splits");
     });
   }
 
   function archive() {
     if (!initial?.id) return;
-    if (!confirm("Archive this split?")) return;
+    if (!confirm("Arhivirati ovaj ciklus treninga?")) return;
     startTransition(async () => {
       const result = await archiveSplit(initial.id!);
       if (!result.ok) {
         toast.error(result.error);
         return;
       }
-      toast.success("Archived");
+      toast.success("Arhivirano");
       router.push("/plans/splits");
     });
   }
 
   function destroy() {
     if (!initial?.id) return;
-    if (!confirm("Delete this split? This cannot be undone.")) return;
+    if (!confirm("Obrisati ovaj ciklus treninga? Ovu radnju nije moguće poništiti.")) return;
     startTransition(async () => {
       const result = await deleteSplit(initial.id!);
       if (!result.ok) {
         toast.error(result.error);
         return;
       }
-      toast.success("Deleted");
+      toast.success("Obrisano");
       router.push("/plans/splits");
     });
   }
@@ -162,32 +162,32 @@ export function SplitForm({
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <Label>Name</Label>
-        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Microcycle A" />
+        <Label>Naziv</Label>
+        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ciklus A" />
       </div>
 
       <div className="space-y-2">
-        <Label>Notes</Label>
+        <Label>Beleške</Label>
         <Textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={4}
-          placeholder="Goal, intent, references…"
+          placeholder="Cilj, namena, reference…"
         />
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label>Days</Label>
+          <Label>Dani</Label>
           <Button size="sm" variant="outline" onClick={add}>
-            <Plus className="mr-2 h-4 w-4" /> Add day
+            <Plus className="mr-2 h-4 w-4" /> Dodaj dan
           </Button>
         </div>
-        {days.length === 0 ? <p className="text-xs text-muted-foreground">No days yet.</p> : null}
+        {days.length === 0 ? <p className="text-xs text-muted-foreground">Još nema dana.</p> : null}
         {days.map((day, idx) => (
           <div key={idx} className="rounded-md border p-3 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Day {idx + 1}</span>
+              <span className="text-xs text-muted-foreground">Dan {idx + 1}</span>
               <div className="flex gap-1">
                 <Button size="icon" variant="ghost" onClick={() => move(idx, -1)}>
                   <ArrowUp className="h-4 w-4" />
@@ -201,9 +201,9 @@ export function SplitForm({
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Workout plans</Label>
+              <Label>Šabloni treninga</Label>
               {workoutPlans.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No workout plans yet.</p>
+                <p className="text-xs text-muted-foreground">Još nema šablona treninga.</p>
               ) : (
                 <>
                   <Select
@@ -213,7 +213,7 @@ export function SplitForm({
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Add workout plan" />
+                      <SelectValue placeholder="Dodaj šablon treninga" />
                     </SelectTrigger>
                     <SelectContent>
                       {workoutPlans
@@ -225,7 +225,7 @@ export function SplitForm({
                         ))}
                       {workoutPlans.every((p) => day.workoutPlanIds.includes(p.id)) ? (
                         <SelectItem value={NONE} disabled>
-                          All added
+                          Svi su dodati
                         </SelectItem>
                       ) : null}
                     </SelectContent>
@@ -253,7 +253,7 @@ export function SplitForm({
               )}
             </div>
             {tagGroups.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No tag groups. Create some in Configuration.</p>
+              <p className="text-xs text-muted-foreground">Nema grupa oznaka. Dodaj ih u podešavanjima treninga.</p>
             ) : (
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {tagGroups.map((g) => {
@@ -266,7 +266,7 @@ export function SplitForm({
                         value={current ?? NONE}
                         onValueChange={(v) => setDayTagForGroup(idx, g.id, v === NONE ? null : v)}
                       >
-                        <SelectTrigger><SelectValue placeholder={`Pick ${g.name}`} /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={`Izaberi: ${g.name}`} /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value={NONE}>—</SelectItem>
                           {groupTags.map((t) => (
@@ -283,7 +283,7 @@ export function SplitForm({
         ))}
         {days.length > 0 ? (
           <Button size="sm" variant="outline" onClick={add} className="w-full">
-            <Plus className="mr-2 h-4 w-4" /> Add day
+            <Plus className="mr-2 h-4 w-4" /> Dodaj dan
           </Button>
         ) : null}
       </div>
@@ -292,16 +292,16 @@ export function SplitForm({
         {initial?.id ? (
           <>
             <Button variant="ghost" onClick={destroy} disabled={pending} className="text-destructive">
-              Delete
+              Obriši
             </Button>
             <Button variant="ghost" onClick={archive} disabled={pending}>
-              Archive
+              Arhiviraj
             </Button>
           </>
         ) : null}
-        <Button variant="ghost" onClick={() => router.back()} disabled={pending}>Cancel</Button>
+        <Button variant="ghost" onClick={() => router.back()} disabled={pending}>Otkaži</Button>
         <Button onClick={submit} disabled={pending || !name.trim()}>
-          {initial?.id ? "Save" : "Create split"}
+          {initial?.id ? "Sačuvaj" : "Kreiraj ciklus treninga"}
         </Button>
       </div>
     </div>

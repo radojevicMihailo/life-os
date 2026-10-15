@@ -14,11 +14,11 @@ export function PageHeader({
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-400">
         {eyebrow}
       </p>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+      <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
         {title}
       </h1>
       {children ? (
-        <div className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
+        <div className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
           {children}
         </div>
       ) : null}

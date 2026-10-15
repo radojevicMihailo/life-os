@@ -43,7 +43,7 @@ export function PriorityForm() {
       className="flex flex-wrap items-end gap-2"
     >
       <div className="space-y-1">
-        <Label htmlFor="prio-name" className="text-xs">Name</Label>
+        <Label htmlFor="prio-name" className="text-xs">Naziv</Label>
         <Input
           id="prio-name"
           value={name}

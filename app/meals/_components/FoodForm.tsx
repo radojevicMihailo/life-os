@@ -65,19 +65,19 @@ export function FoodForm({
       className="max-w-3xl space-y-6 rounded-3xl border border-border bg-card p-5 sm:p-7"
     >
       <div className="space-y-1">
-        <Label>Name</Label>
+        <Label>Naziv</Label>
         <Input value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} />
       </div>
       <div className="space-y-1">
-        <Label>Brand (optional)</Label>
+        <Label>Brend (opciono)</Label>
         <Input value={v.brand} onChange={(e) => setV({ ...v, brand: e.target.value })} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { k: "kcalPer100g", label: "kcal / 100g" },
-          { k: "proteinPer100g", label: "Protein g / 100g" },
-          { k: "carbsPer100g", label: "Carbs g / 100g" },
-          { k: "fatPer100g", label: "Fat g / 100g" },
+          { k: "kcalPer100g", label: "kcal / 100 g" },
+          { k: "proteinPer100g", label: "Proteini g / 100 g" },
+          { k: "carbsPer100g", label: "Ugljeni hidrati g / 100 g" },
+          { k: "fatPer100g", label: "Masti g / 100 g" },
         ].map((f) => (
           <div key={f.k} className="space-y-1">
             <Label>{f.label}</Label>
@@ -95,7 +95,7 @@ export function FoodForm({
       </div>
       {error && <div className="text-sm text-red-600">{error}</div>}
       <Button type="submit" disabled={pending}>
-        {pending ? "Saving…" : "Save"}
+        {pending ? "Čuvanje…" : "Sačuvaj"}
       </Button>
     </form>
   );

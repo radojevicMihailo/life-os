@@ -35,7 +35,7 @@ export function ExerciseGroupEditor({ groups }: { groups: ExerciseGroup[] }) {
   }
 
   function remove(g: ExerciseGroup) {
-    if (!confirm(`Remove group "${g.name}"? Exercises in this group lose their group.`)) return;
+    if (!confirm(`Ukloniti grupu „${g.name}“? Vežbe iz ove grupe ostaće bez grupe.`)) return;
     startTransition(async () => {
       const result = await removeExerciseGroup(g.id);
       if (!result.ok) toast.error(result.error);
@@ -64,11 +64,11 @@ export function ExerciseGroupEditor({ groups }: { groups: ExerciseGroup[] }) {
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="New group"
+          placeholder="Nova grupa"
           className="max-w-xs"
         />
         <Button size="sm" onClick={submit} disabled={pending || !name.trim()}>
-          <Plus className="mr-2 h-4 w-4" /> Add group
+          <Plus className="mr-2 h-4 w-4" /> Dodaj grupu
         </Button>
       </div>
     </div>

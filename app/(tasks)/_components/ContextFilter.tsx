@@ -14,6 +14,8 @@ export function ContextFilter({
 
   function withParam(value: string | null): string {
     const next = new URLSearchParams(params.toString());
+    next.delete("limit");
+    next.delete("page");
     if (value) next.set("context", value);
     else next.delete("context");
     const q = next.toString();
@@ -24,9 +26,9 @@ export function ContextFilter({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-xs uppercase tracking-wide text-muted-foreground">Context:</span>
+      <span className="text-xs uppercase tracking-wide text-muted-foreground">Kontekst:</span>
       <Link href={withParam(null)}>
-        <Badge variant={active ? "outline" : "default"}>All</Badge>
+        <Badge variant={active ? "outline" : "default"}>Sve</Badge>
       </Link>
       {contexts.map((c) => (
         <Link key={c.id} href={withParam(c.id)}>

@@ -1,6 +1,6 @@
 # Life OS
 
-Personal life tracker. First module: task manager.
+Personal life tracker for tasks, habits, finances, training, meals, notes, goals and travel.
 
 ## Stack
 
@@ -65,7 +65,7 @@ docs/superpowers/specs/  # design specs
 
 ## Notes
 
-- Single user, no auth. Local only — do not expose without adding auth.
+- Single-user application with password-based access. Set `LIFE_OS_ACCESS_PASSWORD` to a unique value of at least 24 characters.
 - Postgres bound to `localhost:5433` to avoid clashing with other local Postgres instances.
 
 ## Finansije
@@ -94,3 +94,14 @@ zaseban lokalni PostgreSQL server, može se zadati `FINANCE_TEST_POSTGRES_URL`
 (npr. `postgresql://postgres@127.0.0.1:55439/postgres`). Svaki test paket tada
 kreira i po završetku briše sopstvenu nasumično imenovanu `finance_test_*` bazu.
 Ovu promenljivu ne usmeravati na aplikacionu bazu.
+
+## Svakodnevni rad
+
+- **Danas** prikazuje tri prioritetna zadatka, sledeći događaj, današnje navike i finansijske ciljeve. Paneli se učitavaju nezavisno; zadatke i navike možeš menjati direktno iz pregleda.
+- **⌘K / Ctrl+K** otvara pretragu ekrana, zadataka, projekata i kompletnog sadržaja beležaka. `?` prikazuje pomoć za tastaturu.
+- Zadaci i beleške pretražuju se na serveru i prikazuju u ograničenim stranicama; filteri ostaju sačuvani u URL-u.
+- Beleške i tekst proizvoda automatski se čuvaju. Ako upis ne uspe, dostupan je ponovni pokušaj. Nesačuvani nacrti na istom uređaju nude izričitu obnovu ili odbacivanje. Oporavak posle zatvaranja zahteva dostupno lokalno skladište browsera. Nepotvrđeno dodavanje proizvoda ponavlja se ručno, jer je moguće da je prvi zahtev ipak stigao do servera.
+- **Podešavanja → Izgled i brzi pristup** bira gustinu prikaza i do tri omiljene oblasti u donjoj mobilnoj navigaciji. Izbor je lokalni za uređaj.
+- Investicije prvo prikazuju portfolio; forme se otvaraju u sklopivim odeljcima koji zadržavaju započeti unos.
+
+Za ponovljivo lokalno merenje pokreni `scripts/measure-pages.mjs` uz `LIFE_OS_MEASURE_URL` i `LIFE_OS_MEASURE_PASSWORD` privremene testne aplikacije. Skripta prihvata samo lokalnu adresu i ispisuje vreme odgovora i veličinu HTML-a, bez sadržaja podataka. Ta merenja nisu zamena za produkciono merenje pod stvarnim opterećenjem.

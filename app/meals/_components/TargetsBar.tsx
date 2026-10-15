@@ -11,9 +11,9 @@ type Totals = { kcal: number; protein: number; carbs: number; fat: number };
 
 const ROWS: { key: keyof Targets; label: string; unit: string }[] = [
   { key: "kcal", label: "kcal", unit: "" },
-  { key: "protein", label: "Protein", unit: "g" },
-  { key: "carbs", label: "Carbs", unit: "g" },
-  { key: "fat", label: "Fat", unit: "g" },
+  { key: "protein", label: "Proteini", unit: "g" },
+  { key: "carbs", label: "Ugljeni hidrati", unit: "g" },
+  { key: "fat", label: "Masti", unit: "g" },
 ];
 
 export function TargetsBar({

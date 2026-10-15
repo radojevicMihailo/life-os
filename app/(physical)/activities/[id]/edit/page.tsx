@@ -34,7 +34,7 @@ export default async function ActivityEditPage({
   ]);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 sm:px-6 py-8 space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6">
       <Link href="/activities" className="inline-flex items-center text-sm text-muted-foreground hover:underline">
         <ChevronLeft className="h-4 w-4" /> Aktivnosti
       </Link>

@@ -82,9 +82,9 @@ export function RecurrenceEditor({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
+                <SelectItem value="daily">Dnevno</SelectItem>
+                <SelectItem value="weekly">Nedeljno</SelectItem>
+                <SelectItem value="monthly">Mesečno</SelectItem>
               </SelectContent>
             </Select>
             <Input

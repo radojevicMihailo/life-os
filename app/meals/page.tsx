@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { belgradeDayKey } from "@/lib/day";
 import { DayView } from "./_components/DayView";
 import { sections } from "@/components/main-sections";
 import { SectionLinks } from "@/components/section-links";
@@ -9,7 +9,7 @@ export default function MealsTodayPage() {
       <div className="pt-6">
         <SectionLinks section={sections.meals} />
       </div>
-      <DayView date={format(new Date(), "yyyy-MM-dd")} />
+      <DayView date={belgradeDayKey(new Date())} />
     </div>
   );
 }

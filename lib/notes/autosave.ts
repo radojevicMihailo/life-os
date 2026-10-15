@@ -1,3 +1,5 @@
+export type SaveGuard = { flush: () => Promise<boolean>; isDirty: () => boolean };
+
 export type AutosaveState = "saved" | "saving" | "error";
 
 /** Debounce edits, serialize writes, and retain failed edits for retry. */
@@ -44,5 +46,6 @@ export function createAutosave<T>(save: (value: T) => Promise<void>, onState: (s
       timer = setTimeout(() => { void flush(); }, 500);
     },
     flush,
+    isDirty: () => Boolean(pending || running),
   };
 }

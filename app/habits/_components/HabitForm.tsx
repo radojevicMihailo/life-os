@@ -1,5 +1,7 @@
 "use client";
 
+import { belgradeDayKey } from "@/lib/day";
+
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -23,7 +25,6 @@ import {
   WEEKDAY_LABELS,
   toggleWeekday,
 } from "@/lib/habits/schedule";
-import { isoDate } from "@/lib/habits/date";
 
 type Mode = { mode: "create" } | { mode: "edit"; habit: Habit };
 
@@ -45,7 +46,7 @@ export function HabitForm(props: Mode) {
     initial?.weekdays ?? ALL_WEEKDAYS_MASK,
   );
   const [startDate, setStartDate] = useState<string>(
-    initial?.startDate ?? isoDate(new Date()),
+    initial?.startDate ?? belgradeDayKey(new Date()),
   );
   const [endDate, setEndDate] = useState<string>(initial?.endDate ?? "");
 

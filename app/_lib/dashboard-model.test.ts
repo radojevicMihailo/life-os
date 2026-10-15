@@ -39,3 +39,21 @@ describe("Belgrade dashboard day", () => {
     });
   });
 });
+
+it("selects an ongoing or future event without reviving finished events", async () => {
+  const { nextPlanItem } = await import("./dashboard-model");
+  const plan = assembleTodayPlan("2026-09-27", [], [
+    { id: "ended", title: "Gotovo", dateISO: "2026-09-27T08:00:00Z", endISO: "2026-09-27T09:00:00Z", hasTime: true },
+    { id: "ongoing", title: "Sada", dateISO: "2026-09-27T09:00:00Z", endISO: "2026-09-27T11:00:00Z", hasTime: true },
+    { id: "later", title: "Kasnije", dateISO: "2026-09-27T12:00:00Z", hasTime: true },
+  ]);
+  expect(nextPlanItem(plan, new Date("2026-09-27T10:00:00Z"))?.title).toBe("Sada");
+  expect(nextPlanItem(plan, new Date("2026-09-27T13:00:00Z"))).toBeUndefined();
+});
+
+it("retains task end times so an ongoing task remains next on the plan", async () => {
+  const { nextPlanItem } = await import("./dashboard-model");
+  const plan = assembleTodayPlan("2026-09-27", [{ id: "working", title: "Rad", actionAt: new Date("2026-09-27T09:00:00Z"), actionEndAt: new Date("2026-09-27T11:00:00Z") }], []);
+  expect(nextPlanItem(plan, new Date("2026-09-27T10:00:00Z"))?.title).toBe("Rad");
+  expect(nextPlanItem(plan, new Date("2026-09-27T11:00:00Z"))).toBeUndefined();
+});
