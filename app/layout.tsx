@@ -1,3 +1,4 @@
+import { FinancePrivacyProvider } from "@/modules/finance/ui/components/finance-privacy";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Sidebar } from "@/components/sidebar";
@@ -33,15 +34,17 @@ export default function RootLayout({
       <body className="min-h-full">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           <PomodoroProvider>
-            <div className="flex min-h-screen">
-              <Sidebar />
-              <div className="flex min-w-0 flex-1 flex-col">
-                <MobileNav />
-                <main className="mx-auto w-full max-w-[1660px] flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+            <FinancePrivacyProvider>
+              <div className="flex min-h-screen">
+                <Sidebar />
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <MobileNav />
+                  <main className="mx-auto w-full max-w-[1660px] flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+                </div>
               </div>
-            </div>
-            <Toaster richColors position="top-right" />
-            <KeyboardShortcuts />
+              <Toaster richColors position="top-right" />
+              <KeyboardShortcuts />
+            </FinancePrivacyProvider>
           </PomodoroProvider>
         </ThemeProvider>
       </body>

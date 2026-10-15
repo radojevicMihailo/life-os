@@ -1,3 +1,4 @@
+import { FinancePrivacyToggle } from "@/modules/finance/ui/components/finance-privacy";
 import { GoalProgress } from "@/modules/finance/ui/components/goal-progress";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Check, Circle, Landmark, Repeat2 } from "lucide-react";
@@ -46,6 +47,7 @@ export default async function Home() {
 
       <section className="cockpit-card min-w-0 p-5 sm:p-6" aria-label="Finansijski ciljevi">
         <PanelHeading icon={Landmark} title="Finansijski ciljevi" href="/finance/goals" />
+        <div className="mb-4 flex justify-end"><FinancePrivacyToggle /></div>
         {dashboard.goals.length === 0 ? <EmptyPanel href="/finance/goals" action="Postavi cilj">Još nema aktivnih finansijskih ciljeva.</EmptyPanel> : <ul className="space-y-3">{dashboard.goals.map((goal) => <li className="min-w-0 rounded-2xl border border-border bg-background/30 p-3.5" key={goal.id}>
           <div className="mb-3 truncate text-sm font-medium" title={goal.name}>{goal.name}</div>
           <GoalProgress name={goal.name} balance={goal.balance} percentage={goal.percentage} targetAmount={goal.targetAmount} currencyCode={goal.currencyCode} underfunded={goal.underfunded} stale={goal.stale} />
