@@ -1,3 +1,6 @@
+import { getAvailableCash } from "@/modules/finance/read-models/available-cash";
+import { AvailableCash } from "@/modules/finance/ui/components/available-cash";
+import { transactionTypeLabels, transactionSourceLabels } from "@/modules/finance/ui/components/transaction-labels";
 import { FinancialValue } from "@/modules/finance/ui/components/finance-privacy";
 import { GoalProgress } from "@/modules/finance/ui/components/goal-progress";
 import { EmptyState } from "@/modules/finance/ui/components/empty-state";
@@ -37,7 +40,7 @@ function MetricCard({
 
 export default async function DashboardPage() {
   const { dependencies, valuationOptions } = await loadReadModelRuntime();
-  const dashboard = await getDashboard(dependencies, valuationOptions);
+  const [dashboard, availableCash] = await Promise.all([getDashboard(dependencies, valuationOptions), getAvailableCash(dependencies, {}, valuationOptions)]);
 
   return (
     <>
@@ -46,6 +49,7 @@ export default async function DashboardPage() {
         datum i status konverzije.
       </PageHeader>
 
+      <AvailableCash view={availableCash} />
       <section aria-label="Ključni pokazatelji" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           amount={dashboard.netWorth.amount}
@@ -80,6 +84,7 @@ export default async function DashboardPage() {
                   <p className="mt-2 text-xs text-slate-400">
                     Preneto <Money amount={budget.carryInAmount} currencyCode={budget.currencyCode} /> · Potrošeno <Money amount={budget.spendingAmount} currencyCode={budget.currencyCode} />
                   </p>
+                  {budget.projection.alerts.length ? <p className="mt-2 text-xs text-amber-300">Proveri tempo i projekciju potrošnje u budžetima.</p> : null}
                 </li>
               ))}
             </ul>
@@ -116,8 +121,8 @@ export default async function DashboardPage() {
               {dashboard.recentTransactions.map((transaction) => (
                 <li className="flex flex-wrap items-center justify-between gap-3 py-4" key={transaction.id}>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{transaction.description ?? transaction.type}</p>
-                    <p className="mt-1 text-xs text-slate-500">{transaction.occurredAt.toLocaleDateString("sr-Latn-RS", { timeZone: "Europe/Belgrade" })} · {transaction.source}</p>
+                    <p className="truncate text-sm font-medium">{transaction.description ?? transactionTypeLabels[transaction.type]}</p>
+                    <p className="mt-1 text-xs text-slate-500">{transaction.occurredAt.toLocaleDateString("sr-Latn-RS", { timeZone: "Europe/Belgrade" })} · {transactionSourceLabels[transaction.source]}</p>
                   </div>
                   <TransactionAmounts amounts={transaction.nativeAmounts} />
                 </li>

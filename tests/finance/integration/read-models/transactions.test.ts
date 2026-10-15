@@ -1,3 +1,4 @@
+import { parseTransactionFilters } from "@/modules/finance/ui/forms/transaction-filters";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { createAccount } from "@/modules/finance/application/accounts";
@@ -327,4 +328,16 @@ describe("transactions read model", () => {
       },
     ]);
   });
+  it("paginates equal-time entries and treats wildcard search characters literally",async()=>{
+    const cash=await createAccount(dependencies,{name:"Search bank",classification:"asset",currencyCode:"EUR",subtype:"bank"});
+    const category=await createCategory(dependencies,{name:"Search category",classification:"expense"});
+    for(let i=0;i<51;i++)await recordTransaction(dependencies,{type:"expense",accountId:cash.id,categoryId:category.id,amount:"0.01",description:`kafa % ${i}`,occurredAt:new Date("2026-08-01T12:00:00Z")});
+    await recordTransaction(dependencies,{type:"expense",accountId:cash.id,categoryId:category.id,amount:"0.01",description:"ordinary",occurredAt:new Date("2026-08-01T12:00:00Z")});
+    const filters={accountId:cash.id,categoryId:category.id,q:"%"};
+    const first=await listTransactions(dependencies,filters);expect(first.items).toHaveLength(50);expect(first.hasMore).toBe(true);
+    const next=await listTransactions(dependencies,{...parseTransactionFilters({cursor:first.nextCursor!}),...filters});
+    expect(next.items).toHaveLength(1);expect(new Set([...first.items,...next.items].map(i=>i.id)).size).toBe(51);
+    expect(next.hasMore).toBe(false);
+  });
+
 });

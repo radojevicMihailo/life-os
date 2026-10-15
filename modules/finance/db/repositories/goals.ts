@@ -15,6 +15,7 @@ export class GoalsRepository {
     accountId: string | null;
     targetCurrencyCode: string;
     targetAmount: string;
+    targetDate?: string | null;
     now: Date;
   }): Promise<GoalRecord> {
     const [goal] = await this.tx
@@ -64,6 +65,7 @@ export class GoalsRepository {
     name: string;
     targetCurrencyCode: string;
     targetAmount: string;
+    targetDate?: string | null;
     now: Date;
   }): Promise<GoalRecord> {
     const [goal] = await this.tx
@@ -72,6 +74,7 @@ export class GoalsRepository {
         name: input.name,
         targetCurrencyCode: input.targetCurrencyCode,
         targetAmount: input.targetAmount,
+        ...(input.targetDate !== undefined ? {targetDate:input.targetDate}:{}),
         updatedAt: input.now,
       })
       .where(eq(goals.id, input.id))

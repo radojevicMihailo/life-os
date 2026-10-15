@@ -5,11 +5,13 @@ import { usePathname } from "next/navigation";
 
 const destinations = [
   { href: "/finance", label: "Pregled", shortLabel: "Pregled" },
+  { href: "/finance/planning", label: "Planiranje", shortLabel: "Plan" },
   { href: "/finance/transactions", label: "Transakcije", shortLabel: "Promet" },
   { href: "/finance/accounts", label: "Računi", shortLabel: "Računi" },
   { href: "/finance/budgets", label: "Budžeti", shortLabel: "Budžeti" },
   { href: "/finance/goals", label: "Ciljevi", shortLabel: "Ciljevi" },
   { href: "/finance/investments", label: "Investicije", shortLabel: "Ulaganja" },
+  { href: "/finance/reports", label: "Izveštaji", shortLabel: "Izveštaji" },
   { href: "/finance/settings", label: "Podešavanja", shortLabel: "Postavke" },
 ] as const;
 

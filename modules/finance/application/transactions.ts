@@ -1,3 +1,6 @@
+import { lockPlanning, movePlannedJournal } from "../db/repositories/planning";
+import { planOccurrences } from "../db/schema/planning";
+import { eq } from "drizzle-orm";
 import Decimal from "decimal.js";
 
 import {
@@ -851,11 +854,7 @@ export async function persistTransactionBuild(
   });
 }
 
-export async function recordTransaction(
-  deps: ApplicationDependencies,
-  input: RecordTransactionInput,
-): Promise<TransactionSummary> {
-  return deps.unitOfWork.run(async (tx: DbTx) => {
+export async function recordTransactionInTransaction(deps: ApplicationDependencies, tx: DbTx, input: RecordTransactionInput): Promise<TransactionSummary> {
     const repositories = {
       accounts: new AccountsRepository(tx),
       categories: new CategoriesRepository(tx),
@@ -871,7 +870,9 @@ export async function recordTransaction(
     const summary = await persistTransactionBuild(deps, ledger, build);
     await recomputeBudgetSeriesForDrafts(deps, tx, [build.draft]);
     return summary;
-  });
+}
+export async function recordTransaction(deps:ApplicationDependencies,input:RecordTransactionInput):Promise<TransactionSummary> {
+  return deps.unitOfWork.run(tx=>recordTransactionInTransaction(deps,tx,input));
 }
 
 function journalDraftFromPersisted(journal: PersistedJournal): JournalDraft {
@@ -914,6 +915,7 @@ export async function correctTransaction(
     };
     const ledger = new LedgerRepository(tx);
     const now = deps.clock.now();
+    await lockPlanning(tx);
     const original = await ledger.lockJournal(input.originalId);
 
     if (await new InvestmentsRepository(tx).hasJournalLink(original.id)) {
@@ -982,6 +984,14 @@ export async function correctTransaction(
       },
     );
 
+    const [linked] = await tx.select().from(planOccurrences).where(eq(planOccurrences.journalTransactionId,original.id));
+    if(linked && (input.replacement.type !== original.type || !["income","expense"].includes(input.replacement.type))) applicationError("plan_occurrence_conflict");
+    if(linked && (input.replacement.type === "income" || input.replacement.type === "expense")) {
+      const replacement=input.replacement;
+      const [account] = await repositories.accounts.lockByIds([replacement.accountId]);
+      const [category] = await repositories.categories.lockByIds([replacement.categoryId]);
+      await movePlannedJournal(tx,original.id,replacementSummary.id,{...linked.snapshot!,accountId:account.id,accountName:account.name,categoryId:category.id,categoryName:category.name,currencyCode:account.currencyCode,amount:replacement.amount,occurredAt:replacementDate.toISOString()});
+    }
     await ledger.updateCorrectedBy(original.id, replacementSummary.id);
     await recomputeBudgetSeriesForDrafts(deps, tx, [
       reversalDraft,
@@ -1007,6 +1017,7 @@ export async function correctTransaction(
 export async function deleteTransaction(deps: ApplicationDependencies, input: { id: string }) {
   return deps.unitOfWork.run(async (tx) => {
     const ledger = new LedgerRepository(tx);
+    await lockPlanning(tx);
     const original = await ledger.lockJournal(input.id);
     if (original.type === "correction") applicationError("journal_reversal_cannot_be_corrected");
     if (original.correctedById) applicationError("journal_already_corrected");
@@ -1024,6 +1035,7 @@ export async function deleteTransaction(deps: ApplicationDependencies, input: { 
     const reversal = await persistTransactionBuild(deps, ledger, { draft, userAccountIds }, { id: draft.id });
     // Marking the original hides it from active lists; its immutable postings and
     // balanced reversal remain available for exports and auditing.
+    await movePlannedJournal(tx,original.id,null);
     await ledger.updateCorrectedBy(original.id, reversal.id);
     await recomputeBudgetSeriesForDrafts(deps, tx, [draft]);
     return { id: original.id };

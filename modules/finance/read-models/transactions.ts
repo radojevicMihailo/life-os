@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import { encodeTransactionCursor } from "../ui/forms/transaction-filters";
 import {
   and,
   desc,
@@ -31,6 +32,8 @@ const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
 
 export interface TransactionFilters {
+  q?: string;
+  cursor?: { occurredAt: string; id: string };
   accountId?: string;
   categoryId?: string;
   dateFrom?: string;
@@ -67,6 +70,7 @@ export type TransactionCorrectionDraft =
 
 export interface TransactionsReadModel {
   filters: Omit<TransactionFilters, "limit">;
+  nextCursor?: string | null;
   hasMore: boolean;
   items: TransactionReadModelItem[];
 }
@@ -191,6 +195,8 @@ export async function listTransactions(
     const limit = normalizedLimit(filters.limit);
     const conditions = [eq(journalTransactions.status, "posted"), isNull(journalTransactions.correctedById), ne(journalTransactions.type, "correction")];
 
+    if (filters.q?.trim()) conditions.push(sql`position(lower(${filters.q.trim().slice(0,200)}) in lower(coalesce(${journalTransactions.description}, ''))) > 0`);
+    if (filters.cursor) conditions.push(sql`(${journalTransactions.occurredAt}, ${journalTransactions.id}) < (${new Date(filters.cursor.occurredAt)}, ${filters.cursor.id})`);
     if (filters.type) conditions.push(eq(journalTransactions.type, filters.type));
     if (filters.source) {
       conditions.push(eq(journalTransactions.source, filters.source));
@@ -331,6 +337,7 @@ export async function listTransactions(
     });
     return {
       filters: selectedFilters(filters),
+      nextCursor: headers.length > limit && visibleHeaders.length ? encodeTransactionCursor({occurredAt: visibleHeaders[visibleHeaders.length-1].occurredAt.toISOString(),id:visibleHeaders[visibleHeaders.length-1].id}) : null,
       hasMore: headers.length > limit,
       items,
     };

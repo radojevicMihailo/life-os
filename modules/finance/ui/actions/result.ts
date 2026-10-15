@@ -37,7 +37,8 @@ export async function executeAction<T>(
       ...(error instanceof ZodError ? { fields: fieldErrors(error) } : {}),
     };
   }
-  for (const path of options?.revalidate ?? []) {
+  const paths = new Set([...(options?.revalidate ?? []), ...(options?.financial ? ["/finance", "/finance/planning", "/finance/reports"] : [])]);
+  for (const path of paths) {
     try {
       runtime.revalidate(path);
     } catch {

@@ -1,3 +1,4 @@
+import { isCalendarDate } from "../domain/calendar";
 import { AccountsRepository } from "../db/repositories/accounts";
 import { GoalsRepository, type GoalRecord } from "../db/repositories/goals";
 import { Money } from "../domain/money";
@@ -8,15 +9,17 @@ export interface CreateGoalInput {
   name: string;
   targetCurrencyCode: string;
   targetAmount: string;
+  targetDate?: string | null;
 }
 export interface UpdateGoalInput extends CreateGoalInput { id: string }
 export type GoalProgress = GoalFundReadModel & { goal: GoalRecord };
 
 async function validatedGoalValues(tx: Parameters<Parameters<ApplicationDependencies["unitOfWork"]["run"]>[0]>[0], input: CreateGoalInput, now: Date) {
+  if(input.targetDate && !isCalendarDate(input.targetDate)) applicationError("plan_invalid");
   const name = input.name.trim();
   if (!name) applicationError("goal_name_required");
   const currency = await new AccountsRepository(tx).activateCurrency(input.targetCurrencyCode, now);
-  return { name, targetCurrencyCode: currency.code,
+  return { name, ...(input.targetDate !== undefined ? {targetDate:input.targetDate}:{}), targetCurrencyCode: currency.code,
     targetAmount: Money.parse(input.targetAmount, { code: currency.code, minorUnit: currency.minorUnit }).amount };
 }
 export async function createGoal(deps: ApplicationDependencies, input: CreateGoalInput): Promise<GoalRecord> {

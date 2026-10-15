@@ -4,6 +4,7 @@ import type { Clock } from "./ports";
 import type { UnitOfWork } from "../db/unit-of-work";
 import type { DbTx } from "../db/client";
 import {
+  planRules, planOccurrences, cashAccountPreferences,
   accounts,
   budgetLimits,
   budgetPeriods,
@@ -30,6 +31,9 @@ export interface FullExportV1 {
     reportingCurrencyCode: "EUR";
     schemaVersion: 1;
   };
+  planRules: Array<Record<string, unknown>>;
+  planOccurrences: Array<Record<string, unknown>>;
+  cashAccountPreferences: Array<Record<string, unknown>>;
   currencies: Array<Record<string, unknown>>;
   accounts: Array<Record<string, unknown>>;
   categories: Array<Record<string, unknown>>;
@@ -77,6 +81,11 @@ export async function buildFullExport(
   dependencies: ExportDependencies,
 ): Promise<FullExportV1> {
   return dependencies.unitOfWork.run(async (tx) => {
+    const [ruleRows, occurrenceRows, cashPreferences] = [
+await tx.select().from(planRules),
+await tx.select().from(planOccurrences),
+await tx.select().from(cashAccountPreferences)
+];
     const currencyRows = await tx.select({ code: currencies.code, name: currencies.name, minorUnit: currencies.minorUnit, isActive: currencies.isActive, activatedAt: currencies.activatedAt, createdAt: currencies.createdAt }).from(currencies).orderBy(asc(currencies.code));
     const accountRows = await tx.select({ id: accounts.id, name: accounts.name, classification: accounts.classification, subtype: accounts.subtype, currencyCode: accounts.currencyCode, isSystem: accounts.isSystem, isActive: accounts.isActive, archivedAt: accounts.archivedAt, createdAt: accounts.createdAt, updatedAt: accounts.updatedAt }).from(accounts).orderBy(asc(accounts.id));
     const categoryRows = await tx.select({ id: categories.id, name: categories.name, classification: categories.classification, isSystem: categories.isSystem, isActive: categories.isActive, archivedAt: categories.archivedAt, createdAt: categories.createdAt, updatedAt: categories.updatedAt }).from(categories).orderBy(asc(categories.id));
@@ -84,7 +93,7 @@ export async function buildFullExport(
     const journalPostingRows = await tx.select({ id: journalPostings.id, transactionId: journalPostings.transactionId, accountId: journalPostings.accountId, currencyCode: journalPostings.currencyCode, amount: journalPostings.amount, categoryId: journalPostings.categoryId, counterparty: journalPostings.counterparty, createdAt: journalPostings.createdAt }).from(journalPostings).orderBy(asc(journalPostings.id));
     const budgetLimitRows = await tx.select({ id: budgetLimits.id, categoryId: budgetLimits.categoryId, month: budgetLimits.month, currencyCode: budgetLimits.currencyCode, amount: budgetLimits.amount, createdAt: budgetLimits.createdAt, updatedAt: budgetLimits.updatedAt }).from(budgetLimits).orderBy(asc(budgetLimits.id));
     const budgetPeriodRows = await tx.select({ id: budgetPeriods.id, categoryId: budgetPeriods.categoryId, month: budgetPeriods.month, currencyCode: budgetPeriods.currencyCode, limitAmount: budgetPeriods.limitAmount, carryInAmount: budgetPeriods.carryInAmount, spendingAmount: budgetPeriods.spendingAmount, remainingAmount: budgetPeriods.remainingAmount, recomputedAt: budgetPeriods.recomputedAt }).from(budgetPeriods).orderBy(asc(budgetPeriods.id));
-    const goalRows = await tx.select({ id: goals.id, name: goals.name, accountId: goals.accountId, targetCurrencyCode: goals.targetCurrencyCode, targetAmount: goals.targetAmount, isActive: goals.isActive, archivedAt: goals.archivedAt, createdAt: goals.createdAt, updatedAt: goals.updatedAt }).from(goals).orderBy(asc(goals.id));
+    const goalRows = await tx.select({ id: goals.id, name: goals.name, accountId: goals.accountId, targetCurrencyCode: goals.targetCurrencyCode, targetAmount: goals.targetAmount, targetDate:goals.targetDate, isActive: goals.isActive, archivedAt: goals.archivedAt, createdAt: goals.createdAt, updatedAt: goals.updatedAt }).from(goals).orderBy(asc(goals.id));
     const instrumentRows = await tx.select({ id: instruments.id, symbol: instruments.symbol, name: instruments.name, class: instruments.class, valuationMethod: instruments.valuationMethod, quoteCurrencyCode: instruments.quoteCurrencyCode, provider: instruments.provider, providerId: instruments.providerId, isin: instruments.isin, exchange: instruments.exchange, isActive: instruments.isActive, archivedAt: instruments.archivedAt, createdAt: instruments.createdAt, updatedAt: instruments.updatedAt }).from(instruments).orderBy(asc(instruments.id));
     const investmentAccountRows = await tx.select({ id: investmentAccounts.id, name: investmentAccounts.name, cashAccountId: investmentAccounts.cashAccountId, provider: investmentAccounts.provider, isActive: investmentAccounts.isActive, archivedAt: investmentAccounts.archivedAt, createdAt: investmentAccounts.createdAt }).from(investmentAccounts).orderBy(asc(investmentAccounts.id));
     const investmentTransactionRows = await tx.select({ id: investmentTransactions.id, investmentAccountId: investmentTransactions.investmentAccountId, instrumentId: investmentTransactions.instrumentId, journalTransactionId: investmentTransactions.journalTransactionId, type: investmentTransactions.type, status: investmentTransactions.status, occurredAt: investmentTransactions.occurredAt, quantity: investmentTransactions.quantity, tradeCurrencyCode: investmentTransactions.tradeCurrencyCode, grossAmount: investmentTransactions.grossAmount, feeAmount: investmentTransactions.feeAmount, tradeFxRateToEur: investmentTransactions.tradeFxRateToEur, correctionOfId: investmentTransactions.correctionOfId, correctedById: investmentTransactions.correctedById, createdAt: investmentTransactions.createdAt }).from(investmentTransactions).orderBy(asc(investmentTransactions.id));
@@ -100,6 +109,9 @@ export async function buildFullExport(
         reportingCurrencyCode: "EUR",
         schemaVersion: 1,
       },
+      planRules: ruleRows.map(r=>({...r,createdAt:r.createdAt.toISOString(),updatedAt:r.updatedAt.toISOString(),archivedAt:iso(r.archivedAt)})),
+      planOccurrences: occurrenceRows.map(r=>({...r,updatedAt:r.updatedAt.toISOString()})),
+      cashAccountPreferences: cashPreferences,
       currencies: currencyRows.map((row) => ({ ...row, activatedAt: iso(row.activatedAt), createdAt: row.createdAt.toISOString() })),
       accounts: accountRows.map((row) => ({ ...row, archivedAt: iso(row.archivedAt), createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString() })),
       categories: categoryRows.map((row) => ({ ...row, archivedAt: iso(row.archivedAt), createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString() })),
@@ -218,7 +230,7 @@ function csvDefinition(dataset: ExportCsvDataset): { headers: string[]; page: Cs
     case "goals":
       return {
         headers: ["ID cilja", "Naziv", "ID računa", "Valuta cilja", "Ciljni iznos", "Aktivan", "Arhiviran", "Kreiran", "Ažuriran"],
-        page: async (tx, offset) => (await tx.select({ id: goals.id, name: goals.name, accountId: goals.accountId, targetCurrencyCode: goals.targetCurrencyCode, targetAmount: goals.targetAmount, isActive: goals.isActive, archivedAt: goals.archivedAt, createdAt: goals.createdAt, updatedAt: goals.updatedAt }).from(goals).orderBy(asc(goals.id)).limit(CSV_PAGE_SIZE).offset(offset)).map((row) => [textCell(row.id), textCell(row.name), textCell(row.accountId), textCell(row.targetCurrencyCode), decimalCell(row.targetAmount), textCell(row.isActive), textCell(iso(row.archivedAt)), textCell(row.createdAt.toISOString()), textCell(row.updatedAt.toISOString())]),
+        page: async (tx, offset) => (await tx.select({ id: goals.id, name: goals.name, accountId: goals.accountId, targetCurrencyCode: goals.targetCurrencyCode, targetAmount: goals.targetAmount, targetDate:goals.targetDate, isActive: goals.isActive, archivedAt: goals.archivedAt, createdAt: goals.createdAt, updatedAt: goals.updatedAt }).from(goals).orderBy(asc(goals.id)).limit(CSV_PAGE_SIZE).offset(offset)).map((row) => [textCell(row.id), textCell(row.name), textCell(row.accountId), textCell(row.targetCurrencyCode), decimalCell(row.targetAmount), textCell(row.isActive), textCell(iso(row.archivedAt)), textCell(row.createdAt.toISOString()), textCell(row.updatedAt.toISOString())]),
       };
     case "positions": {
       const quantity = sql<string>`sum(case when ${investmentTransactions.type} = 'buy' then ${investmentTransactions.quantity} else -${investmentTransactions.quantity} end)`;

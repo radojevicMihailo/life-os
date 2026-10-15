@@ -44,3 +44,9 @@ describe("Server Action result truthfulness", () => {
     expect(result).toMatchObject({ ok: false });
   });
 });
+
+it("refreshes planning and historical reports after a financial change",async()=>{
+ const refreshed:string[]=[];
+ const result=await executeAction(async()=>({id:"saved"}),{financial:true,revalidate:["/finance/accounts"]},guardedRuntime(path=>{refreshed.push(path);}));
+ expect(result.ok).toBe(true);expect(refreshed).toEqual(expect.arrayContaining(["/finance/planning","/finance/reports","/finance/accounts"]));
+});

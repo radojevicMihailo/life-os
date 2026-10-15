@@ -1,3 +1,4 @@
+import { isCalendarDate } from "../../domain/calendar";
 import Decimal from "decimal.js";
 import { z } from "zod";
 
@@ -5,6 +6,7 @@ import { currencyCode, formRecord, identifier, optionalText, parseField, require
 
 const goalFormSchema = z.object({
   id: z.unknown().optional(),
+  targetDate: z.unknown().optional().transform(value=>optionalText(value)??null).refine(value=>value===null||isCalendarDate(value),"Unesite ispravan rok."),
   name: requiredText,
   targetCurrencyCode: currencyCode,
   targetAmount: serbianDecimal().refine((value) => new Decimal(value).gt(0), "Unesite pozitivan iznos."),
@@ -15,6 +17,7 @@ export function parseGoalForm(input: FormData | Record<string, unknown>) {
   return {
     ...(optionalText(raw.id) ? { id: parseField("id", identifier, raw.id) } : {}),
     name: raw.name,
+    ...(formRecord(input).targetDate !== undefined ? {targetDate: raw.targetDate}:{}),
     targetCurrencyCode: raw.targetCurrencyCode,
     targetAmount: raw.targetAmount,
   };

@@ -31,6 +31,12 @@ export default async function GoalsPage() {
           <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10 text-emerald-300"><Wallet className="size-5" /></span>
         </div>
         <GoalProgress name={goal.name} balance={goal.balance} percentage={goal.percentage} targetAmount={goal.targetAmount} currencyCode={goal.currencyCode} underfunded={goal.underfunded} stale={goal.stale} />
+        <div className="mt-4 space-y-2 text-sm text-slate-400">
+          <p>Na računima: {goal.cashBalance===null?"Nedostaje kurs":<Money amount={goal.cashBalance} currencyCode={goal.currencyCode}/>} · Potraživanja: {goal.receivableBalance===null?"Nedostaje kurs":<Money amount={goal.receivableBalance} currencyCode={goal.currencyCode}/>}</p>
+          {goal.targetDate?<><p>Rok: {goal.targetDate}</p>{goal.savingsPlan.status==="overdue"?<p className="text-amber-300">Rok je prošao. Preostalo: {goal.savingsPlan.remaining===null?"Nedostaje kurs":<Money amount={goal.savingsPlan.remaining} currencyCode={goal.currencyCode}/>}</p>:goal.savingsPlan.monthly!==null?<p>Potrebno mesečno: <Money amount={goal.savingsPlan.monthly} currencyCode={goal.currencyCode}/> · {goal.savingsPlan.months} mesečnih izdvajanja</p>:<p className="text-amber-300">Mesečni plan nije dostupan: proveri kurseve i pokrivenost rezervacija.</p>}</>:<p>Dodaj rok za obračun mesečne štednje.</p>}
+          {goal.receivableBalance!==null&&Number(goal.receivableBalance)>0?<p>Potraživanja su uslovni doprinos; nisu uključena u mesečni plan štednje.</p>:null}
+          {goal.underfunded?<p className="text-amber-300">Deo rezervacija nije pokriven saldom. Plan štednje važi pod uslovom da dopuniš nedostajuća sredstva.</p>:null}
+        </div>
         {goal.legacyAccountName && !goal.allocations.length ? <p className="mt-4 rounded-xl bg-blue-400/10 p-3 text-xs text-blue-200">Ovaj cilj je ranije pratio ceo saldo računa „{goal.legacyAccountName}“. Izaberi koliko novca izdvajaš za cilj; saldo se više ne računa automatski.</p> : null}
         <section className="mt-5 space-y-3 border-t border-white/10 pt-4" aria-label={`Raspodela: ${goal.name}`}>
           <h3 className="text-sm font-semibold">Gde je novac</h3>

@@ -1,0 +1,12 @@
+import Link from "next/link";
+import type { getAvailableCash } from "../../read-models/available-cash";
+import { Money } from "./money";
+import { FinancialDetail } from "./finance-privacy";
+export function AvailableCash({ view }: {
+    view: Awaited<ReturnType<typeof getAvailableCash>>;
+}) {
+    return <section className="mb-6 rounded-3xl border border-blue-400/20 bg-blue-400/5 p-5 sm:p-6"><div className="flex flex-wrap items-start justify-between gap-4"><div><h2 className="font-semibold">Raspoloživo za potrošnju</h2><p className="mt-1 text-sm text-slate-400">{view.horizonReason}</p><p className="mt-3 text-3xl font-semibold">{view.amountEur === null ? "Nedostaje kurs" : <Money amount={view.amountEur} currencyCode="EUR"/>}</p></div><div><p className="text-sm text-slate-400">Dnevno · {view.days} dana</p><p className="mt-2 text-xl">{view.dailyEur === null ? "Nedostupno" : <Money amount={view.dailyEur} currencyCode="EUR"/>}</p></div></div>
+ <FinancialDetail>{view.deficitEur && view.deficitEur !== "0" ? <p className="mt-3 text-amber-300">Nedostaje <Money amount={view.deficitEur} currencyCode="EUR"/> za postojeće rezervacije i obaveze.</p> : null}{view.stale ? <p className="mt-3 text-amber-300 text-sm">Procena koristi zastareo kurs.</p> : null}{view.overdueCount ? <p className="mt-2 text-amber-300 text-sm">Dospelih nepotvrđenih obaveza: {view.overdueCount}.</p> : null}
+ <details className="mt-4"><summary className="cursor-pointer text-sm text-blue-200 py-2">Kako je izračunato</summary><p className="text-sm text-slate-400 mb-3">Saldo umanjen za rezervacije i planirane obaveze. Ista budžetska rezervacija i obaveza računaju se jednom. Očekivani prihodi nisu dodati saldu.</p><ul className="space-y-3">{view.breakdown.map(a => <li key={a.accountId} className="rounded-xl bg-slate-900/60 p-3 text-sm"><p className="font-medium">{a.accountName} · raspoloživo <Money amount={a.available} currencyCode={a.currencyCode}/></p><p className="text-slate-400 mt-1">Saldo <Money amount={a.balance} currencyCode={a.currencyCode}/> · ciljevi <Money amount={a.goalReserved} currencyCode={a.currencyCode}/></p>{a.groups.map(g => <p key={`${g.categoryId}:${g.month}`} className="text-slate-400">{g.month}: rezervisano <Money amount={g.reserved} currencyCode={a.currencyCode}/> · obaveze <Money amount={g.pending} currencyCode={a.currencyCode}/></p>)}</li>)}</ul></details></FinancialDetail>
+ <Link className="mt-4 inline-block text-sm text-blue-200" href="/finance/planning">Otvori planiranje →</Link></section>;
+}

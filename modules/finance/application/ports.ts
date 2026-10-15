@@ -6,6 +6,8 @@ import type {
 import type { UnitOfWork } from "../db/unit-of-work";
 
 export type IdKind =
+  | "planRule"
+  | "planOccurrence"
   | "account"
   | "accountPurpose"
   | "budgetLimit"
@@ -40,6 +42,9 @@ export interface ApplicationDependencies {
 }
 
 export type ApplicationErrorCode =
+  | "plan_invalid"
+  | "plan_not_found"
+  | "plan_occurrence_conflict"
   | "account_purpose_target_invalid"
   | "account_purpose_currency_mismatch"
   | "account_purpose_insufficient_balance"

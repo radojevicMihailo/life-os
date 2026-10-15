@@ -1,7 +1,9 @@
+import {calculateGoalPlan} from "../domain/goal-plan";
+import {todayBelgrade} from "../domain/calendar";
 import Decimal from "decimal.js";
 import { eq } from "drizzle-orm";
 import type { DbTx } from "../db/client";
-import { accountPurposes, accounts, goals } from "../db/schema";
+import { accountPurposes, accounts, goals, currencies } from "../db/schema";
 import { LedgerRepository } from "../db/repositories/ledger";
 import { ValuationRepository } from "../db/repositories/valuation";
 import { calculateAccountPurposeBalance } from "../domain/account-purposes";
@@ -17,12 +19,14 @@ export interface GoalAllocation {
   accountClassification: string; accountActive: boolean; underfunded: boolean; accountDeficit: string;
 }
 export interface GoalFundReadModel {
+  targetDate: string|null; cashBalance: string|null; receivableBalance:string|null; savingsPlan: ReturnType<typeof calculateGoalPlan>;
   id: string; name: string; targetAmount: string; currencyCode: string; isActive: boolean;
   legacyAccountId: string | null; legacyAccountName: string | null;
   allocations: GoalAllocation[]; balance: string | null; percentage: string | null;
   complete: boolean; underfunded: boolean; stale: boolean;
 }
 export async function loadGoalFundsInTransaction(tx: DbTx, now: Date, options?: GoalValuationOptions): Promise<GoalFundReadModel[]> {
+  const currencyRows = await tx.select().from(currencies);
   const goalRows = await tx.select({ goal: goals, legacyAccountName: accounts.name }).from(goals)
     .leftJoin(accounts, eq(accounts.id, goals.accountId)).orderBy(goals.isActive, goals.name, goals.id);
   const purposes = await tx.select({ purpose: accountPurposes, account: accounts }).from(accountPurposes)
@@ -59,7 +63,10 @@ export async function loadGoalFundsInTransaction(tx: DbTx, now: Date, options?: 
     const complete = allocations.every((a) => a.convertedAmount !== null);
     const balance = complete ? allocations.reduce((sum, a) => sum.plus(a.convertedAmount!), new ExactDecimal(0)).toFixed() : null;
     const percentage = balance === null ? null : new ExactDecimal(balance).div(goal.targetAmount).times(100).toFixed();
-    return { id: goal.id, name: goal.name, targetAmount: new ExactDecimal(goal.targetAmount).toFixed(), currencyCode: goal.targetCurrencyCode,
+    const sumKind=(kind:string)=>{const parts=allocations.filter(a=>a.accountClassification===kind);return parts.some(a=>a.convertedAmount===null)?null:parts.reduce((sum,a)=>sum.plus(a.convertedAmount!),new ExactDecimal(0)).toFixed();};
+    const cashBalance=sumKind("asset"),receivableBalance=sumKind("receivable");
+    const savingsPlan=calculateGoalPlan({targetAmount:goal.targetAmount,fundedCash:allocations.some(a=>a.accountClassification==="asset"&&a.underfunded)?null:cashBalance,receivables:receivableBalance,targetDate:goal.targetDate,today:todayBelgrade(now),minorUnit:Number(currencyRows.find(c=>c.code===goal.targetCurrencyCode)?.minorUnit??2)});
+    return {targetDate:goal.targetDate,cashBalance,receivableBalance,savingsPlan, id: goal.id, name: goal.name, targetAmount: new ExactDecimal(goal.targetAmount).toFixed(), currencyCode: goal.targetCurrencyCode,
       isActive: goal.isActive, legacyAccountId: goal.accountId, legacyAccountName, allocations, balance, percentage, complete,
       underfunded: allocations.some((a) => a.underfunded), stale: allocations.some((a) => a.valuation.stale) };
   });

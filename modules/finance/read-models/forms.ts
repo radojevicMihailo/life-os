@@ -13,7 +13,7 @@ export async function getMutationOptions(dependencies: ApplicationDependencies) 
       .from(categories).where(eq(categories.isSystem, false)).orderBy(asc(categories.name));
     const currencyRows = await tx.select({ code: currencies.code, name: currencies.name, minorUnit: currencies.minorUnit, isActive: currencies.isActive })
       .from(currencies).orderBy(asc(currencies.code));
-    const goalRows = await tx.select({ id: goals.id, name: goals.name, accountId: goals.accountId, targetAmount: goals.targetAmount, targetCurrencyCode: goals.targetCurrencyCode, isActive: goals.isActive })
+    const goalRows = await tx.select({ id: goals.id, name: goals.name, accountId: goals.accountId, targetAmount: goals.targetAmount, targetDate:goals.targetDate, targetCurrencyCode: goals.targetCurrencyCode, isActive: goals.isActive })
       .from(goals).orderBy(asc(goals.name));
     const instrumentRows = await tx.select({ id: instruments.id, symbol: instruments.symbol, name: instruments.name, class: instruments.class, quoteCurrencyCode: instruments.quoteCurrencyCode, providerId: instruments.providerId })
       .from(instruments).where(eq(instruments.isActive, true)).orderBy(asc(instruments.symbol));

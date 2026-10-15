@@ -67,3 +67,30 @@ docs/superpowers/specs/  # design specs
 
 - Single user, no auth. Local only — do not expose without adding auth.
 - Postgres bound to `localhost:5433` to avoid clashing with other local Postgres instances.
+
+## Finansije
+
+- `/finance/planning` — jednokratni i ponavljajući prihodi/obaveze. Potvrda
+  knjiži stvarni promet; povezivanje postojeće transakcije ne pravi novi promet.
+  Preskakanje menja plan, a korekcija/brisanje povezanog knjiženja ažurira potvrdu.
+- `/finance` — raspoloživ novac do sledećeg planiranog prihoda, uz odbitak
+  rezervacija i obaveza bez duplog oduzimanja iste budžetske namene. Izbor
+  uključenih računa je u finansijskim podešavanjima; potraživanja i investiciona
+  gotovina podrazumevano nisu novac za svakodnevnu potrošnju.
+- `/finance/budgets` — tempo, upozorenja, projekcija i prethodna tri meseca.
+- `/finance/goals` — opcioni rok i potreban mesečni iznos štednje. Potraživanja
+  su prikazana odvojeno; nepokrivene rezervacije ne daju obećanje finansiranja.
+- `/finance/reports` — mesečni tokovi, stopa štednje i istorija neto imovine.
+  Kupovine/prodaje investicija odvojene su od tržišnog i valutnog efekta.
+  Nedostajući istorijski izvori daju prazninu, bez korišćenja budućih cena.
+- Transakcije podržavaju pretragu opisa, filtere po nazivima i stabilnu paginaciju.
+
+Za ove funkcije potrebne su dodatne migracije `0017` i `0018`, koje se primenjuju
+postojećom komandom `pnpm db:migrate`. Planirane stavke se ne knjiže automatski;
+nema novih servisa, dodatnih poziva provajderima ili bankarskog uvoza.
+
+Finansijski integracioni testovi podrazumevano koriste Docker. Ako je dostupan
+zaseban lokalni PostgreSQL server, može se zadati `FINANCE_TEST_POSTGRES_URL`
+(npr. `postgresql://postgres@127.0.0.1:55439/postgres`). Svaki test paket tada
+kreira i po završetku briše sopstvenu nasumično imenovanu `finance_test_*` bazu.
+Ovu promenljivu ne usmeravati na aplikacionu bazu.

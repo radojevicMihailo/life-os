@@ -7,7 +7,7 @@ import { archiveGoalAction, saveGoalAction } from "@/modules/finance/ui/actions/
 import { ActionMessage } from "@/modules/finance/ui/components/action-message";
 
 const control = "mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white";
-type GoalFields = { id: string; name: string; targetAmount: string; currencyCode: string };
+type GoalFields = { id: string; name: string; targetAmount: string; currencyCode: string; targetDate?:string|null };
 type CurrencyOption = { code: string; isActive: boolean };
 
 export function GoalForm({ currencies, goal }: { currencies: CurrencyOption[]; goal?: GoalFields }) {
@@ -18,6 +18,7 @@ export function GoalForm({ currencies, goal }: { currencies: CurrencyOption[]; g
     <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <label className="text-xs text-slate-400">Naziv cilja<input className={control} defaultValue={goal?.name} name="name" placeholder="Emergency fond" required /></label>
       <label className="text-xs text-slate-400">Ciljni iznos<input className={control} defaultValue={decimalInputValue(goal?.targetAmount)} placeholder="1.000,00" inputMode="decimal" name="targetAmount" required /></label>
+      <label className="text-xs text-slate-400">Rok (opciono)<input className={control} type="date" name="targetDate" defaultValue={goal?.targetDate??""}/></label>
       <label className="text-xs text-slate-400">Valuta cilja<select className={control} defaultValue={goal?.currencyCode ?? "EUR"} name="targetCurrencyCode" required>
         {currencies.filter((currency) => currency.isActive || currency.code === goal?.currencyCode).map((currency) => <option key={currency.code} value={currency.code}>{currency.code}</option>)}
       </select></label>

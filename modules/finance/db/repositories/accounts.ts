@@ -3,7 +3,7 @@ import { and, asc, eq, inArray, ne } from "drizzle-orm";
 import type { AccountClassification } from "../../domain/ledger";
 import { applicationError, type AccountSummary } from "../../application/ports";
 import type { DbTx } from "../client";
-import { accountPurposes, accounts, currencies, goals, investmentAccounts, journalPostings } from "../schema";
+import { planRules,cashAccountPreferences, accountPurposes, accounts, currencies, goals, investmentAccounts, journalPostings } from "../schema";
 
 export interface AccountRecord extends AccountSummary {
   classification: AccountClassification;
@@ -222,12 +222,14 @@ export class AccountsRepository {
   }
 
   async delete(id: string): Promise<void> {
+    await this.tx.delete(cashAccountPreferences).where(eq(cashAccountPreferences.accountId,id));
     await this.tx.delete(accounts).where(eq(accounts.id, id));
   }
 
   async hasLinkedRecords(id: string): Promise<boolean> {
     for (const [table, column] of [
       [journalPostings, journalPostings.accountId],
+      [planRules, planRules.accountId],
       [accountPurposes, accountPurposes.accountId],
       [goals, goals.accountId],
       [investmentAccounts, investmentAccounts.cashAccountId],

@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  date,
   check,
   numeric,
   pgTable,
@@ -21,6 +22,7 @@ export const goals = pgTable(
     targetCurrencyCode: text("target_currency_code")
       .notNull()
       .references(() => currencies.code),
+    targetDate: date("target_date"),
     targetAmount: numeric("target_amount", {
       precision: 38,
       scale: 18,

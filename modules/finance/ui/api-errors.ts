@@ -25,6 +25,9 @@ export interface ApiErrorBody {
 }
 
 const messages: Record<ApiErrorCode, string> = {
+  plan_invalid:"Plan ili datum dospeća nije ispravan.",
+  plan_not_found:"Plan ne postoji ili je arhiviran.",
+  plan_occurrence_conflict:"Stavka je već obrađena ili transakcija ne odgovara planu. Osvežite prikaz.",
   alpha_vantage_request_budget_exhausted: "Dostignut je Alpha Vantage limit od 25 zahteva u 24 sata. Pokušajte kasnije, kada se oslobodi dnevni limit.",
   account_purpose_target_invalid: "Izabrani cilj ili budžet nije dostupan.",
   account_purpose_currency_mismatch: "Valuta namene mora odgovarati valuti računa.",
