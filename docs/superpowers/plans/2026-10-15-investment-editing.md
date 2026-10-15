@@ -61,7 +61,9 @@ Files: investment read model, investment forms/page/actions and form parser.
 
 - [x] Run focused parser/form tests, investment correction integration suites, full unit suite, scoped ESLint and production build.
 - [x] Review the correction implementation independently.
-- [ ] Commit only this task's files, push once, watch the existing deployment.
-- [ ] Add IBKR using the repaired validated form; verify a current quote and empty initial-position form exist without entering quantity or purchase facts.
-- [ ] Verify hide/reopen and refresh persistence through the UI; restore the opening form visible so the user can enter IBKR.
-- [ ] Inspect edit fields on existing entries without saving financial mutations.
+- [x] Commit only this task's files, push once, watch the existing deployment.
+- [x] Add IBKR using the repaired validated form; verify a current quote and empty initial-position form exist without entering quantity or purchase facts.
+- [x] Verify hide/reopen and refresh persistence through the UI; restore the opening form visible so the user can enter IBKR.
+- [x] Inspect edit fields on existing entries without saving financial mutations.
+
+Verification completed: production deployment c835557; IBKR catalogue entry and USD quote confirmed; hide survives refresh and was reopened; editor fields inspected without submitting a financial change. Full unit suite: 503 passing. Investment application/correction suites and read models passing; production build and scoped lint passed.
