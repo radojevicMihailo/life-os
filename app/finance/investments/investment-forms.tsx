@@ -23,7 +23,7 @@ function OpeningLotCard({ instrument, investmentAccounts, currencies }: { instru
     <h3 className="font-semibold">{instrument.symbol}</h3><p className="text-xs text-slate-500">{instrument.name}</p>
     <div className="mt-3 grid gap-2 sm:grid-cols-2">
       <label className="text-xs text-slate-400">Investicioni račun<select className={control} name="investmentAccountId" required {...fieldErrorProps(state, "investmentAccountId")}><option value="">Izaberi</option>{investmentAccounts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-      <label className="text-xs text-slate-400">Početna količina<input className={control} inputMode="decimal" name="quantity" {...fieldErrorProps(state, "quantity")} /></label>
+      <label className="text-xs text-slate-400">Početna količina<input className={control} inputMode="decimal" placeholder="npr. 1,983" name="quantity" {...fieldErrorProps(state, "quantity")} /><span className="mt-1 block text-xs text-slate-500">Za decimale koristi zarez: 1,983 znači jednu akciju i deo akcije.</span></label>
       <label className="text-xs text-slate-400">Datum sticanja<Input className={control} name="acquiredAt" type="date" {...fieldErrorProps(state, "acquiredAt")} /></label>
       <label className="text-xs text-slate-400">Cena sticanja<input className={control} inputMode="decimal" name="price" {...fieldErrorProps(state, "price")} /></label>
       <label className="text-xs text-slate-400">Valuta sticanja<select className={control} defaultValue="" name="currencyCode" {...fieldErrorProps(state, "currencyCode")}><option value="">Izaberi</option>{currencies.filter((item) => item.isActive).map((item) => <option key={item.code}>{item.code}</option>)}</select></label>

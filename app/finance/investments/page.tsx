@@ -166,7 +166,7 @@ export default async function InvestmentsPage() {
               {investments.lots.map((lot) => (
                 <li className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm" key={lot.id}>
                   <div className="flex justify-between gap-3">
-                    <span>{lot.acquiredAt.toLocaleDateString("sr-Latn-RS")}</span>
+                    <span>{lot.acquiredAt.toLocaleDateString("sr-Latn-RS", { timeZone: "Europe/Belgrade" })}</span>
                     <FinancialValue className="tabular-nums">{lot.remainingQuantity} / {lot.quantity}</FinancialValue>
                   </div>
                   <p className="mt-2 text-xs text-slate-500">Osnovica <Money amount={lot.costAmount} currencyCode={lot.costCurrencyCode} /> + naknada <Money amount={lot.feeAmount} currencyCode={lot.costCurrencyCode} /></p>
@@ -188,7 +188,7 @@ export default async function InvestmentsPage() {
                 <li className="flex flex-wrap justify-between gap-3 py-4 text-sm" key={item.id}>
                   <div>
                     <p className="font-medium">{item.symbol} · {item.type}</p>
-                    <p className="mt-1 text-xs text-slate-500">{item.occurredAt.toLocaleDateString("sr-Latn-RS")} · {item.accountName}</p>
+                    <p className="mt-1 text-xs text-slate-500">{item.occurredAt.toLocaleDateString("sr-Latn-RS", { timeZone: "Europe/Belgrade" })} · {item.accountName}</p>
                   </div>
                   <div className="text-right tabular-nums"><FinancialValue>
                     {item.grossAmount ?? item.feeAmount ?? item.quantity ?? "—"}{" "}
