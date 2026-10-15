@@ -48,6 +48,7 @@ export interface InvestmentTransactionInsert {
   grossAmount?: string;
   feeAmount?: string;
   tradeFxRateToEur: string;
+  correctionOfId?: string;
 }
 
 export type PerformanceLotRecord = OpenLotRecord;
@@ -233,6 +234,7 @@ export class InvestmentsRepository {
       .where(and(
         eq(investmentTransactions.investmentAccountId, input.investmentAccountId),
         eq(taxLots.instrumentId, input.instrumentId),
+        eq(investmentTransactions.status, "posted"),
         gt(taxLots.remainingQuantity, "0"),
         input.disposedAt ? lte(taxLots.acquiredAt, input.disposedAt) : undefined,
       ))
@@ -251,12 +253,15 @@ export class InvestmentsRepository {
         amount: sql<string>`coalesce(sum(${lotDisposals.costBasisAmount}), 0)::text`,
       })
       .from(lotDisposals)
-      .where(inArray(lotDisposals.taxLotId, rows.map((row) => row.id)))
+      .innerJoin(investmentTransactions, eq(investmentTransactions.id, lotDisposals.investmentTransactionId))
+      .where(and(inArray(lotDisposals.taxLotId, rows.map((row) => row.id)), eq(investmentTransactions.status, "posted")))
       .groupBy(lotDisposals.taxLotId);
     const disposedByLot = new Map(disposed.map((row) => [row.taxLotId, row.amount]));
 
+    const orderIds = await this.getLotOrderIds(rows.map((row) => row.investmentTransactionId));
     return rows.map((row) => ({
       ...row,
+      fifoOrderId: orderIds.get(row.investmentTransactionId) ?? row.id,
       quantity: canonicalDatabaseDecimal(row.quantity),
       remainingQuantity: canonicalDatabaseDecimal(row.remainingQuantity),
       tradeFxRateToEur: row.tradeFxRateToEur,
@@ -311,6 +316,71 @@ export class InvestmentsRepository {
     return row !== undefined;
   }
 
+  async getTransaction(id: string, lock = false) {
+    const query = this.tx.select().from(investmentTransactions)
+      .where(eq(investmentTransactions.id, id));
+    const [row] = lock ? await query.for("update") : await query;
+    if (!row) applicationError("investment_transaction_not_found");
+    return row;
+  }
+
+  async markCorrected(originalId: string, replacementId: string) {
+    await this.tx.update(investmentTransactions)
+      .set({ status: "reversed", correctedById: replacementId })
+      .where(eq(investmentTransactions.id, originalId));
+    // Raw original lots remain available for audit but must never be spendable.
+    await this.tx.update(taxLots).set({ remainingQuantity: "0" })
+      .where(eq(taxLots.investmentTransactionId, originalId));
+  }
+
+  async getLotOrderIds(transactionIds: string[]) {
+    if (transactionIds.length === 0) return new Map<string, string>();
+    const result = await this.tx.execute(sql`
+      with recursive ancestry as (
+        select id as leaf_id, id, correction_of_id
+        from finance_investment_transactions where id in ${transactionIds}
+        union all
+        select a.leaf_id, t.id, t.correction_of_id from ancestry a
+        join finance_investment_transactions t on t.id=a.correction_of_id
+      )
+      select a.leaf_id, l.id as lot_id from ancestry a
+      join finance_tax_lots l on l.investment_transaction_id=a.id
+      where a.correction_of_id is null
+    `);
+    return new Map(result.rows.map((row) => [String(row.leaf_id), String(row.lot_id)]));
+  }
+
+  async resetPairForReplay(input: { investmentAccountId: string; instrumentId: string }) {
+    const all = await this.tx.select().from(investmentTransactions)
+      .where(and(eq(investmentTransactions.investmentAccountId, input.investmentAccountId),
+        eq(investmentTransactions.instrumentId, input.instrumentId)))
+      .orderBy(asc(investmentTransactions.occurredAt), asc(investmentTransactions.id))
+      .for("update");
+    const active = all.filter((row) => row.status === "posted");
+    // Disposal allocations are derived. Keep reversed sale allocations as audit data;
+    // only the still-active sales are recalculated.
+    const sales = active.filter((row) => row.type === "sell");
+    if (sales.length) await this.tx.delete(lotDisposals)
+      .where(inArray(lotDisposals.investmentTransactionId, sales.map((row) => row.id)));
+    const buys = active.filter((row) => row.type === "buy");
+    if (buys.length) await this.tx.update(taxLots)
+      .set({ remainingQuantity: sql`${taxLots.quantity}` })
+      .where(inArray(taxLots.investmentTransactionId, buys.map((row) => row.id)));
+    if (sales.length === 0) return sales;
+    const roots = await this.tx.execute(sql`
+      with recursive ancestry as (
+        select id as leaf_id, id, correction_of_id
+        from finance_investment_transactions where id in ${sales.map((row) => row.id)}
+        union all
+        select a.leaf_id, t.id, t.correction_of_id from ancestry a
+        join finance_investment_transactions t on t.id=a.correction_of_id
+      ) select leaf_id, id from ancestry where correction_of_id is null
+    `);
+    const order = new Map(roots.rows.map((row) => [String(row.leaf_id), String(row.id)]));
+    return sales.sort((a, b) => a.occurredAt.getTime() - b.occurredAt.getTime() ||
+      (order.get(a.id) ?? a.id).localeCompare(order.get(b.id) ?? b.id));
+  }
+
   async insertTransaction(input: InvestmentTransactionInsert): Promise<void> {
     await this.tx.insert(investmentTransactions).values({
       id: input.id,
@@ -325,6 +395,7 @@ export class InvestmentsRepository {
       grossAmount: input.grossAmount ?? null,
       feeAmount: input.feeAmount ?? null,
       tradeFxRateToEur: input.tradeFxRateToEur,
+      correctionOfId: input.correctionOfId ?? null,
     });
   }
 
@@ -416,6 +487,8 @@ export class InvestmentsRepository {
       .where(and(
         eq(investmentTransactions.investmentAccountId, input.investmentAccountId),
         eq(investmentTransactions.instrumentId, input.instrumentId),
+        eq(investmentTransactions.status, "posted"),
+        eq(buyTransactions.status, "posted"),
       ));
 
     return rows.map((row) => ({

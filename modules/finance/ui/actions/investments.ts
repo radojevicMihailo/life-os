@@ -1,5 +1,7 @@
 "use server";
 
+import { cookies } from "next/headers";
+import { z } from "zod";
 import { AlphaVantageClient } from "../../adapters/alpha-vantage/client";
 import { CoinGeckoClient } from "../../adapters/coingecko/client";
 import { buyInvestment, createInvestmentAccount, recordDividend, recordInvestmentFee, recordOpeningLot, resolveInstrument, sellInvestment } from "../../application/investments";
@@ -10,6 +12,26 @@ import type { ActionResult } from "../forms/action-result";
 import { parseInstrumentResolutionForm, parseInvestmentAccountForm, parseInvestmentActivityForm, parseOpeningLotForm } from "../forms/investment";
 import { executeAction } from "./result";
 import { mutationDependencies } from "./runtime";
+import { parseField } from "../forms/common";
+import { correctInvestmentTransaction } from "../../application/investment-corrections";
+import { parseInvestmentCorrectionForm } from "../forms/investment";
+
+export async function correctInvestmentTransactionAction(_previous: ActionResult<{ id: string }> | undefined, formData: FormData) {
+  return executeAction(() => correctInvestmentTransaction(mutationDependencies(), parseInvestmentCorrectionForm(formData)), {
+    financial: true, revalidate: ["/finance/investments", "/finance", "/finance/accounts", "/finance/transactions", "/finance/budgets", "/finance/goals"],
+  });
+}
+
+export async function setOpeningSetupVisibilityAction(_previous: ActionResult<{ hidden: boolean }> | undefined, formData: FormData) {
+  return executeAction(async () => {
+    const hidden = parseField("hidden", z.enum(["true", "false"]), formData.get("hidden")) === "true";
+    (await cookies()).set("finance-opening-setup-hidden", hidden ? "1" : "0", {
+      path: "/finance", maxAge: 365 * 24 * 60 * 60,
+      httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
+    });
+    return { hidden };
+  }, { revalidate: ["/finance/investments"] });
+}
 
 function providerFor(name: "alpha_vantage" | "coingecko") {
   const common = { clock: { now: () => new Date() }, fetch };

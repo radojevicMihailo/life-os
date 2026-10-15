@@ -120,3 +120,19 @@ export function parseInstrumentResolutionForm(input: FormData | Record<string, u
     ...(optionalText(raw.exchange) ? { exchange: optionalText(raw.exchange) } : {}),
   };
 }
+
+export function parseInvestmentCorrectionForm(input: FormData | Record<string, unknown>) {
+  const raw = formRecord(input);
+  return {
+    originalId: parseField("originalId", identifier, raw.originalId),
+    investmentAccountId: parseField("investmentAccountId", identifier, raw.investmentAccountId),
+    instrumentId: parseField("instrumentId", identifier, raw.instrumentId),
+    quantity: normalizeSerbianDecimalField("quantity", raw.quantity),
+    grossAmount: normalizeSerbianDecimalField("grossAmount", raw.grossAmount),
+    feeAmount: normalizeSerbianDecimalField("feeAmount", raw.feeAmount, { allowZero: true }),
+    tradeCurrencyCode: parseField("tradeCurrencyCode", currencyCode, raw.tradeCurrencyCode),
+    tradeFxRateToEur: normalizeSerbianDecimalField("tradeFxRateToEur", raw.tradeFxRateToEur),
+    occurredAt: parseField("occurredAt", belgradeDateTime("Datum je obavezan."), raw.occurredAt) as Date,
+    ...(/^\d{4}-\d{2}-\d{2}$/.test(optionalText(raw.occurredAt) ?? "") ? { preserveTimeOnSameDate: true } : {}),
+  };
+}

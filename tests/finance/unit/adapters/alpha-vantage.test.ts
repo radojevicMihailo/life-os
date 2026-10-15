@@ -16,6 +16,20 @@ async function jsonFixture(name: string) {
 }
 
 describe("Alpha Vantage parser", () => {
+  it.each(["IBIS", "IBIS2"])("recognizes %s as a Xetra listing family", (exchange) => {
+    expect(parseAlphaVantageSymbolResolution({ bestMatches: [
+      { "1. symbol": "VWCE.FRK", "4. region": "Frankfurt", "8. currency": "EUR" },
+      { "1. symbol": "VWCE.DEX", "4. region": "XETRA", "8. currency": "EUR" },
+    ] }, { symbol: "VWCE", quoteCurrencyCode: "EUR", exchange }))
+      .toMatchObject({ providerId: "VWCE.DEX", currencyCode: "EUR" });
+  });
+  it("resolves an exact NASDAQ symbol in USD without choosing a foreign listing", () => {
+    expect(parseAlphaVantageSymbolResolution({ bestMatches: [
+      { "1. symbol": "IBKR", "4. region": "United States", "8. currency": "USD" },
+      { "1. symbol": "IBKR.LON", "4. region": "United Kingdom", "8. currency": "USD" },
+    ] }, { symbol: "IBKR", quoteCurrencyCode: "USD", exchange: "NASDAQ" }))
+      .toMatchObject({ providerId: "IBKR", currencyCode: "USD" });
+  });
   it("recognizes the live XETRA region while excluding the Frankfurt listing", () => {
     expect(parseAlphaVantageSymbolResolution({ bestMatches: [
       { "1. symbol": "VWCE.FRK", "4. region": "Frankfurt", "8. currency": "EUR" },

@@ -47,6 +47,7 @@ export interface OpenPositionRow {
   quantity: string;
   quoteCurrencyCode: string;
   symbol: string;
+  exchange?: string | null;
 }
 
 export function mergePositionValuations(
@@ -119,6 +120,7 @@ export async function listInvestments(
         quantity,
         quoteCurrencyCode: instruments.quoteCurrencyCode,
         symbol: instruments.symbol,
+        exchange: instruments.exchange,
       })
       .from(investmentTransactions)
       .innerJoin(
@@ -153,6 +155,7 @@ export async function listInvestments(
         investmentTransactions,
         eq(investmentTransactions.id, taxLots.investmentTransactionId),
       )
+      .where(eq(investmentTransactions.status, "posted"))
       .orderBy(desc(taxLots.acquiredAt), taxLots.id)
       .limit(LIST_LIMIT + 1);
     const activityRows = await tx
@@ -161,11 +164,15 @@ export async function listInvestments(
         feeAmount: investmentTransactions.feeAmount,
         grossAmount: investmentTransactions.grossAmount,
         id: investmentTransactions.id,
+        instrumentId: investmentTransactions.instrumentId,
+        investmentAccountId: investmentTransactions.investmentAccountId,
+        journalTransactionId: investmentTransactions.journalTransactionId,
         occurredAt: investmentTransactions.occurredAt,
         quantity: investmentTransactions.quantity,
         status: investmentTransactions.status,
         symbol: instruments.symbol,
         tradeCurrencyCode: investmentTransactions.tradeCurrencyCode,
+        tradeFxRateToEur: investmentTransactions.tradeFxRateToEur,
         type: investmentTransactions.type,
       })
       .from(investmentTransactions)
@@ -177,6 +184,7 @@ export async function listInvestments(
         investmentAccounts,
         eq(investmentAccounts.id, investmentTransactions.investmentAccountId),
       )
+      .where(eq(investmentTransactions.status, "posted"))
       .orderBy(
         desc(investmentTransactions.occurredAt),
         desc(investmentTransactions.id),

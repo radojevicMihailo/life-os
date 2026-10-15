@@ -15,6 +15,7 @@ export type ActiveInvestmentClass = "stock" | "etf" | "crypto";
 
 export interface InvestmentLot {
   id: string;
+  fifoOrderId?: string;
   acquiredAt: Date;
   quantity: string;
   remainingQuantity: string;
@@ -89,7 +90,7 @@ function remainingQuantity(value: string, assetClass: ActiveInvestmentClass) {
 
 function compareLots(left: InvestmentLot, right: InvestmentLot) {
   const timeOrder = left.acquiredAt.getTime() - right.acquiredAt.getTime();
-  return timeOrder || left.id.localeCompare(right.id);
+  return timeOrder || (left.fifoOrderId ?? left.id).localeCompare(right.fifoOrderId ?? right.id);
 }
 
 export function disposeFifo(

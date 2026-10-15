@@ -274,6 +274,9 @@ describe("investment application service", () => {
     await expect(testDb.pool.query(
       "select provider_id from finance_instruments where symbol = 'MSFT'",
     )).resolves.toMatchObject({ rows: [{ provider_id: "MSFT" }] });
+    await expect(testDb.pool.query(`select q.price::numeric::text price,q.quote_currency_code,q.provider
+      from finance_market_quotes q join finance_instruments i on i.id=q.instrument_id where i.symbol='MSFT'`))
+      .resolves.toMatchObject({ rows: [{ price: "500.000000000000000000", quote_currency_code: "USD", provider: "alpha_vantage" }] });
   });
 
   it.each([

@@ -3,7 +3,7 @@
 import { Input } from "@/components/ui/input";
 
 import { useActionState } from "react";
-import { createInvestmentAccountAction, createOpeningLotAction, resolveInstrumentAction, saveInvestmentActivityAction } from "@/modules/finance/ui/actions/investments";
+import { createInvestmentAccountAction, createOpeningLotAction, resolveInstrumentAction, saveInvestmentActivityAction, setOpeningSetupVisibilityAction } from "@/modules/finance/ui/actions/investments";
 import { ActionMessage, fieldErrorProps } from "@/modules/finance/ui/components/action-message";
 
 const control = "mt-1 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white";
@@ -34,8 +34,23 @@ function OpeningLotCard({ instrument, investmentAccounts, currencies }: { instru
   </form>;
 }
 
-export function OpeningSetup({ instruments, investmentAccounts, currencies }: { instruments: Instrument[]; investmentAccounts: InvestmentAccount[]; currencies: Array<{ code: string; isActive: boolean }> }) {
-  return <section className="mt-6"><h2 className="text-xl font-semibold">Početne pozicije</h2><p className="mt-1 text-sm text-slate-400">Polja ostaju prazna dok ne unesete stvarnu količinu, datum, cenu, valutu i naknade.</p><div className="mt-4 grid gap-4 lg:grid-cols-2">{instruments.map((instrument) => <OpeningLotCard currencies={currencies} instrument={instrument} investmentAccounts={investmentAccounts} key={instrument.id} />)}</div></section>;
+export function OpeningSetup({ instruments, investmentAccounts, currencies, initiallyHidden = false }: { instruments: Instrument[]; investmentAccounts: InvestmentAccount[]; currencies: Array<{ code: string; isActive: boolean }>; initiallyHidden?: boolean }) {
+  const [state, action, pending] = useActionState(setOpeningSetupVisibilityAction, undefined);
+  const hidden = state?.ok ? state.value.hidden : initiallyHidden;
+  return <section className="mt-6">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <h2 className="text-xl font-semibold">Početne pozicije</h2>
+      <form action={action}>
+        <input name="hidden" type="hidden" value={String(!hidden)} />
+        <button className="min-h-11 rounded-xl border border-white/10 px-4 text-sm text-slate-300" disabled={pending} type="submit">{hidden ? "Prikaži početne pozicije" : "Završi početni unos"}</button>
+      </form>
+    </div>
+    <ActionMessage state={state} success={hidden ? "Početni unos je sklonjen. Možeš ga ponovo prikazati kad ti zatreba." : "Početni unos je prikazan."} />
+    <div hidden={hidden}>
+      <p className="mt-1 text-sm text-slate-400">Polja ostaju prazna dok ne unesete stvarnu količinu, datum, cenu, valutu i naknade.</p>
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">{instruments.map((instrument) => <OpeningLotCard currencies={currencies} instrument={instrument} investmentAccounts={investmentAccounts} key={instrument.id} />)}</div>
+    </div>
+  </section>;
 }
 
 export function InvestmentActivityForm({ instruments, investmentAccounts }: { instruments: Instrument[]; investmentAccounts: InvestmentAccount[] }) {
@@ -45,5 +60,5 @@ export function InvestmentActivityForm({ instruments, investmentAccounts }: { in
 
 export function ResolveInstrumentForm() {
   const [state, action, pending] = useActionState(resolveInstrumentAction, undefined);
-  return <form action={action} className="rounded-3xl border border-white/10 bg-white/[0.03] p-4"><h2 className="font-semibold">Dodaj potvrđeni instrument</h2><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><label className="text-xs text-slate-400">Simbol<input className={control} name="symbol" required /></label><label className="text-xs text-slate-400">Naziv instrumenta<input className={control} name="name" required /></label><label className="text-xs text-slate-400">Klasa<select className={control} name="class"><option value="stock">Akcija</option><option value="etf">ETF</option><option value="crypto">Kripto</option></select></label><label className="text-xs text-slate-400">Valuta kotacije<input className={control} defaultValue="EUR" name="quoteCurrencyCode" /></label><label className="text-xs text-slate-400">Izvor instrumenta<select className={control} name="provider"><option value="alpha_vantage">Alpha Vantage</option><option value="coingecko">CoinGecko</option></select></label><label className="text-xs text-slate-400">Stabilni provider ID<input className={control} name="providerId" /></label><label className="text-xs text-slate-400">ISIN<input className={control} name="isin" /></label><label className="text-xs text-slate-400">Berza<input className={control} name="exchange" /></label></div><button className="mt-4 min-h-11 rounded-xl border border-white/10 px-4 text-sm" disabled={pending}>Proveri cenu i dodaj</button><ActionMessage state={state} success="Izvor je potvrdio instrument i cenu." /></form>;
+  return <form action={action} className="rounded-3xl border border-white/10 bg-white/[0.03] p-4"><h2 className="font-semibold">Dodaj potvrđeni instrument</h2><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><label className="text-xs text-slate-400">Simbol<input className={control} name="symbol" required /></label><label className="text-xs text-slate-400">Naziv instrumenta<input className={control} name="name" required /></label><label className="text-xs text-slate-400">Klasa<select className={control} name="class"><option value="stock">Akcija</option><option value="etf">ETF</option><option value="crypto">Kripto</option></select></label><label className="text-xs text-slate-400">Valuta kotacije<input className={control} defaultValue="EUR" name="quoteCurrencyCode" /></label><label className="text-xs text-slate-400">Izvor instrumenta<select className={control} name="provider"><option value="alpha_vantage">Alpha Vantage</option><option value="coingecko">CoinGecko</option></select></label><label className="text-xs text-slate-400">Stabilni provider ID<input className={control} name="providerId" /></label><label className="text-xs text-slate-400">ISIN<input className={control} name="isin" /></label><label className="text-xs text-slate-400">Berza<select className={control} name="exchange" defaultValue=""><option value="">Izaberi berzu</option><option value="NASDAQ">NASDAQ</option><option value="IBIS">IBIS · Xetra</option><option value="IBIS2">IBIS2 · Xetra ETF</option><option value="Xetra">Xetra</option></select></label></div><button className="mt-4 min-h-11 rounded-xl border border-white/10 px-4 text-sm" disabled={pending}>Proveri cenu i dodaj</button><ActionMessage state={state} success="Izvor je potvrdio instrument i cenu." /></form>;
 }

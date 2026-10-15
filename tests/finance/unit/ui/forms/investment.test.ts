@@ -3,10 +3,20 @@ import { ZodError } from "zod";
 
 import {
   parseInvestmentActivityForm,
+  parseInvestmentCorrectionForm,
   parseOpeningLotForm,
 } from "@/modules/finance/ui/forms/investment";
 
 describe("investment forms", () => {
+  it("parses correction totals separately from fees and preserves same-day hidden time", () => {
+    expect(parseInvestmentCorrectionForm({ originalId: "old-buy", investmentAccountId: "broker", instrumentId: "ibkr",
+      quantity: "12", grossAmount: "1.234,56", feeAmount: "0", tradeCurrencyCode: "usd", tradeFxRateToEur: "0,92", occurredAt: "2026-10-15" }))
+      .toEqual({ originalId: "old-buy", investmentAccountId: "broker", instrumentId: "ibkr", quantity: "12", grossAmount: "1234.56",
+        feeAmount: "0", tradeCurrencyCode: "USD", tradeFxRateToEur: "0.92", occurredAt: new Date("2026-10-14T22:00:00Z"), preserveTimeOnSameDate: true });
+    expect(() => parseInvestmentCorrectionForm({ originalId: "old-buy", investmentAccountId: "broker", instrumentId: "ibkr",
+      quantity: "12", grossAmount: "bad", feeAmount: "0", tradeCurrencyCode: "USD", tradeFxRateToEur: "1", occurredAt: "2026-10-15" }))
+      .toThrow(ZodError);
+  });
   it("keeps all seeded opening-position fields empty until the user supplies them", () => {
     expect(parseOpeningLotForm({
       investmentAccountId: "broker",

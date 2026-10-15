@@ -79,15 +79,19 @@ export function parseAlphaVantageSymbolResolution(
   if (symbolCandidates.length === 0) throw new Error("alpha_vantage_symbol_not_found");
 
   const configuredExchange = input.exchange?.trim().toLocaleLowerCase("en-US");
-  const listingIdentity = configuredExchange === "deutsche börse/xetra" ||
-    configuredExchange === "xetra"
+  const listingIdentity = ["deutsche börse/xetra", "xetra", "ibis", "ibis2"].includes(configuredExchange ?? "")
     ? { suffix: ".DEX", regions: ["GERMANY", "XETRA"] }
-    : undefined;
+    : configuredExchange === "nasdaq"
+      ? { suffix: "", regions: ["UNITED STATES"] }
+      : undefined;
   if (!listingIdentity) throw new Error("alpha_vantage_exchange_mismatch");
   const candidates = symbolCandidates.filter((candidate) => {
     const providerId = String(candidate["1. symbol"] ?? "").toUpperCase();
     const region = String(candidate["4. region"] ?? "").toUpperCase();
-    return providerId.endsWith(listingIdentity.suffix) && listingIdentity.regions.includes(region);
+    const matchesSymbol = listingIdentity.suffix
+      ? providerId.endsWith(listingIdentity.suffix)
+      : providerId === symbol;
+    return matchesSymbol && listingIdentity.regions.includes(region);
   });
   if (candidates.length === 0) throw new Error("alpha_vantage_exchange_mismatch");
   if (candidates.length > 1) throw new Error("alpha_vantage_symbol_ambiguous");

@@ -18,6 +18,7 @@ import {
   type InstrumentRecord,
 } from "../db/repositories/investments";
 import { LedgerRepository } from "../db/repositories/ledger";
+import { ValuationRepository } from "../db/repositories/valuation";
 import type { DbTx } from "../db/client";
 import { currencies } from "../db/schema";
 import type { MarketQuoteProvider } from "./valuation";
@@ -207,8 +208,8 @@ export async function recordOpeningLot(
 ) {
   return deps.unitOfWork.run(async (tx) => {
     const investments = new InvestmentsRepository(tx);
-    await investments.lockInvestmentAccount(input.investmentAccountId);
     const instrument = await investments.lockInstrument(input.instrumentId);
+    await investments.lockInvestmentAccount(input.investmentAccountId);
     const code = normalizeCurrencyCode(input.currencyCode);
     const [currency] = await tx.select({ minorUnit: currencies.minorUnit, isActive: currencies.isActive })
       .from(currencies).where(eq(currencies.code, code)).for("update");
@@ -305,7 +306,7 @@ export async function resolveInstrument(
   }
   return deps.unitOfWork.run(async (tx) => {
     await new AccountsRepository(tx).activateCurrency(quoteCurrencyCode, deps.clock.now());
-    return new InvestmentsRepository(tx).createInstrument({
+    const instrument = await new InvestmentsRepository(tx).createInstrument({
       id,
       symbol,
       name: normalizedRequiredText(input.name),
@@ -317,6 +318,8 @@ export async function resolveInstrument(
       ...(input.exchange?.trim() ? { exchange: input.exchange.trim() } : {}),
       now: deps.clock.now(),
     });
+    await new ValuationRepository(tx).insertMarketQuote(deps.ids.nextId("marketQuote"), quote);
+    return instrument;
   });
 }
 
