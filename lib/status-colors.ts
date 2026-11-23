@@ -3,13 +3,13 @@ import type { TravelRegion, TravelStatus } from "@/db/schema/travels";
 import type { GoalStatus } from "@/db/schema/goals";
 
 export const taskStatusColors: Record<TaskStatus | "active" | "all", string> = {
-  active: "border-sky-500/70 bg-sky-500/20 text-sky-100",
-  backlog: "border-slate-400/60 bg-slate-400/20 text-slate-100",
-  in_progress: "border-blue-400/70 bg-blue-500/25 text-blue-100",
-  waiting_for: "border-amber-400/70 bg-amber-500/20 text-amber-100",
-  done: "border-emerald-400/70 bg-emerald-500/20 text-emerald-100",
-  canceled: "border-rose-400/70 bg-rose-500/20 text-rose-100",
-  all: "border-violet-400/70 bg-violet-500/20 text-violet-100",
+  active: "border-sky-500/70 bg-sky-100 text-sky-900 dark:bg-sky-500/20 dark:text-sky-100",
+  backlog: "border-slate-400/60 bg-slate-100 text-slate-900 dark:bg-slate-400/20 dark:text-slate-100",
+  in_progress: "border-blue-400/70 bg-blue-100 text-blue-900 dark:bg-blue-500/25 dark:text-blue-100",
+  waiting_for: "border-amber-400/70 bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-100",
+  done: "border-emerald-400/70 bg-emerald-100 text-emerald-900 dark:bg-emerald-500/20 dark:text-emerald-100",
+  canceled: "border-rose-400/70 bg-rose-100 text-rose-900 dark:bg-rose-500/20 dark:text-rose-100",
+  all: "border-violet-400/70 bg-violet-100 text-violet-900 dark:bg-violet-500/20 dark:text-violet-100",
 };
 
 export const projectStatusColors: Record<ProjectStatus, string> = {

@@ -41,8 +41,8 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
         <label className="text-xs text-muted-foreground">Račun<select className="mt-1 min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground" defaultValue={filters.accountId ?? ""} name="accountId"><option value="">Svi računi</option>{options.accounts.map(a=><option key={a.id} value={a.id}>{a.name}{a.isActive ? "" : " · Arhiviran"}</option>)}</select></label>
         <label className="text-xs text-muted-foreground">Kategorija<select className="mt-1 min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground" defaultValue={filters.categoryId ?? ""} name="categoryId"><option value="">Sve kategorije</option>{options.categories.map(c=><option key={c.id} value={c.id}>{c.name}{c.isActive ? "" : " · Arhivirana"}</option>)}</select></label>
         <label className="text-xs text-muted-foreground sm:col-span-2 lg:col-span-5">Pretraga opisa<Input className="mt-1" name="q" defaultValue={filters.q} maxLength={200} placeholder="Npr. kafa, računi…" /></label>
-        <Link href="/finance/transactions" className="py-2 text-sm text-blue-700 dark:text-blue-200">Očisti filtere</Link>
-        <button className="min-h-11 action-button rounded-xl px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:col-span-2 lg:col-span-5" type="submit">Primeni filtere</button>
+        <Link href="/finance/transactions" className="py-2 text-sm text-primary">Očisti filtere</Link>
+        <button className="min-h-11 action-button rounded-xl px-4 text-sm font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:col-span-2 lg:col-span-5" type="submit">Primeni filtere</button>
       </form>
       {transactions.items.length === 0 ? (
         <div className="mt-6"><EmptyState title="Nema transakcija za izabrane filtere" /></div>
@@ -52,8 +52,8 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
         </section>
       )}
       <nav aria-label="Stranice transakcija" className="mt-5 flex justify-between gap-4">
-        {filters.cursor ? <Link className="text-blue-700 dark:text-blue-200 py-3" href={pageUrl(history.at(-1) === "first" ? undefined : history.at(-1), history.slice(0,-1))}>← Prethodno</Link> : <span />}
-        {transactions.nextCursor ? <Link className="text-blue-700 dark:text-blue-200 py-3" href={pageUrl(transactions.nextCursor,[...history,currentCursor ?? "first"])}>Sledeće →</Link> : null}
+        {filters.cursor ? <Link className="text-primary py-3" href={pageUrl(history.at(-1) === "first" ? undefined : history.at(-1), history.slice(0,-1))}>← Prethodno</Link> : <span />}
+        {transactions.nextCursor ? <Link className="text-primary py-3" href={pageUrl(transactions.nextCursor,[...history,currentCursor ?? "first"])}>Sledeće →</Link> : null}
       </nav>
     </>
   );

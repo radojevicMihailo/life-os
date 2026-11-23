@@ -16,7 +16,7 @@ export function SectionLinks({ section, dark = false }: { section: MainSection; 
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-2xl border p-5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${dark ? "border-white/10 bg-white/[0.04] hover:border-blue-400/60 hover:bg-blue-500/10" : "bg-card hover:border-primary/50 hover:bg-accent"}`}
+              className={`rounded-2xl border p-5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${dark ? "border-white/10 bg-white/[0.04] hover:border-primary/60 hover:bg-primary/10" : "bg-card hover:border-primary/50 hover:bg-accent"}`}
             >
               <div className="flex items-center gap-2 text-base font-medium">
                 <Icon className="size-4" />

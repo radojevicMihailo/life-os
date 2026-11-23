@@ -143,7 +143,7 @@ export default async function InvestmentsPage() {
                   </div>
                 </dl>
                 <details className="mt-4 border-t border-border pt-2">
-                  <summary className="min-h-10 cursor-pointer py-2 text-sm font-medium text-blue-700 dark:text-blue-200">Izmeni poziciju</summary>
+                  <summary className="min-h-10 cursor-pointer py-2 text-sm font-medium text-primary">Izmeni poziciju</summary>
                   <p className="mt-1 text-xs text-muted-foreground">Izaberi unos koji želiš da ispraviš.</p>
                   {investments.activity.filter((item) => item.instrumentId === position.instrumentId && item.investmentAccountId === position.investmentAccountId && (item.type === "buy" || item.type === "sell")).map((item) => <InvestmentCorrectionForm key={item.id} activity={item} accounts={options.investmentAccounts} instruments={options.instruments} currencies={options.currencies} label={`${item.journalTransactionId === null ? "Početni unos" : item.type === "buy" ? "Kupovina" : "Prodaja"} · ${item.occurredAt.toLocaleDateString("sr-Latn-RS", { timeZone: "Europe/Belgrade" })}`} />)}
                 </details>

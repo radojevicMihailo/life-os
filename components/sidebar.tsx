@@ -9,18 +9,17 @@ import { SearchButton } from "@/components/command-palette";
 
 export function Sidebar() {
   return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
-      <div className="px-5 py-7">
-        <Link href="/" className="flex items-center gap-3 text-xl font-semibold tracking-tight">
-          <BrandMark className="shadow-[0_3px_12px_rgba(8,19,36,0.2)]" />
-          <span>Life OS<small className="block text-[0.65rem] font-normal tracking-normal text-muted-foreground">Bolji ja. Svaki dan.</small></span>
+    <aside className="sticky top-0 hidden h-dvh w-48 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex lg:w-52">
+      <div className="px-4 py-5">
+        <Link href="/" className="flex items-center gap-2.5 text-lg font-semibold tracking-tight">
+          <BrandMark className="size-8 rounded-lg" />
+          <span>Life OS</span>
         </Link>
       </div>
       <div className="px-3 pb-4"><SearchButton /></div>
       <nav className="flex-1 overflow-y-auto px-3 pb-4" aria-label="Glavna navigacija">
         <NavTree />
       </nav>
-      <div className="mx-5 mb-5 border-t border-sidebar-border pt-5 text-xs leading-5 text-muted-foreground"><span className="mb-2 block h-0.5 w-9 bg-primary" />Mali koraci,<br />velike promene.</div>
       <div className="px-3 pb-2"><SettingsLink /></div>
       <div className="flex min-w-0 items-center gap-2 border-t border-sidebar-border px-3 py-3">
         <ThemeToggle />

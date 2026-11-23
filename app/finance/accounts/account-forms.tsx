@@ -24,7 +24,7 @@ export function AccountForm({ currencies }: { currencies: CurrencyOption[] }) {
       <label className="text-xs text-muted-foreground">Podvrsta računa<input className={control} name="subtype" required /></label>
       <label className="text-xs text-muted-foreground">Valuta računa<select className={control} name="currencyCode" defaultValue="EUR">{currencies.filter((currency) => currency.isActive).map((currency) => <option key={currency.code}>{currency.code}</option>)}</select></label>
     </div>
-    <button className="mt-4 min-h-11 action-button rounded-xl px-5 text-sm font-semibold text-white" disabled={pending}>Kreiraj račun</button>
+    <button className="mt-4 min-h-11 action-button rounded-xl px-5 text-sm font-semibold text-primary-foreground" disabled={pending}>Kreiraj račun</button>
     <ActionMessage state={state} success="Račun je kreiran." />
   </form>;
 }
@@ -32,7 +32,7 @@ export function AccountForm({ currencies }: { currencies: CurrencyOption[] }) {
 export function EditAccountForm({ account, currencies }: { account: EditableAccount; currencies: CurrencyOption[] }) {
   const [state, action, pending] = useActionState(updateAccountAction, undefined);
   return <details className="mt-4 border-t border-border pt-4">
-    <summary className="min-h-11 cursor-pointer text-sm font-medium text-blue-700 dark:text-blue-200">Izmeni račun</summary>
+    <summary className="min-h-11 cursor-pointer text-sm font-medium text-primary">Izmeni račun</summary>
     <form action={action} className="mt-3 space-y-3">
       <input name="id" type="hidden" value={account.id} />
       <div className="grid gap-3 sm:grid-cols-2">
@@ -42,7 +42,7 @@ export function EditAccountForm({ account, currencies }: { account: EditableAcco
         <label className="text-xs text-muted-foreground">Valuta računa<select className={control} name="currencyCode" defaultValue={account.currencyCode}>{currencies.filter((currency) => currency.isActive || currency.code === account.currencyCode).map((currency) => <option key={currency.code}>{currency.code}</option>)}</select></label>
       </div>
       <p className="text-xs text-muted-foreground">Vrsta i valuta mogu da se promene samo dok račun nema transakcije, rezervisane namene, ciljeve ili povezan investicioni račun.</p>
-      <button className="min-h-11 action-button rounded-xl px-4 text-sm font-semibold text-white" disabled={pending}>Sačuvaj izmene</button>
+      <button className="min-h-11 action-button rounded-xl px-4 text-sm font-semibold text-primary-foreground" disabled={pending}>Sačuvaj izmene</button>
       <ActionMessage state={state} success="Račun je izmenjen." />
     </form>
   </details>;

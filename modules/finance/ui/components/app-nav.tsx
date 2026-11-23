@@ -20,11 +20,11 @@ export function AppNav() {
   return (
     <div className="sticky top-16 z-20 space-y-3 bg-card/95 backdrop-blur md:top-0">
       <div className="flex justify-end">
-        <Link href="/finance/transactions#new-transaction" className="action-button inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold text-white">Nova transakcija</Link>
+        <Link href="/finance/transactions#new-transaction" className="action-button inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold text-primary-foreground">Nova transakcija</Link>
       </div>
       <nav
         aria-label="Finansije"
-        className="overflow-x-auto rounded-2xl border border-blue-400/20 bg-card/95 p-1.5 backdrop-blur"
+        className="overflow-x-auto rounded-2xl border border-primary/20 bg-card/95 p-1.5 backdrop-blur"
       >
         <ul className="flex w-max min-w-full gap-1">
           {destinations.map((destination) => {
@@ -33,7 +33,7 @@ export function AppNav() {
             <li key={destination.href} className="shrink-0 sm:flex-1">
               <Link
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-11 items-center justify-center rounded-xl px-3 text-center text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 ${active ? "active-section-tab" : "text-foreground hover:bg-blue-400/15 hover:text-foreground"}`}
+                className={`flex min-h-11 items-center justify-center rounded-xl px-3 text-center text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${active ? "active-section-tab" : "text-foreground hover:bg-accent hover:text-foreground"}`}
                 href={destination.href}
               >
                 {destination.label}

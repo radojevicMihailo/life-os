@@ -67,7 +67,7 @@ export function TransactionForm({ accounts, categories, transaction }: { account
         <label className="text-xs text-muted-foreground">Datum<Input className={input} name="occurredAt" type="date" defaultValue={transaction ? new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Belgrade", year: "numeric", month: "2-digit", day: "2-digit" }).format(transaction.occurredAt) : undefined} /></label>
         <label className="text-xs text-muted-foreground sm:col-span-2">Opis<input className={input} name={transaction ? "replacementDescription" : "description"} defaultValue={transaction?.description ?? undefined} /></label>
       </div>
-      <button className="mt-4 min-h-11 action-button rounded-xl px-5 text-sm font-semibold text-white disabled:opacity-50" disabled={pending} type="submit">{transaction ? "Sačuvaj izmene" : "Sačuvaj transakciju"}</button>
+      <button className="mt-4 min-h-11 action-button rounded-xl px-5 text-sm font-semibold text-primary-foreground disabled:opacity-50" disabled={pending} type="submit">{transaction ? "Sačuvaj izmene" : "Sačuvaj transakciju"}</button>
       <ActionMessage state={state} success={transaction ? "Transakcija je izmenjena." : "Transakcija je sačuvana."} />
     </form>
   );

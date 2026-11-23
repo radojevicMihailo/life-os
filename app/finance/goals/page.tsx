@@ -37,13 +37,13 @@ export default async function GoalsPage() {
           {goal.receivableBalance!==null&&Number(goal.receivableBalance)>0?<p>Potraživanja su uslovni doprinos; nisu uključena u mesečni plan štednje.</p>:null}
           {goal.underfunded?<p className="text-amber-800 dark:text-amber-300">Deo rezervacija nije pokriven saldom. Plan štednje važi pod uslovom da dopuniš nedostajuća sredstva.</p>:null}
         </div>
-        {goal.legacyAccountName && !goal.allocations.length ? <p className="mt-4 rounded-xl bg-blue-400/10 p-3 text-xs text-blue-700 dark:text-blue-200">Ovaj cilj je ranije pratio ceo saldo računa „{goal.legacyAccountName}“. Izaberi koliko novca izdvajaš za cilj; saldo se više ne računa automatski.</p> : null}
+        {goal.legacyAccountName && !goal.allocations.length ? <p className="mt-4 rounded-xl bg-primary/10 p-3 text-xs text-primary">Ovaj cilj je ranije pratio ceo saldo računa „{goal.legacyAccountName}“. Izaberi koliko novca izdvajaš za cilj; saldo se više ne računa automatski.</p> : null}
         <section className="mt-5 space-y-3 border-t border-border pt-4" aria-label={`Raspodela: ${goal.name}`}>
           <h3 className="text-sm font-semibold">Gde je novac</h3>
           {!goal.allocations.length ? <p className="text-sm text-muted-foreground">Još nema izdvojenih sredstava.</p> : <ul className="space-y-3">
             {goal.allocations.map((allocation) => <li className="rounded-2xl border border-border p-3.5" key={`${allocation.id}-${allocation.amount}`}>
               <div className="flex flex-wrap items-start justify-between gap-2">
-                <Link href="/finance/accounts" className="min-w-0 break-words text-sm font-medium text-blue-700 dark:text-blue-200 hover:underline">{allocation.accountName}{allocation.accountClassification === "receivable" ? " · Potraživanje" : ""}{allocation.accountActive ? "" : " · Arhiviran račun"}</Link>
+                <Link href="/finance/accounts" className="min-w-0 break-words text-sm font-medium text-primary hover:underline">{allocation.accountName}{allocation.accountClassification === "receivable" ? " · Potraživanje" : ""}{allocation.accountActive ? "" : " · Arhiviran račun"}</Link>
                 <Money amount={allocation.amount} currencyCode={allocation.currencyCode} label={`Izdvojeno sa računa ${allocation.accountName}`} />
               </div>
               {allocation.currencyCode !== goal.currencyCode ? <div className="mt-2 space-y-2 text-xs text-muted-foreground">
@@ -65,8 +65,8 @@ export default async function GoalsPage() {
           </ul>}
         </section>
         {goal.isActive ? <>
-          <details className="mt-4 rounded-2xl border border-blue-400/20 bg-blue-400/5 px-4">
-            <summary className="flex min-h-12 cursor-pointer items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-200"><Plus className="size-4" />Dodaj sredstva</summary>
+          <details className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 px-4">
+            <summary className="flex min-h-12 cursor-pointer items-center gap-2 text-sm font-medium text-primary"><Plus className="size-4" />Dodaj sredstva</summary>
             <div className="pb-4">
               <p className="mb-3 text-xs text-muted-foreground">Rezervacija označava namenu novca ili potraživanja; ne pomera sredstva između računa.</p>
               {accounts.some((account) => !goal.allocations.some((allocation) => allocation.accountId === account.id)) ? <GoalAllocationForm key={goal.allocations.map((allocation) => allocation.id).join(",")} goalId={goal.id} accounts={accounts.filter((account) => !goal.allocations.some((allocation) => allocation.accountId === account.id))} /> : <p className="text-sm text-muted-foreground">{accounts.length ? "Svi aktivni računi su već povezani. Za njih izaberi Izmeni iznos." : "Dodaj aktivan račun u Finansije → Računi."}</p>}

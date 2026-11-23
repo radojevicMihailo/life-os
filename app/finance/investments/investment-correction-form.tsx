@@ -29,7 +29,7 @@ export function InvestmentCorrectionForm({ activity, accounts, instruments, curr
   const currency = accounts.find((account) => account.id === accountId)?.cashCurrencyCode ?? activity.tradeCurrencyCode;
   const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Belgrade", year: "numeric", month: "2-digit", day: "2-digit" }).format(activity.occurredAt);
   return <details className="mt-3 w-full text-left">
-    <summary className="min-h-10 cursor-pointer py-2 text-sm font-medium text-blue-700 dark:text-blue-200">{label}</summary>
+    <summary className="min-h-10 cursor-pointer py-2 text-sm font-medium text-primary">{label}</summary>
     <form action={action} aria-label={`Izmena ${activity.symbol} ${date}`} className="mt-2 rounded-2xl border border-border bg-muted/50 p-4">
       <input name="originalId" type="hidden" value={activity.id} />
       <p className="mb-3 text-sm font-medium">{opening ? "Izmeni početni unos" : activity.type === "buy" ? "Izmeni kupovinu" : "Izmeni prodaju"}</p>
@@ -52,7 +52,7 @@ export function InvestmentCorrectionForm({ activity, accounts, instruments, curr
         <label className="text-xs text-muted-foreground">Datum<Input className={control} name="occurredAt" type="date" defaultValue={date} {...fieldErrorProps(state, "occurredAt")} /></label>
       </div>
       <p className="mt-3 text-xs text-muted-foreground">{opening ? "Ovaj unos ne menja gotovinu." : "Gotovina i povezani obračuni biće preračunati."} Unesi ukupan iznos za celu količinu, bez naknade.</p>
-      <button className="mt-4 min-h-11 action-button rounded-xl px-4 text-sm text-white" disabled={pending} type="submit">Sačuvaj izmene</button>
+      <button className="mt-4 min-h-11 action-button rounded-xl px-4 text-sm text-primary-foreground" disabled={pending} type="submit">Sačuvaj izmene</button>
       <ActionMessage state={state} success="Izmena je sačuvana. Pozicija i povezani obračuni su ažurirani." />
     </form>
   </details>;

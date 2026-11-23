@@ -10,7 +10,7 @@ import { mainSections } from "@/components/main-sections";
 import { navigationMatches, type SearchResult } from "@/lib/search";
 
 export const OPEN_COMMANDS = "life-os:commands";
-const quickLinks = [
+export const quickLinks = [
   { href: "/tasks?new=1", title: "Novi zadatak" },
   { href: "/finance/transactions#new-transaction", title: "Novi trošak" },
   { href: "/notes?new=1", title: "Nova beleška" },
@@ -71,5 +71,5 @@ export function CommandPalette() {
 }
 
 export function SearchButton() {
-  return <button type="button" onClick={() => window.dispatchEvent(new Event(OPEN_COMMANDS))} className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-border bg-background/40 px-3 text-sm text-muted-foreground hover:bg-accent"><Search aria-hidden className="size-4" /><span>Pretraži</span><kbd className="ml-auto text-xs">⌘K</kbd></button>;
+  return <button type="button" onClick={() => window.dispatchEvent(new Event(OPEN_COMMANDS))} className="flex min-h-11 w-full items-center gap-2 rounded-lg border border-sidebar-border px-3 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"><Search aria-hidden className="size-4" /><span>Pretraži</span><kbd className="ml-auto text-xs">⌘K</kbd></button>;
 }

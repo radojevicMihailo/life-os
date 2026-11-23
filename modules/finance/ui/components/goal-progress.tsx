@@ -20,7 +20,7 @@ export function GoalProgress({ name, balance, percentage, targetAmount, currency
       {complete ? <span className={`text-sm font-semibold tabular-nums ${underfunded ? "text-amber-500" : "text-primary"}`}><FinancialValue>{label}%</FinancialValue></span> : null}
     </div>
     {complete ? <FinancialDetail><div className="h-2.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label={`${name}: ${label}% rezervisano`} aria-valuenow={bar} aria-valuemin={0} aria-valuemax={100}>
-      <div className={`h-full rounded-full ${underfunded ? "bg-amber-500" : "bg-gradient-to-r from-blue-500 to-emerald-400"}`} style={{ width: `${bar}%` }} />
+      <div className={`h-full rounded-full ${underfunded ? "bg-amber-500" : "bg-(--action)"}`} style={{ width: `${bar}%` }} />
     </div></FinancialDetail> : <p className="text-xs text-muted-foreground">Ukupna vrednost nije dostupna dok se ne unese kurs.</p>}
     {stale ? <p className="text-xs text-amber-500">Procena koristi zastareo kurs. Osveži kurs za pouzdan prikaz.</p> : null}
     {underfunded ? <p className="text-xs text-amber-500">Nedostaje novac na računu za deo rezervacija.</p> : null}

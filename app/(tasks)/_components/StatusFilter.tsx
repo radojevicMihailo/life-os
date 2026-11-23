@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { taskStatusColors } from "@/lib/status-colors";
 
@@ -32,11 +33,17 @@ export function StatusFilter() {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <span className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Status:</span>
-      {statuses.map((s) => (
-        <Link key={s.key} href={withParam(s.key)} aria-current={active === s.key ? "page" : undefined}>
-          <Badge variant="outline" className={`h-9 rounded-xl border px-3 text-sm ${taskStatusColors[s.key]} ${active === s.key ? "ring-2 ring-white/55 shadow-lg shadow-black/20" : "opacity-75 hover:opacity-100"}`}>{s.label}</Badge>
-        </Link>
-      ))}
+      {statuses.map(({ key, label }) => {
+        const selected = active === key;
+        return (
+          <Link key={key} href={withParam(key)} aria-current={selected ? "page" : undefined} className="rounded-xl underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">
+            <Badge variant="outline" className={`h-10 rounded-xl px-3 text-sm font-semibold ${taskStatusColors[key]} ${selected ? "ring-2 ring-current" : ""}`}>
+              {selected && <Check aria-hidden />}
+              {label}
+            </Badge>
+          </Link>
+        );
+      })}
     </div>
   );
 }

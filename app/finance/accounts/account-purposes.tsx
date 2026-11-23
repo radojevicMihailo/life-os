@@ -17,7 +17,7 @@ function PurposeRow({ accountId, currencyCode, item, editable }: {
   const [editState, editAction, editing] = useActionState(setAccountPurposeAction, undefined);
   return <li className="rounded-xl border border-border p-3">
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <Link className="text-sm text-blue-700 dark:text-blue-200 hover:underline" href={item.type === "goal" ? `/finance/goals#goal-${item.targetId}` : item.budgetMonth ? `/finance/budgets?month=${item.budgetMonth}` : "/finance/budgets"}>
+      <Link className="text-sm text-primary hover:underline" href={item.type === "goal" ? `/finance/goals#goal-${item.targetId}` : item.budgetMonth ? `/finance/budgets?month=${item.budgetMonth}` : "/finance/budgets"}>
         {item.name}{item.targetActive ? "" : " · Arhivirano"}
       </Link>
       <Money amount={item.amount} currencyCode={currencyCode} />
@@ -52,15 +52,15 @@ export function AccountPurposes({ accountId, currencyCode, active, summary, opti
     </div>
     {summary.deficit !== "0" ? <p role="status" className="mt-3 rounded-xl bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-200">Nedostaje <Money amount={summary.deficit} currencyCode={currencyCode} /> za rezervisane namene. Smanji rezervacije ili dopuni račun.</p> : null}
     {summary.items.length ? <ul className="mt-3 space-y-2">{summary.items.map((item) => <PurposeRow key={`${item.id}-${item.amount}`} accountId={accountId} currencyCode={currencyCode} item={item} editable={active} />)}</ul> : <p className="mt-3 text-xs text-muted-foreground">Novac još nije raspoređen na ciljeve ili budžete.</p>}
-    {active ? <details className="mt-3"><summary className="min-h-11 cursor-pointer py-3 text-sm text-blue-700 dark:text-blue-200">Rezerviši za namenu</summary>
+    {active ? <details className="mt-3"><summary className="min-h-11 cursor-pointer py-3 text-sm text-primary">Rezerviši za namenu</summary>
       <p className="mb-3 text-xs text-muted-foreground">Iznos se rezerviše u valuti računa. Cilj može biti u drugoj valuti; njegova protivvrednost se računa po kursu. Potrošnja može stvoriti manjak.</p>
       {available.length ? <form action={action} className="space-y-3">
         <input type="hidden" name="accountId" value={accountId} />
         <label className="block text-xs text-muted-foreground">Cilj ili budžet<select name="target" className={control} required>{available.map((o) => <option value={`${o.type}:${o.id}`} key={`${o.type}:${o.id}`}>{o.name}{o.type === "goal" ? ` · cilj u ${o.currencyCode}` : ""}</option>)}</select></label>
         <label className="block text-xs text-muted-foreground">Iznos ({currencyCode})<input name="amount" className={control} inputMode="decimal" placeholder="0,00" required /></label>
-        <button disabled={pending} className="min-h-11 action-button rounded-xl px-4 text-sm font-semibold text-white">Rezerviši novac</button>
+        <button disabled={pending} className="min-h-11 action-button rounded-xl px-4 text-sm font-semibold text-primary-foreground">Rezerviši novac</button>
         <ActionMessage state={state} success="Novac je rezervisan." />
-      </form> : <p className="text-xs text-muted-foreground">Nema dodatnih ciljeva ili budžeta za ovaj račun. Dodaj ih na <Link className="text-blue-700 dark:text-blue-200 underline" href="/finance/goals">Ciljevima</Link> ili <Link className="text-blue-700 dark:text-blue-200 underline" href="/finance/budgets">Budžetima</Link>.</p>}
+      </form> : <p className="text-xs text-muted-foreground">Nema dodatnih ciljeva ili budžeta za ovaj račun. Dodaj ih na <Link className="text-primary underline" href="/finance/goals">Ciljevima</Link> ili <Link className="text-primary underline" href="/finance/budgets">Budžetima</Link>.</p>}
     </details> : null}
   </section>;
 }

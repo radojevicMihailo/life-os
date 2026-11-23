@@ -35,7 +35,7 @@ export default function RootLayout({
       className="h-full antialiased"
     >
       <body className="min-h-full">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
+        <ThemeProvider attribute="class" storageKey="life-os-theme" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
           <PomodoroProvider>
             <FinancePrivacyProvider>
               <div className="flex min-h-screen">

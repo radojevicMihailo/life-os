@@ -11,7 +11,7 @@ export function PageHeader({
 }) {
   return (
     <header className="mb-8">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-400">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
         {eyebrow}
       </p>
       <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">

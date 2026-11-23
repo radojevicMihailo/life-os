@@ -301,7 +301,7 @@ export function CalendarView({
                     <span
                       className={`text-sm ${
                         today
-                          ? "rounded bg-blue-600 px-1.5 py-0.5 font-semibold text-white"
+                          ? "rounded bg-primary px-1.5 py-0.5 font-semibold text-primary-foreground"
                           : "text-muted-foreground"
                       }`}
                     >
@@ -415,7 +415,7 @@ function Timeline({
               <div
                 className={
                   isToday
-                    ? "inline-block rounded bg-blue-600 px-1.5 font-semibold text-white"
+                    ? "inline-block rounded bg-primary px-1.5 font-semibold text-primary-foreground"
                     : "font-semibold"
                 }
               >

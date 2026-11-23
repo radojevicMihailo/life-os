@@ -24,7 +24,7 @@ export function GoalForm({ currencies, goal }: { currencies: CurrencyOption[]; g
       </select></label>
     </div>
     {!goal ? <p className="mt-3 text-xs text-muted-foreground">Nakon kreiranja izdvoji novac sa jednog ili više računa. Računi mogu biti u različitim valutama.</p> : null}
-    <button className="mt-4 min-h-11 action-button rounded-xl px-5 text-sm font-semibold text-white" disabled={pending}>Sačuvaj cilj</button>
+    <button className="mt-4 min-h-11 action-button rounded-xl px-5 text-sm font-semibold text-primary-foreground" disabled={pending}>Sačuvaj cilj</button>
     <ActionMessage state={state} success="Cilj je sačuvan." />
   </form>;
 }

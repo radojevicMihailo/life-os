@@ -26,7 +26,7 @@ export function GoalAllocationForm({ goalId, accounts, allocation }: {
     </select></label>}
     <label className="block text-xs text-muted-foreground">{allocation ? "Rezervisani iznos" : "Iznos koji izdvajaš"} ({selected?.currencyCode})<input className={control} name="amount" inputMode="decimal" placeholder="0,00" defaultValue={decimalInputValue(allocation?.amount)} required disabled={pending} /></label>
     {selected ? <p className="text-xs text-muted-foreground">{allocation ? "Dodatno slobodno na računu" : "Slobodno na računu"}: <Money amount={selected.free} currencyCode={selected.currencyCode} />. Iznos se čuva u valuti računa.</p> : null}
-    <button className="min-h-11 action-button rounded-xl px-4 text-sm font-semibold text-white" disabled={pending}>{allocation ? "Sačuvaj iznos" : "Izdvoji za cilj"}</button>
+    <button className="min-h-11 action-button rounded-xl px-4 text-sm font-semibold text-primary-foreground" disabled={pending}>{allocation ? "Sačuvaj iznos" : "Izdvoji za cilj"}</button>
     <ActionMessage state={state} success={allocation ? "Rezervacija je izmenjena." : "Sredstva su izdvojena za cilj."} />
   </form>;
 }

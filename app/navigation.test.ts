@@ -30,10 +30,14 @@ it("shows only main sections in the sidebar", () => {
   for (const href of ["/task-manager", "/finance", "/physical", "/habits", "/goals", "/notes", "/meals", "/travels"]) expect(html).toContain(`href="${href}"`);
   expect(html).not.toContain("aria-expanded=");
 });
-it("streams the cockpit with editable habits, priority task actions and quick destinations", async () => {
+it("streams the dashboard with priority actions, chronological agenda, and a quick-add menu", async () => {
   const html = await renderStream(createElement(Home));
-  for (const copy of ["Danas biram", "Čitanje", "Putovanje", "Rad na projektu", "Tri najvažnija zadatka", "Pomeri termin", "Završi", "Brzi unos"]) expect(html).toContain(copy);
-  expect(html).toContain('href="/finance/transactions#new-transaction"');
+  for (const copy of ["Čitanje", "Putovanje", "Rad na projektu", "Prioritetni zadaci", "Pomeri termin", "Završi", "Dodaj"]) expect(html).toContain(copy);
+  expect(html).toMatch(/aria-haspopup="menu"[^>]*>.*?Dodaj/);
+  expect(html).toMatch(/datetime="2026-09-26T08:00:00Z"/i);
+  expect(html).not.toContain("Danas biram");
+  expect(html.indexOf('aria-label="Prioritetni zadaci"')).toBeLessThan(html.indexOf('aria-label="Današnji plan"'));
+  expect(html.indexOf('aria-label="Današnji plan"')).toBeLessThan(html.indexOf('aria-label="Navike"'));
   expect(html).toContain('href="/finance/goals"');
   expect(html).toContain('aria-label="Označi naviku: Čitanje"');
 });
@@ -55,7 +59,7 @@ it("streams usable task, habit and goal content before the calendar resolves", a
     stream = renderToPipeableStream(createElement(Home), { onShellReady() { stream.pipe(output); }, onError: reject });
   });
   expect(html).toContain('aria-busy="true"');
-  expect(html).toContain("Danas biram");
+  expect(html).toContain(">Danas</h1>");
   const completed = new Promise<void>((resolve) => output.on("end", resolve));
   release({ plan: [], calendarError: null });
   await completed;
@@ -65,7 +69,7 @@ it("shows useful empty states without invented values", async () => {
   const html = await renderStream(createElement(Home));
   expect(html).toContain("Još nema navika za danas");
   expect(html).toContain("Još nema aktivnih finansijskih ciljeva");
-  expect(html).toContain("Danas nema zakazanih aktivnosti");
+  expect(html).toContain("Nema zakazanih termina za danas.");
   expect(html).not.toContain("Čitanje");
 });
 it("contains panel failures and keeps the remaining sections usable", async () => {

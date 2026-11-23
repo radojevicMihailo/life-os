@@ -7,7 +7,7 @@ export function InvestmentGuide() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button type="button" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-blue-400/30 bg-blue-400/10 px-4 text-sm font-medium text-blue-700 dark:text-blue-100 hover:bg-blue-400/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400">
+        <button type="button" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 text-sm font-medium text-primary hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
           <Info aria-hidden="true" className="size-4" />
           Uputstvo
         </button>

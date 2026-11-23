@@ -7,6 +7,7 @@ import { Flame, Pencil } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { Habit } from "@/db/schema/habits";
 import { saveHabitCount } from "@/lib/habits/save-count";
 import { upsertLog } from "../_actions/logs";
@@ -17,12 +18,14 @@ export function HabitTodayRow({
   count,
   streak,
   showStreak = true,
+  className,
 }: {
   habit: Habit;
   isoToday: string;
   count: number | undefined;
   streak: number;
   showStreak?: boolean;
+  className?: string;
 }) {
   const [pending, startTransition] = useTransition();
   const [local, setLocal] = useState<number>(count ?? 0);
@@ -53,9 +56,7 @@ export function HabitTodayRow({
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card shadow-sm px-3 py-2 ${
-        done ? "opacity-90" : ""
-      }`}
+      className={cn("flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card px-3 py-2 shadow-sm", done && "opacity-90", className)}
     >
       <div className="flex min-w-0 flex-1 items-center gap-2">
         {habit.kind === "binary" ? (

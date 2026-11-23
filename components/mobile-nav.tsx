@@ -24,10 +24,10 @@ export function MobileNav() {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-sidebar-border bg-sidebar/95 px-4 text-sidebar-foreground backdrop-blur-xl md:hidden">
+    <header className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-sidebar-border bg-sidebar px-3 text-sidebar-foreground md:hidden">
       <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
         <DialogPrimitive.Trigger
-          className="flex size-10 items-center justify-center rounded-xl transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          className="flex size-11 items-center justify-center rounded-lg transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-2 focus-visible:outline-sidebar-ring"
           aria-label="Otvori navigaciju"
         >
           <Menu className="size-5" />
