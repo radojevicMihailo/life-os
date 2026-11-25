@@ -42,7 +42,7 @@ async function insertDaysWithTags(
 
 export async function createSplit(raw: unknown): Promise<ActionResult<{ id: string }>> {
   const parsed = splitPayloadSchema.safeParse(raw);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const data = parsed.data;
 
   const id = await db.transaction(async (tx) => {
@@ -60,7 +60,7 @@ export async function createSplit(raw: unknown): Promise<ActionResult<{ id: stri
 
 export async function updateSplit(splitId: string, raw: unknown): Promise<ActionResult> {
   const parsed = splitPayloadSchema.safeParse(raw);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const data = parsed.data;
 
   await db.transaction(async (tx) => {

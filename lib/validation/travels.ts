@@ -3,12 +3,12 @@ import { z } from "zod";
 export const travelRegionSchema = z.enum(["srbija", "okolne_drzave", "evropa", "svet"]);
 export const travelStatusSchema = z.enum(["idea", "planning", "booked", "done"]);
 
-const isoDate = z.iso.date({ error: "Invalid date" })
+const isoDate = z.iso.date({ error: "Datum nije ispravan." })
   .optional()
   .nullable();
 
 export const createTravelSchema = z.object({
-  name: z.string().trim().min(1, "Name required").max(500),
+  name: z.string().trim().min(1, "Unesi naziv.").max(500),
   region: travelRegionSchema.optional(),
   status: travelStatusSchema.optional(),
   startDate: isoDate,

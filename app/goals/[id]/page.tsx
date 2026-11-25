@@ -51,7 +51,7 @@ export default async function GoalDetailPage({
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium">Milestones</h2>
+          <h2 className="text-lg font-medium">Međukoraci</h2>
           <span className="text-sm text-muted-foreground tabular-nums">
             {done}/{total} · {pct}%
           </span>
@@ -62,7 +62,7 @@ export default async function GoalDetailPage({
         <MilestoneAdd goalId={g.id} />
         <div className="space-y-2">
           {milestones.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No milestones yet.</p>
+            <p className="text-sm text-muted-foreground">Još nema međukoraka.</p>
           ) : (
             milestones.map((m) => <MilestoneRow key={m.id} milestone={m} />)
           )}

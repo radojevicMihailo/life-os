@@ -9,7 +9,7 @@ export const projectStatusSchema = z.enum([
 ]);
 
 export const createProjectSchema = z.object({
-  name: z.string().trim().min(1, "Name required").max(200),
+  name: z.string().trim().min(1, "Unesi naziv.").max(200),
   status: projectStatusSchema.optional(),
   startAt: z.date().optional().nullable(),
   dueAt: z.date().optional().nullable(),

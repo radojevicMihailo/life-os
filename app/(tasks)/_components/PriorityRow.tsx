@@ -30,7 +30,7 @@ export function PriorityRow({
   const [pending, startTransition] = useTransition();
 
   function remove() {
-    if (taskCount > 0 && !confirm(`Priority on ${taskCount} task(s). Remove?`)) return;
+    if (taskCount > 0 && !confirm(`Broj zadataka sa ovim prioritetom: ${taskCount}. Ukloniti prioritet?`)) return;
     startTransition(async () => {
       const r = await deletePriority(id);
       if (!r.ok) toast.error(r.error);
@@ -69,7 +69,7 @@ export function PriorityRow({
             value={editRank}
             onChange={(e) => setEditRank(e.target.value)}
             className="h-8 w-24"
-            aria-label="Rank"
+            aria-label="Redosled"
           />
           <Button size="icon" variant="ghost" onClick={save} disabled={pending}>
             <Check className="h-4 w-4" />

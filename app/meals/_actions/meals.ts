@@ -28,7 +28,7 @@ export async function createMeal(
   input: CreateMealInput,
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = createMealSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const v = parsed.data;
   const foodIds = Array.from(new Set(v.items.map((i) => i.foodId)));
   const foods = await loadFoods(foodIds);
@@ -71,14 +71,14 @@ export async function createMeal(
 
 export async function updateMeal(input: UpdateMealInput): Promise<ActionResult> {
   const parsed = updateMealSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { id, ...v } = parsed.data;
   const result = await db.transaction(async (tx) => {
     // Serialize snapshot reads with edits, and validate item ownership before
     // replacing rows. Stable item IDs keep subsequent edits tied to history.
     const [current] = await tx.select({ id: meal.id, date: meal.date })
       .from(meal).where(eq(meal.id, id)).for("update");
-    if (!current) return fail("Meal not found");
+    if (!current) return fail("Obrok nije pronađen.");
     const existing = await tx.select().from(mealItem).where(eq(mealItem.mealId, id));
     const newFoodIds = Array.from(new Set(v.items.flatMap((item) =>
       !item.mealItemId && item.foodId ? [item.foodId] : [],

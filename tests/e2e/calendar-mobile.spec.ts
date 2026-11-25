@@ -15,15 +15,15 @@ test("calendar defaults to day on phones and supports readable week and month vi
   await expect(page).toHaveURL("/");
   await page.goto("/calendar");
 
-  const day = page.getByRole("button", { name: "Day", exact: true });
-  const week = page.getByRole("button", { name: "Week", exact: true });
-  const month = page.getByRole("button", { name: "Month", exact: true });
+  const day = page.getByRole("button", { name: "Dan", exact: true });
+  const week = page.getByRole("button", { name: "Nedelja", exact: true });
+  const month = page.getByRole("button", { name: "Mesec", exact: true });
   await expect(day).toHaveAttribute("aria-pressed", "true");
   const heading = page.getByTestId("calendar-period");
   const initial = await heading.textContent();
-  await page.getByRole("button", { name: "Next", exact: true }).click();
+  await page.getByRole("button", { name: "Sledeće", exact: true }).click();
   await expect(heading).not.toHaveText(initial!);
-  await page.getByRole("button", { name: "Previous", exact: true }).click();
+  await page.getByRole("button", { name: "Prethodno", exact: true }).click();
   await expect(heading).toHaveText(initial!);
 
   for (const width of [360, 390, 430]) {

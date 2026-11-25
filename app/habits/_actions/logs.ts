@@ -19,7 +19,7 @@ function fail(error: string): ActionResult<never> {
 
 export async function upsertLog(input: UpsertLogInput): Promise<ActionResult> {
   const parsed = upsertLogSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { habitId, date, count } = parsed.data;
 
   await db
@@ -36,7 +36,7 @@ export async function upsertLog(input: UpsertLogInput): Promise<ActionResult> {
 
 export async function deleteLog(input: DeleteLogInput): Promise<ActionResult> {
   const parsed = deleteLogSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { habitId, date } = parsed.data;
 
   await db

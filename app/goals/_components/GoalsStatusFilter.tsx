@@ -29,7 +29,7 @@ export function GoalsStatusFilter() {
             aria-current={active ? "page" : undefined}
           >
             <Badge variant="outline" className={`h-9 rounded-xl border px-3 text-sm ${s === "all" ? "border-violet-400/70 bg-violet-500/20 text-violet-100" : goalStatusColors[s]} ${active ? "ring-2 ring-white/55 shadow-lg shadow-black/20" : "opacity-75 hover:opacity-100"}`}>
-              {s === "all" ? "All" : goalStatusLabel[s]}
+              {s === "all" ? "Svi" : goalStatusLabel[s]}
             </Badge>
           </Link>
         );

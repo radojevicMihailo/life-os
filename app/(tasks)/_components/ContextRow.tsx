@@ -27,7 +27,7 @@ export function ContextRow({
   const [pending, startTransition] = useTransition();
 
   function remove() {
-    if (taskCount > 0 && !confirm(`Context is on ${taskCount} task(s). Remove?`)) return;
+    if (taskCount > 0 && !confirm(`Broj zadataka sa ovim kontekstom: ${taskCount}. Ukloniti kontekst?`)) return;
     startTransition(async () => {
       const r = await deleteContext(id);
       if (!r.ok) toast.error(r.error);

@@ -19,7 +19,7 @@ const addSchema = z.object({
 
 export async function addTagGroup(input: z.input<typeof addSchema>): Promise<ActionResult<{ id: string }>> {
   const parsed = addSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   try {
     const [row] = await db
       .insert(activityTagGroup)
@@ -37,7 +37,7 @@ const renameSchema = z.object({ id: z.uuid(), name: z.string().trim().min(1).max
 
 export async function renameTagGroup(input: z.input<typeof renameSchema>): Promise<ActionResult> {
   const parsed = renameSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   await db.update(activityTagGroup).set({ name: parsed.data.name }).where(eq(activityTagGroup.id, parsed.data.id));
   revalidatePhysicalRoutes();
   return { ok: true, data: undefined };

@@ -19,10 +19,10 @@ export const goalStatusEnum = pgEnum("goal_status", [
 export type GoalStatus = (typeof goalStatusEnum.enumValues)[number];
 
 export const goalStatusLabel: Record<GoalStatus, string> = {
-  active: "Active",
-  done: "Done",
-  paused: "Paused",
-  canceled: "Canceled",
+  active: "Aktivno",
+  done: "Završeno",
+  paused: "Pauzirano",
+  canceled: "Otkazano",
 };
 
 export const goalHorizonEnum = pgEnum("goal_horizon", [
@@ -35,10 +35,10 @@ export const goalHorizonEnum = pgEnum("goal_horizon", [
 export type GoalHorizon = (typeof goalHorizonEnum.enumValues)[number];
 
 export const goalHorizonLabel: Record<GoalHorizon, string> = {
-  yearly: "Yearly",
-  monthly: "Monthly",
-  weekly: "Weekly",
-  daily: "Daily",
+  yearly: "Godišnji",
+  monthly: "Mesečni",
+  weekly: "Nedeljni",
+  daily: "Dnevni",
 };
 
 export const goalHorizonOrder: GoalHorizon[] = ["yearly", "monthly", "weekly", "daily"];

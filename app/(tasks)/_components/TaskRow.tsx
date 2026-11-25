@@ -156,7 +156,7 @@ export function TaskRow({ task }: { task: TaskWithMeta }) {
         </Badge>
       )}
       {task.recurrence && (
-        <Repeat className="h-3.5 w-3.5 text-muted-foreground" aria-label="Recurring" />
+        <Repeat className="h-3.5 w-3.5 text-muted-foreground" aria-label="Ponavlja se" />
       )}
       {task.contexts && task.contexts.length > 0 && (
         <div className="flex items-center gap-1">

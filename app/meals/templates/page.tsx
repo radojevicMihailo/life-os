@@ -28,13 +28,13 @@ export default async function TemplatesPage() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-semibold">Templates</h1>
         <Button asChild>
-          <Link href="/meals/templates/new">New template</Link>
+          <Link href="/meals/templates/new">Novi šablon</Link>
         </Button>
       </div>
       <ul className="divide-y border rounded">
         {templates.length === 0 && (
           <li className="p-4 text-sm text-muted-foreground">
-            No templates yet.
+            Još nema šablona.
           </li>
         )}
         {templates.map((t) => {

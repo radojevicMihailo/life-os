@@ -92,7 +92,7 @@ export function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
                 {formatTaskDate(due)}
               </span>
             ) : (
-              <span className="text-xs text-muted-foreground">Date</span>
+              <span className="text-xs text-muted-foreground">Datum</span>
             )}
           </Button>
         </PopoverTrigger>
@@ -105,7 +105,7 @@ export function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
                 variant="ghost"
                 size="icon"
                 onClick={() => changeDue(null)}
-                aria-label="Clear due date"
+                aria-label="Ukloni rok"
               >
                 <X className="h-4 w-4" />
               </Button>

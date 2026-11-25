@@ -23,7 +23,7 @@ export async function createProject(
   input: CreateProjectInput,
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = createProjectSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
 
   const [row] = await db
     .insert(project)
@@ -41,7 +41,7 @@ export async function createProject(
 
 export async function updateProject(input: UpdateProjectInput): Promise<ActionResult> {
   const parsed = updateProjectSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { id, archived, name, status, startAt, dueAt } = parsed.data;
 
   await db

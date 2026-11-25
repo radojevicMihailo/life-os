@@ -31,7 +31,7 @@ export async function saveMealTargets(
 ): Promise<ActionResult> {
   const parsed = mealTargetsSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Unos nije ispravan." };
   }
   const v = parsed.data;
   await db

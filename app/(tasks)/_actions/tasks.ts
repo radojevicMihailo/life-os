@@ -25,7 +25,7 @@ export async function createTask(
   input: CreateTaskInput,
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = createTaskSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
 
   const contextIds = parsed.data.contextIds ?? [];
 
@@ -60,12 +60,12 @@ export async function createTask(
 
 export async function updateTask(input: UpdateTaskInput): Promise<ActionResult> {
   const parsed = updateTaskSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { id, ...patch } = parsed.data;
 
   const result = await db.transaction(async (tx) => {
     const [existing] = await tx.select().from(task).where(eq(task.id, id)).for("update");
-    if (!existing) return fail("Task not found");
+    if (!existing) return fail("Zadatak nije pronađen.");
     const actionAt = patch.actionAt !== undefined ? patch.actionAt : existing.actionAt;
     const actionEndAt = actionAt === null ? null : patch.actionEndAt !== undefined ? patch.actionEndAt : existing.actionEndAt;
     if (actionAt && actionEndAt && actionEndAt < actionAt) return fail("Kraj aktivnosti ne može biti pre početka.");
@@ -85,11 +85,11 @@ export async function updateTask(input: UpdateTaskInput): Promise<ActionResult> 
 
 export async function setTaskStatus(id: string, status: TaskStatus): Promise<ActionResult> {
   const parsed = taskStatusSchema.safeParse(status);
-  if (!parsed.success) return fail("Invalid status");
+  if (!parsed.success) return fail("Status nije ispravan.");
 
   const result = await db.transaction(async (tx) => {
     const [existing] = await tx.select().from(task).where(eq(task.id, id)).for("update");
-    if (!existing) return fail("Task not found");
+    if (!existing) return fail("Zadatak nije pronađen.");
     if (status === "done" && existing.status !== "done" && existing.recurrence) {
       const [completed] = await tx.insert(task).values({
         title: existing.title, notes: existing.notes, projectId: existing.projectId,
@@ -116,7 +116,7 @@ export async function setTaskStatus(id: string, status: TaskStatus): Promise<Act
 
 export async function toggleTask(id: string): Promise<ActionResult> {
   const existing = await db.query.task.findFirst({ where: eq(task.id, id) });
-  if (!existing) return fail("Task not found");
+  if (!existing) return fail("Zadatak nije pronađen.");
   return setTaskStatus(id, existing.status === "done" ? "backlog" : "done");
 }
 

@@ -76,12 +76,12 @@ export function ConfigPanel() {
 
   return (
     <div className="mt-6 grid gap-4 rounded-2xl border border-border bg-card shadow-sm p-4">
-      <h3 className="text-sm font-medium">Settings</h3>
+      <h3 className="text-sm font-medium">Podešavanja</h3>
       <div className="grid grid-cols-2 gap-4">
         <NumberField
           key={cfg.workMin}
           id="work-min"
-          label="Work (min)"
+          label="Rad (min)"
           value={cfg.workMin}
           min={1}
           disabled={disabled}
@@ -90,7 +90,7 @@ export function ConfigPanel() {
         <NumberField
           key={cfg.breakMin}
           id="break-min"
-          label="Break (min)"
+          label="Pauza (min)"
           value={cfg.breakMin}
           min={1}
           disabled={disabled}
@@ -105,7 +105,7 @@ export function ConfigPanel() {
             size="sm"
             onClick={() => void requestNotificationPermission()}
           >
-            Enable notifications
+            Uključi obaveštenja
           </Button>
         )}
         {notifyEnabled && (
@@ -115,7 +115,7 @@ export function ConfigPanel() {
             size="sm"
             onClick={() => setNotify(false)}
           >
-            Disable notifications
+            Isključi obaveštenja
           </Button>
         )}
       </div>

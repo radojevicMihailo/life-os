@@ -14,6 +14,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
+import { srLatn } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CalendarPeriodSelect } from "@/components/ui/calendar-period-select";
@@ -214,40 +215,40 @@ export function CalendarView({
 
   const title =
     view === "day"
-      ? format(cursor, "EEE, MMM d, yyyy")
+      ? format(cursor, "EEE, d. MMM yyyy.", { locale: srLatn })
       : view === "week"
-        ? `${format(days[0], "MMM d")} – ${format(days[6], "MMM d, yyyy")}`
-        : format(cursor, "MMMM yyyy");
+        ? `${format(days[0], "d. MMM", { locale: srLatn })} – ${format(days[6], "d. MMM yyyy.", { locale: srLatn })}`
+        : format(cursor, "MMMM yyyy.", { locale: srLatn });
 
   const weekdayLabels = Array.from({ length: 7 }, (_, i) =>
-    format(addDays(startOfWeek(new Date(), { weekStartsOn }), i), "EEE"),
+    format(addDays(startOfWeek(new Date(), { weekStartsOn }), i), "EEE", { locale: srLatn }),
   );
 
   return (
     <div className="min-w-0 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => shift(-1)} aria-label="Previous">
+          <Button variant="outline" size="icon" onClick={() => shift(-1)} aria-label="Prethodno">
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="sm" onClick={() => setCursor(new Date())}>
-            Today
+            Danas
           </Button>
-          <Button variant="outline" size="icon" onClick={() => shift(1)} aria-label="Next">
+          <Button variant="outline" size="icon" onClick={() => shift(1)} aria-label="Sledeće">
             <ChevronRight className="h-4 w-4" />
           </Button>
           <span data-testid="calendar-period" className="text-sm font-medium sm:ml-2">{title}</span>
           <CalendarPeriodSelect month={cursor.getMonth()} year={cursor.getFullYear()} onMonthChange={(month) => setCursor((date) => changeCalendarMonth(date, month))} onYearChange={(year) => setCursor((date) => changeCalendarYear(date, year))} />
           {toolbarExtras}
         </div>
-        <div role="group" aria-label="Calendar view" className="inline-flex rounded-2xl border border-border bg-card shadow-sm p-0.5 text-sm">
+        <div role="group" aria-label="Prikaz kalendara" className="inline-flex rounded-2xl border border-border bg-card shadow-sm p-0.5 text-sm">
           <button
             type="button"
             onClick={() => setView("day")}
             aria-pressed={view === "day"}
             className={`min-h-11 rounded px-3 py-1 ${view === "day" ? "bg-accent text-foreground" : "text-foreground/70"}`}
           >
-            Day
+            Dan
           </button>
           <button
             type="button"
@@ -257,7 +258,7 @@ export function CalendarView({
               view === "week" ? "bg-accent text-foreground" : "text-foreground/70"
             }`}
           >
-            Week
+            Nedelja
           </button>
           <button
             type="button"
@@ -267,12 +268,12 @@ export function CalendarView({
               view === "month" ? "bg-accent text-foreground" : "text-foreground/70"
             }`}
           >
-            Month
+            Mesec
           </button>
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-md" role="region" aria-label="Calendar dates" tabIndex={0}>
+      <div className="overflow-x-auto rounded-md" role="region" aria-label="Datumi u kalendaru" tabIndex={0}>
         {view === "month" ? (
           <div className="grid min-w-[700px] grid-cols-7 gap-px overflow-hidden rounded-md border bg-border text-sm md:min-w-0">
             {weekdayLabels.map((d) => (
@@ -332,7 +333,7 @@ export function CalendarView({
                         <li key={it.id} onClick={(e) => e.stopPropagation()}>
                           <Link
                             href={`/tasks/${it.taskId!}`}
-                            title={`${it.title} (${it.kind})`}
+                            title={`${it.title} (${it.kind === "due" ? "rok" : "termin rada"})`}
                             className={`flex items-center gap-1 truncate rounded border px-1.5 py-1 text-sm ${
                               it.status === "done" || it.status === "canceled"
                                 ? "text-muted-foreground line-through"
@@ -402,7 +403,7 @@ function Timeline({
         className="grid border-b bg-muted/40"
         style={{ gridTemplateColumns: `56px repeat(${days.length}, minmax(0, 1fr))` }}
       >
-        <div className="px-2 py-1 text-xs text-muted-foreground">All-day</div>
+        <div className="px-2 py-1 text-xs text-muted-foreground">Ceo dan</div>
         {days.map((day) => {
           const isToday = isSameDay(day, today);
           return (
@@ -410,7 +411,7 @@ function Timeline({
               key={`h-${format(day, "yyyy-MM-dd")}`}
               className="border-l px-2 py-1 text-sm font-medium"
             >
-              <div className="text-muted-foreground">{format(day, "EEE")}</div>
+              <div className="text-muted-foreground">{format(day, "EEE", { locale: srLatn })}</div>
               <div
                 className={
                   isToday
@@ -457,7 +458,7 @@ function Timeline({
                     <li key={it.id} onClick={(e) => e.stopPropagation()}>
                       <Link
                         href={`/tasks/${it.taskId!}`}
-                        title={`${it.title} (${it.kind})`}
+                        title={`${it.title} (${it.kind === "due" ? "rok" : "termin rada"})`}
                         className={`flex items-center gap-1 truncate rounded border px-1.5 py-1 text-sm ${
                           it.status === "done" || it.status === "canceled"
                             ? "text-muted-foreground line-through"
@@ -574,7 +575,7 @@ function Timeline({
                     key={it.id}
                     onClick={(e) => e.stopPropagation()}
                     href={`/tasks/${it.taskId!}`}
-                    title={`${it.title} (${it.kind})`}
+                    title={`${it.title} (${it.kind === "due" ? "rok" : "termin rada"})`}
                     className={`absolute left-1 right-1 overflow-hidden rounded border px-1.5 py-1 text-sm leading-tight ${
                       muted ? "text-muted-foreground line-through" : ""
                     }`}

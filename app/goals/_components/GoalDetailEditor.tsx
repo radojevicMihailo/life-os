@@ -102,7 +102,7 @@ export function GoalDetailEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Horizon</Label>
+        <Label>Period</Label>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -124,7 +124,7 @@ export function GoalDetailEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Target date</Label>
+        <Label>Rok</Label>
         <DateField
           value={targetDate}
           withTime={false}
@@ -134,12 +134,12 @@ export function GoalDetailEditor({
       </div>
 
       <div className="space-y-2 sm:col-span-2">
-        <Label>Description</Label>
+        <Label>Opis</Label>
         <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           onBlur={saveDescription}
-          placeholder="Why this goal matters, success criteria..."
+          placeholder="Zašto ti je ovaj cilj važan i kako ćeš znati da je ostvaren?"
           rows={3}
         />
       </div>

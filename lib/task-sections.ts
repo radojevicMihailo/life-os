@@ -13,12 +13,12 @@ export const sectionOrder: SectionKey[] = [
 ];
 
 export const sectionLabels: Record<SectionKey, string> = {
-  overdue: "Overdue",
-  today: "Today",
-  tomorrow: "Tomorrow",
-  "this-week": "This week",
-  later: "Later",
-  "no-date": "No date",
+  overdue: "Rok istekao",
+  today: "Danas",
+  tomorrow: "Sutra",
+  "this-week": "Ove nedelje",
+  later: "Kasnije",
+  "no-date": "Bez datuma",
 };
 
 const weekStartsOn = 1 as const;

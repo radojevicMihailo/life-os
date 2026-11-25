@@ -31,11 +31,11 @@ export function SubtaskAdd({ parentTaskId }: { parentTaskId: string }) {
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Add subtask"
+        placeholder="Dodaj podzadatak"
         disabled={pending}
       />
       <Button type="submit" disabled={pending || !title.trim()} size="sm">
-        Add
+        Dodaj
       </Button>
     </form>
   );

@@ -54,7 +54,7 @@ export function PomodoroView({ tasks, taskLoadError = false }: { tasks: TaskOpti
         </div>
         {state.phase === "break" && state.status === "idle" && (
           <p className="text-center text-sm text-muted-foreground">
-            Set your break duration below, then start the timer.
+            Podesi trajanje pauze ispod, pa pokreni tajmer.
           </p>
         )}
 
@@ -93,7 +93,7 @@ export function PomodoroView({ tasks, taskLoadError = false }: { tasks: TaskOpti
         </div>
 
         <div className="w-full space-y-2">
-          <Label htmlFor="pomodoro-task">Working on</Label>
+          <Label htmlFor="pomodoro-task">Na čemu radiš</Label>
           <Popover
             open={pickerOpen}
             onOpenChange={(open) => {
@@ -109,7 +109,7 @@ export function PomodoroView({ tasks, taskLoadError = false }: { tasks: TaskOpti
                 className="w-full min-w-0 justify-between"
               >
                 <span className="truncate">
-                  {selectedTask?.title ?? (taskLoadError ? "Task list unavailable" : state.taskId ? "Task no longer active" : "Choose a task or write manually")}
+                  {selectedTask?.title ?? (taskLoadError ? "Lista zadataka nije dostupna" : state.taskId ? "Zadatak više nije aktivan" : "Izaberi zadatak ili unesi opis")}
                 </span>
                 <ChevronDown />
               </Button>
@@ -118,8 +118,8 @@ export function PomodoroView({ tasks, taskLoadError = false }: { tasks: TaskOpti
               <Input
                 value={taskQuery}
                 onChange={(e) => setTaskQuery(e.target.value)}
-                placeholder="Search tasks..."
-                aria-label="Search tasks"
+                placeholder="Pretraži zadatke…"
+                aria-label="Pretraži zadatke"
                 autoFocus
               />
               <div className="max-h-56 space-y-1 overflow-y-auto">
@@ -132,7 +132,7 @@ export function PomodoroView({ tasks, taskLoadError = false }: { tasks: TaskOpti
                     setTaskQuery("");
                   }}
                 >
-                  No task — write manually
+                  Bez zadatka, unesi opis
                 </button>
                 {matchingTasks.map((task) => (
                   <button
@@ -153,7 +153,7 @@ export function PomodoroView({ tasks, taskLoadError = false }: { tasks: TaskOpti
                 ))}
                 {matchingTasks.length === 0 && (
                   <p className="px-2 py-2 text-sm text-muted-foreground">
-                    {taskLoadError ? "Task list unavailable. Try reloading the page." : tasks.length === 0 ? "No active tasks yet." : "No tasks match your search."}
+                    {taskLoadError ? "Lista zadataka nije dostupna. Osveži stranicu i pokušaj ponovo." : tasks.length === 0 ? "Još nema aktivnih zadataka." : "Nema zadataka koji odgovaraju pretrazi."}
                   </p>
                 )}
               </div>
@@ -163,32 +163,32 @@ export function PomodoroView({ tasks, taskLoadError = false }: { tasks: TaskOpti
             <Input
               value={state.label}
               onChange={(e) => setLabel(e.target.value)}
-              placeholder="Describe your work"
-              aria-label="Manual work description"
+              placeholder="Opiši na čemu radiš"
+              aria-label="Opis rada"
             />
           )}
           {selectedTask && (
             <Link href={`/tasks/${selectedTask.id}`} className="text-xs text-muted-foreground underline-offset-2 hover:underline">
-              Open task
+              Otvori zadatak
             </Link>
           )}
           {state.taskId && !selectedTask && !taskLoadError && (
             <p className="text-xs text-muted-foreground">
-              This task is no longer active. Choose another task or{" "}
+              Ovaj zadatak više nije aktivan. Izaberi drugi zadatak ili{" "}
               <button type="button" className="underline" onClick={() => setTaskId(null)}>
-                write manually
+                uneseš opis
               </button>
               .
             </p>
           )}
           {taskLoadError && (
             <p className="text-xs text-muted-foreground">
-              The task list is unavailable. The timer still works; reload to try again.
+              Lista zadataka nije dostupna. Tajmer i dalje radi. Osveži stranicu i pokušaj ponovo.
               {state.taskId && (
                 <>
-                  {" "}You can also{" "}
+                  {" "}Možeš i da{" "}
                   <button type="button" className="underline" onClick={() => setTaskId(null)}>
-                    write manually
+                    uneseš opis
                   </button>
                   .
                 </>
@@ -200,26 +200,26 @@ export function PomodoroView({ tasks, taskLoadError = false }: { tasks: TaskOpti
         <div className="flex flex-wrap items-center justify-center gap-2">
           {state.status === "idle" && (
             <Button type="button" onClick={start}>
-              Start {state.phase === "work" ? "work" : "break"}
+              {state.phase === "work" ? "Započni rad" : "Započni pauzu"}
             </Button>
           )}
           {state.status === "running" && (
             <Button type="button" onClick={pause} variant="secondary">
-              Pause
+              Pauziraj
             </Button>
           )}
           {state.status === "paused" && (
             <Button type="button" onClick={resume}>
-              Resume
+              Nastavi
             </Button>
           )}
           {state.status !== "idle" && (
             <>
               <Button type="button" variant="outline" onClick={finishPhase}>
-                {state.phase === "work" ? "Stop work" : "End break"}
+                {state.phase === "work" ? "Završi rad" : "Završi pauzu"}
               </Button>
               <Button type="button" variant="ghost" onClick={reset}>
-                Reset
+                Vrati na početak
               </Button>
             </>
           )}

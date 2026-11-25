@@ -174,7 +174,7 @@ export function TaskForm({
                     setShowActionEnd(true);
                   }}
                 >
-                  + End date
+                  + Datum završetka
                 </Button>
               ) : (
                 <Button
@@ -186,7 +186,7 @@ export function TaskForm({
                     setActionEndAt(null);
                   }}
                 >
-                  <X className="h-3 w-3" /> End
+                  <X className="h-3 w-3" /> Ukloni završetak
                 </Button>
               )}
             </div>

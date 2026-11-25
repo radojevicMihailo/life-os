@@ -65,7 +65,7 @@ export function GoalEditableTitle({ id, value }: { id: string; value: string }) 
         variant="ghost"
         onClick={() => setEditing(true)}
         className="opacity-0 transition group-hover:opacity-100"
-        aria-label="Rename"
+        aria-label="Preimenuj cilj"
       >
         <Pencil className="h-4 w-4" />
       </Button>

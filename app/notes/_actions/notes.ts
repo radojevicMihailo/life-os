@@ -36,7 +36,7 @@ export async function createNote(
   input: CreateNoteInput,
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = createNoteSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
 
   const [row] = await db
     .insert(note)
@@ -49,7 +49,7 @@ export async function createNote(
 
 export async function updateNote(input: UpdateNoteInput): Promise<ActionResult> {
   const parsed = updateNoteSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { id, ...patch } = parsed.data;
 
   await db
@@ -63,7 +63,7 @@ export async function updateNote(input: UpdateNoteInput): Promise<ActionResult> 
 
 export async function deleteNote(input: { id: string }): Promise<ActionResult> {
   const parsed = deleteNoteSchema.safeParse(input);
-  if (!parsed.success) return fail("Invalid input");
+  if (!parsed.success) return fail("Unos nije ispravan.");
 
   await db.delete(note).where(eq(note.id, parsed.data.id));
   revalidateNoteRoutes();
@@ -72,7 +72,7 @@ export async function deleteNote(input: { id: string }): Promise<ActionResult> {
 
 export async function addItem(input: AddItemInput): Promise<ActionResult<{ id: string }>> {
   const parsed = addItemSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
 
   const [{ max }] = await db
     .select({ max: sql<number>`COALESCE(MAX(${noteItem.position}), -1)` })
@@ -95,7 +95,7 @@ export async function addItem(input: AddItemInput): Promise<ActionResult<{ id: s
 
 export async function updateItemText(input: UpdateItemTextInput): Promise<ActionResult> {
   const parsed = updateItemTextSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
 
   const [row] = await db
     .update(noteItem)
@@ -112,7 +112,7 @@ export async function updateItemText(input: UpdateItemTextInput): Promise<Action
 
 export async function toggleItem(input: ToggleItemInput): Promise<ActionResult> {
   const parsed = toggleItemSchema.safeParse(input);
-  if (!parsed.success) return fail("Invalid input");
+  if (!parsed.success) return fail("Unos nije ispravan.");
 
   const [row] = await db
     .update(noteItem)
@@ -129,13 +129,13 @@ export async function toggleItem(input: ToggleItemInput): Promise<ActionResult> 
 
 export async function reorderItems(input: ReorderItemInput): Promise<ActionResult> {
   const parsed = reorderItemSchema.safeParse(input);
-  if (!parsed.success) return fail("Invalid input");
+  if (!parsed.success) return fail("Unos nije ispravan.");
 
   const [target] = await db
     .select({ noteId: noteItem.noteId })
     .from(noteItem)
     .where(eq(noteItem.id, parsed.data.id));
-  if (!target) return fail("Item not found");
+  if (!target) return fail("Stavka nije pronađena.");
 
   const items = await db
     .select({ id: noteItem.id, position: noteItem.position })
@@ -157,7 +157,7 @@ export async function reorderItems(input: ReorderItemInput): Promise<ActionResul
 
 export async function deleteItem(input: { id: string }): Promise<ActionResult> {
   const parsed = deleteItemSchema.safeParse(input);
-  if (!parsed.success) return fail("Invalid input");
+  if (!parsed.success) return fail("Unos nije ispravan.");
 
   const [row] = await db
     .delete(noteItem)

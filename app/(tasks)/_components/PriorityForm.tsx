@@ -48,13 +48,13 @@ export function PriorityForm() {
           id="prio-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Priority name"
+          placeholder="Naziv prioriteta"
           disabled={pending}
           className="max-w-xs"
         />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="prio-rank" className="text-xs">Rank (lower = higher)</Label>
+        <Label htmlFor="prio-rank" className="text-xs">Redosled (manji broj znači viši prioritet)</Label>
         <Input
           id="prio-rank"
           type="number"
@@ -67,7 +67,7 @@ export function PriorityForm() {
       </div>
       <ColorPicker value={color} onChange={setColor} />
       <Button type="submit" disabled={pending || !name.trim()}>
-        Add priority
+        Dodaj prioritet
       </Button>
     </form>
   );

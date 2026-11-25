@@ -1,7 +1,7 @@
 import { getDay } from "date-fns";
 import type { Habit } from "@/db/schema/habits";
 
-export const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+export const WEEKDAY_LABELS = ["Pon", "Uto", "Sre", "Čet", "Pet", "Sub", "Ned"] as const;
 
 export const ALL_WEEKDAYS_MASK = 127;
 

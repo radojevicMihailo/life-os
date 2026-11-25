@@ -21,7 +21,7 @@ export async function createHabit(
   input: CreateHabitInput,
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = createHabitSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
 
   const v = parsed.data;
   const [row] = await db
@@ -46,7 +46,7 @@ export async function createHabit(
 
 export async function updateHabit(input: UpdateHabitInput): Promise<ActionResult> {
   const parsed = updateHabitSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { id, ...patch } = parsed.data;
 
   await db

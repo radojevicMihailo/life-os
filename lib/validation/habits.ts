@@ -3,10 +3,10 @@ import { z } from "zod";
 export const habitKindSchema = z.enum(["binary", "count"]);
 export const habitCadenceSchema = z.enum(["daily", "weekly_target", "weekdays"]);
 
-const dateString = z.iso.date({ error: "Invalid date" });
+const dateString = z.iso.date({ error: "Datum nije ispravan." });
 
 const baseHabit = z.object({
-  title: z.string().trim().min(1, "Title required").max(500),
+  title: z.string().trim().min(1, "Unesi naslov.").max(500),
   description: z.string().max(10_000).optional().nullable(),
   kind: habitKindSchema,
   targetCount: z.number().int().min(1).max(100_000),
@@ -24,7 +24,7 @@ function checkCommon(v: HabitFields, ctx: z.RefinementCtx) {
   if (v.endDate && v.endDate < v.startDate) {
     ctx.addIssue({
       code: "custom",
-      message: "End date must be on or after start date",
+      message: "Datum završetka mora biti na dan početka ili posle njega.",
       path: ["endDate"],
     });
   }
@@ -38,7 +38,7 @@ function checkCommon(v: HabitFields, ctx: z.RefinementCtx) {
   if (v.cadence === "weekdays" && (v.weekdays & 127) === 0) {
     ctx.addIssue({
       code: "custom",
-      message: "Pick at least one weekday",
+      message: "Izaberi bar jedan dan u nedelji.",
       path: ["weekdays"],
     });
   }

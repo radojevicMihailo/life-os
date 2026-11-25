@@ -1,15 +1,16 @@
 import { format, isToday, isTomorrow, isYesterday, isThisYear } from "date-fns";
+import { srLatn } from "date-fns/locale";
 import { hasTimeComponent } from "@/lib/date-input";
 
 export function formatTaskDate(d: Date, withTime?: boolean): string {
   const showTime = withTime ?? hasTimeComponent(d);
   const dateLabel = isToday(d)
-    ? "Today"
+    ? "Danas"
     : isTomorrow(d)
-      ? "Tomorrow"
+      ? "Sutra"
       : isYesterday(d)
-        ? "Yesterday"
-        : format(d, isThisYear(d) ? "MMM d" : "MMM d yyyy");
+        ? "Juče"
+        : format(d, isThisYear(d) ? "d. MMM" : "d. MMM yyyy.", { locale: srLatn });
   return showTime ? `${dateLabel} ${format(d, "HH:mm")}` : dateLabel;
 }
 

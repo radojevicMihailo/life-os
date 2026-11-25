@@ -15,7 +15,7 @@ export async function ProjectSidebar() {
   return (
     <div className="px-3 pt-4">
       <div className="px-3 pb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        Projects
+        Projekti
       </div>
       <ul className="space-y-0.5">
         {projects.map((p) => (

@@ -33,7 +33,7 @@ export function MarkdownBody({ id, initialBody }: { id: string; initialBody: str
     <div className="space-y-2">
       <div className="flex justify-end">
         <Button type="button" variant="outline" size="sm" onClick={() => setPreview((p) => !p)}>
-          {preview ? "Edit" : "Preview"}
+          {preview ? "Uredi" : "Pregled"}
         </Button>
       </div>
       {preview ? (

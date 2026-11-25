@@ -16,20 +16,19 @@ export default async function FoodLibraryPage() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold">Food library</h1>
+        <h1 className="text-xl font-semibold">Biblioteka namirnica</h1>
         <Button asChild>
-          <Link href="/meals/library/new">New food</Link>
+          <Link href="/meals/library/new">Nova namirnica</Link>
         </Button>
       </div>
       <p className="mb-4 text-sm text-muted-foreground">
-        Values are per 100g of the edible portion in the stated raw, cooked or
-        drained condition. USDA entries are general food averages; check the
-        packaging for your specific product.
+        Vrednosti se odnose na 100 g jestivog dela namirnice u navedenom stanju: sirovo, kuvano ili oceđeno.
+        Podaci iz baze USDA su prosečne vrednosti. Za konkretan proizvod proveri deklaraciju.
       </p>
       <ul className="divide-y border rounded">
         {rows.length === 0 && (
           <li className="p-4 text-sm text-muted-foreground">
-            No foods yet. Add one or import from OpenFoodFacts.
+            Još nema namirnica. Dodaj namirnicu ili je uvezi iz baze Open Food Facts.
           </li>
         )}
         {rows.map((f) => {
@@ -41,7 +40,7 @@ export default async function FoodLibraryPage() {
               <div className="text-sm text-muted-foreground">
                 {f.brand ? `${f.brand} · ` : ""}
                 {Number(f.kcalPer100g)} kcal · P{Number(f.proteinPer100g)} ·
-                C{Number(f.carbsPer100g)} · F{Number(f.fatPer100g)} per 100g
+                C{Number(f.carbsPer100g)} · F{Number(f.fatPer100g)} na 100 g
                 {f.source === "off" ? " · OFF" : ""}
               </div>
             </Link>
@@ -53,7 +52,7 @@ export default async function FoodLibraryPage() {
                 title={catalogSource.sourceDescription}
                 className="ml-3 shrink-0 text-xs text-muted-foreground underline"
               >
-                USDA source
+                Izvor: USDA
               </a>
             )}
           </li>

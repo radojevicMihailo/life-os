@@ -90,7 +90,7 @@ export default async function GoalsPage({
       <GoalsHorizonTabs counts={counts} />
       <div className="space-y-2">
         {goals.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No goals yet.</p>
+          <p className="text-sm text-muted-foreground">Još nema ciljeva.</p>
         ) : (
           goals.map((g) => <GoalRow key={g.id} goal={g} />)
         )}

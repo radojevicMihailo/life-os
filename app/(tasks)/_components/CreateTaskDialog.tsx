@@ -123,7 +123,7 @@ export function CreateTaskDialog({
           </div>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={pending}>
-              Cancel
+              Otkaži
             </Button>
             <Button type="submit" disabled={pending || !title.trim()}>
               Dodaj

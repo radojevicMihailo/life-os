@@ -23,13 +23,13 @@ export default async function ProjectsPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
-        <p className="text-sm text-muted-foreground">{projects.length} total</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Projekti</h1>
+        <p className="text-sm text-muted-foreground">{projects.length} ukupno</p>
       </header>
       <ProjectForm />
       {projects.length === 0 ? (
         <div className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
-          No projects yet.
+          Još nema projekata.
         </div>
       ) : (
         <div className="space-y-1">

@@ -21,7 +21,7 @@ export async function createMilestone(
   input: CreateMilestoneInput,
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = createMilestoneSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
 
   const [row] = await db
     .insert(milestone)
@@ -38,11 +38,11 @@ export async function createMilestone(
 
 export async function updateMilestone(input: UpdateMilestoneInput): Promise<ActionResult> {
   const parsed = updateMilestoneSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { id, ...patch } = parsed.data;
 
   const existing = await db.query.milestone.findFirst({ where: eq(milestone.id, id) });
-  if (!existing) return fail("Milestone not found");
+  if (!existing) return fail("Međukorak nije pronađen.");
 
   await db
     .update(milestone)
@@ -55,7 +55,7 @@ export async function updateMilestone(input: UpdateMilestoneInput): Promise<Acti
 
 export async function toggleMilestone(id: string): Promise<ActionResult> {
   const existing = await db.query.milestone.findFirst({ where: eq(milestone.id, id) });
-  if (!existing) return fail("Milestone not found");
+  if (!existing) return fail("Međukorak nije pronađen.");
 
   await db
     .update(milestone)
@@ -68,7 +68,7 @@ export async function toggleMilestone(id: string): Promise<ActionResult> {
 
 export async function deleteMilestone(id: string): Promise<ActionResult> {
   const existing = await db.query.milestone.findFirst({ where: eq(milestone.id, id) });
-  if (!existing) return fail("Milestone not found");
+  if (!existing) return fail("Međukorak nije pronađen.");
 
   await db.delete(milestone).where(eq(milestone.id, id));
   revalidateGoalRoutes({ goalId: existing.goalId });

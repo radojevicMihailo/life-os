@@ -70,7 +70,7 @@ export function ProjectForm() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus className="mr-1 h-4 w-4" /> New project
+          <Plus className="mr-1 h-4 w-4" /> Novi projekat
         </Button>
       </DialogTrigger>
       <DialogContent>

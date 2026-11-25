@@ -14,7 +14,7 @@ export default async function EditFoodPage({
   if (!row) notFound();
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-xl font-semibold mb-4">Edit food</h1>
+      <h1 className="text-xl font-semibold mb-4">Izmeni namirnicu</h1>
       <FoodForm
         mode={{ kind: "edit", id: row.id }}
         initial={{

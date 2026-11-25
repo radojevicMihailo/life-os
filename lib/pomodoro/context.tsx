@@ -37,8 +37,12 @@ import {
 } from "@/components/ui/dialog";
 
 const PHASE_LABEL: Record<Phase, string> = {
-  work: "Work",
-  break: "Break",
+  work: "Rad",
+  break: "Pauza",
+};
+const PHASE_END_LABEL: Record<Phase, string> = {
+  work: "Rad je završen",
+  break: "Pauza je završena",
 };
 
 type Actions = {
@@ -131,7 +135,7 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
     if (typeof document === "undefined") return;
     const r = remainingMs(state, nowTick);
     if (finishedPhase) {
-      document.title = `${PHASE_LABEL[finishedPhase]} session finished — Life OS`;
+      document.title = `${PHASE_END_LABEL[finishedPhase]} — Life OS`;
     } else if (state.status === "running" || state.status === "paused") {
       document.title = `${formatRemaining(r)} · ${PHASE_LABEL[state.phase]} — Life OS`;
     } else {
@@ -263,16 +267,16 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
         <DialogContent showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>
-              {finishedPhase === "work" ? "Work session finished" : "Break finished"}
+              {finishedPhase && PHASE_END_LABEL[finishedPhase]}
             </DialogTitle>
             <DialogDescription>
               {finishedPhase === "work"
-                ? "Your break timer is ready. Set the break length and start it when you are ready."
-                : "Your work timer is ready. Start it when you are ready to continue."}
+                ? "Podesi trajanje pauze i pokreni je kad budeš spreman."
+                : "Pokreni tajmer kad budeš spreman da nastaviš s radom."}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={() => setFinishedPhase(null)}>Got it</Button>
+            <Button onClick={() => setFinishedPhase(null)}>U redu</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -294,10 +298,9 @@ function maybeNotify(phase: Phase, enabled: boolean): void {
   if (!enabled) return;
   if (typeof window === "undefined" || !("Notification" in window)) return;
   if (Notification.permission !== "granted") return;
-  const title =
-    phase === "work" ? "Work phase complete" : "Break complete";
+  const title = PHASE_END_LABEL[phase];
   const body =
-    phase === "work" ? "Take a break." : "Back to work.";
+    phase === "work" ? "Napravi pauzu." : "Vreme je za nastavak rada.";
   try {
     new Notification(title, { body });
   } catch {

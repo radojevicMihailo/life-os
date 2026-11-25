@@ -26,7 +26,7 @@ export default async function EditHabitPage({
         >
           <ChevronLeft className="h-3.5 w-3.5" /> Back to habits
         </Link>
-        <h1 className="text-2xl font-semibold">Edit habit</h1>
+        <h1 className="text-2xl font-semibold">Izmeni naviku</h1>
       </header>
       <HabitForm mode="edit" habit={row} />
     </div>

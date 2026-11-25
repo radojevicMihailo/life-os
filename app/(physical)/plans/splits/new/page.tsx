@@ -16,7 +16,7 @@ export default async function NewSplitPage() {
       <Link href="/plans/splits" className="inline-flex items-center text-sm text-muted-foreground hover:underline">
         <ChevronLeft className="h-4 w-4" /> Splits
       </Link>
-      <h1 className="text-2xl font-semibold">New split</h1>
+      <h1 className="text-2xl font-semibold">Novi ciklus treninga</h1>
       <SplitForm tagGroups={tagGroups} tags={tags} workoutPlans={workoutPlans} />
     </div>
   );

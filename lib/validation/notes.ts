@@ -3,13 +3,13 @@ import { z } from "zod";
 export const noteKindSchema = z.enum(["free", "todo"]);
 
 export const createNoteSchema = z.object({
-  title: z.string().trim().min(1, "Title required").max(500),
+  title: z.string().trim().min(1, "Unesi naslov.").max(500),
   kind: noteKindSchema.optional().default("free"),
 });
 
 export const updateNoteSchema = z.object({
   id: z.uuid(),
-  title: z.string().trim().min(1, "Title required").max(500).optional(),
+  title: z.string().trim().min(1, "Unesi naslov.").max(500).optional(),
   body: z.string().max(100_000).optional(),
   kind: noteKindSchema.optional(),
   categoryId: z.uuid().nullable().optional(),

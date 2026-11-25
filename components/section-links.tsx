@@ -5,7 +5,7 @@ export function SectionLinks({ section, dark = false }: { section: MainSection; 
   if (section.links.length === 0) return null;
 
   return (
-    <section aria-label={`${section.label} sections`} className="space-y-3">
+    <section aria-label={`Oblasti: ${section.label}`} className="space-y-3">
       <h2 className={`text-xs font-semibold uppercase tracking-[0.2em] ${dark ? "text-slate-300" : "text-muted-foreground"}`}>
         Istraži oblast
       </h2>

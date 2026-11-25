@@ -4,7 +4,7 @@ export const goalStatusSchema = z.enum(["active", "done", "paused", "canceled"])
 export const goalHorizonSchema = z.enum(["yearly", "monthly", "weekly", "daily"]);
 
 export const createGoalSchema = z.object({
-  title: z.string().trim().min(1, "Title required").max(500),
+  title: z.string().trim().min(1, "Unesi naslov.").max(500),
   description: z.string().max(10_000).optional().nullable(),
   status: goalStatusSchema.optional(),
   horizon: goalHorizonSchema.optional(),
@@ -17,7 +17,7 @@ export const updateGoalSchema = createGoalSchema.partial().extend({
 
 export const createMilestoneSchema = z.object({
   goalId: z.uuid(),
-  title: z.string().trim().min(1, "Title required").max(500),
+  title: z.string().trim().min(1, "Unesi naslov.").max(500),
   dueDate: z.date().optional().nullable(),
 });
 

@@ -2,12 +2,12 @@ import { z } from "zod";
 
 export const foodSourceSchema = z.enum(["manual", "off"]);
 
-const dateString = z.iso.date({ error: "Invalid date" });
+const dateString = z.iso.date({ error: "Datum nije ispravan." });
 
 const macro = z.number().min(0).max(1000);
 
 export const createFoodSchema = z.object({
-  name: z.string().trim().min(1, "Name required").max(200),
+  name: z.string().trim().min(1, "Unesi naziv.").max(200),
   brand: z.string().trim().max(200).optional().nullable(),
   kcalPer100g: z.number().min(0).max(10_000),
   proteinPer100g: macro,
@@ -30,10 +30,10 @@ const mealItemInput = z.object({
 
 export const createMealSchema = z.object({
   date: dateString,
-  name: z.string().trim().min(1, "Name required").max(200),
+  name: z.string().trim().min(1, "Unesi naziv.").max(200),
   eatenAt: z.string().datetime().optional().nullable(),
   notes: z.string().max(10_000).optional().nullable(),
-  items: z.array(mealItemInput).min(1, "Add at least one food"),
+  items: z.array(mealItemInput).min(1, "Dodaj bar jednu namirnicu."),
 });
 export type CreateMealInput = z.infer<typeof createMealSchema>;
 
@@ -41,19 +41,19 @@ const updateMealItemInput = mealItemInput.extend({
   foodId: z.string().uuid().nullable(),
   mealItemId: z.string().uuid().optional(),
 }).refine((item) => item.foodId !== null || Boolean(item.mealItemId), {
-  message: "Deleted food must reference an existing meal item",
+  message: "Izbrisana namirnica mora da pripada postojećem obroku.",
   path: ["foodId"],
 });
 
 export const updateMealSchema = createMealSchema.extend({
   id: z.string().uuid(),
-  items: z.array(updateMealItemInput).min(1, "Add at least one food"),
+  items: z.array(updateMealItemInput).min(1, "Dodaj bar jednu namirnicu."),
 });
 export type UpdateMealInput = z.infer<typeof updateMealSchema>;
 
 export const createTemplateSchema = z.object({
-  name: z.string().trim().min(1, "Name required").max(200),
-  items: z.array(mealItemInput).min(1, "Add at least one food"),
+  name: z.string().trim().min(1, "Unesi naziv.").max(200),
+  items: z.array(mealItemInput).min(1, "Dodaj bar jednu namirnicu."),
 });
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>;
 

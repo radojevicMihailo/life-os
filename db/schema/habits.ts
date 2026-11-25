@@ -22,14 +22,14 @@ export type HabitKind = (typeof habitKindEnum.enumValues)[number];
 export type HabitCadence = (typeof habitCadenceEnum.enumValues)[number];
 
 export const habitKindLabel: Record<HabitKind, string> = {
-  binary: "Done / not done",
-  count: "Count",
+  binary: "Urađeno / nije urađeno",
+  count: "Broj ponavljanja",
 };
 
 export const habitCadenceLabel: Record<HabitCadence, string> = {
-  daily: "Every day",
-  weekly_target: "Weekly target",
-  weekdays: "Specific weekdays",
+  daily: "Svakog dana",
+  weekly_target: "Nedeljni cilj",
+  weekdays: "Izabrani dani u nedelji",
 };
 
 export const habit = pgTable(

@@ -16,7 +16,7 @@ export function GoalForm({ currencies, goal }: { currencies: CurrencyOption[]; g
     <h2 className="font-semibold">{goal ? `Izmeni: ${goal.name}` : "Novi cilj"}</h2>
     {goal ? <input name="id" type="hidden" value={goal.id} /> : null}
     <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      <label className="text-xs text-muted-foreground">Naziv cilja<input className={control} defaultValue={goal?.name} name="name" placeholder="Emergency fond" required /></label>
+      <label className="text-xs text-muted-foreground">Naziv cilja<input className={control} defaultValue={goal?.name} name="name" placeholder="Fond za nepredviđene troškove" required /></label>
       <label className="text-xs text-muted-foreground">Ciljni iznos<input className={control} defaultValue={decimalInputValue(goal?.targetAmount)} placeholder="1.000,00" inputMode="decimal" name="targetAmount" required /></label>
       <label className="text-xs text-muted-foreground">Rok (opciono)<input className={control} type="date" name="targetDate" defaultValue={goal?.targetDate??""}/></label>
       <label className="text-xs text-muted-foreground">Valuta cilja<select className={control} defaultValue={goal?.currencyCode ?? "EUR"} name="targetCurrencyCode" required>

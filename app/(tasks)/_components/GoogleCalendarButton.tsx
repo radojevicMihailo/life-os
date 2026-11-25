@@ -67,10 +67,10 @@ export function GoogleCalendarButton({ initialConnected }: { initialConnected: b
     startTransition(async () => {
       try {
         await saveSelectedGoogleCalendarsAction(ids);
-        toast.success("Calendar selection saved");
+        toast.success("Izbor kalendara je sačuvan");
         setOpen(false);
       } catch {
-        toast.error("Could not save selection");
+        toast.error("Izbor kalendara nije sačuvan");
       }
     });
   }
@@ -89,31 +89,28 @@ export function GoogleCalendarButton({ initialConnected }: { initialConnected: b
     return (
       <div className="relative">
         <Button variant="outline" size="sm" onClick={() => setOpen((o) => !o)}>
-          Connect Google Calendar
+          Poveži Google kalendar
         </Button>
         {open && (
           <div className="absolute right-0 z-20 mt-2 w-96 rounded-md border bg-popover p-3 text-sm shadow">
-            <p className="font-medium">Connect Google Calendar</p>
+            <p className="font-medium">Poveži Google kalendar</p>
             <ol className="mt-2 list-decimal space-y-1 pl-4 text-muted-foreground">
               <li>
-                Create an OAuth Client (Web app) in Google Cloud Console with redirect URI
+                U Google Cloud konzoli napravi OAuth klijent za veb aplikaciju sa adresom za preusmeravanje
                 <code className="ml-1">http://localhost:3000/oauth2callback</code>.
               </li>
               <li>
-                Add <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code> to{" "}
+                Dodaj <code>GOOGLE_CLIENT_ID</code> i <code>GOOGLE_CLIENT_SECRET</code> u{" "}
                 <code>.env.local</code>.
               </li>
               <li>
-                Run <code>pnpm google:oauth</code> once per Google account. Collect each printed
-                refresh token.
+                Pokreni <code>pnpm google:oauth</code> jednom za svaki Google nalog i sačuvaj dobijene tokene za osvežavanje.
               </li>
               <li>
-                Set <code>GOOGLE_REFRESH_TOKENS</code> in <code>.env.local</code> to a
-                comma-separated list of those tokens (single <code>GOOGLE_REFRESH_TOKEN</code> still
-                works for one account). Optionally set{" "}
-                <code>GOOGLE_ACCOUNT_LABELS</code> to a matching comma-separated list of labels.
+                U <code>.env.local</code> postavi <code>GOOGLE_REFRESH_TOKENS</code> na listu tih tokena razdvojenih zarezom. Za jedan nalog možeš koristiti <code>GOOGLE_REFRESH_TOKEN</code>. Po želji postavi{" "}
+                <code>GOOGLE_ACCOUNT_LABELS</code> na listu naziva naloga, istim redosledom i razdvojenu zarezom.
               </li>
-              <li>Restart the dev server and refresh this page.</li>
+              <li>Restartuj razvojni server i osveži stranicu.</li>
             </ol>
           </div>
         )}
@@ -123,8 +120,8 @@ export function GoogleCalendarButton({ initialConnected }: { initialConnected: b
 
   const label =
     state.status === "ready"
-      ? `Google Calendar (${state.selected.size})`
-      : "Google Calendar";
+      ? `Google kalendar (${state.selected.size})`
+      : "Google kalendar";
 
   return (
     <div className="relative">
@@ -133,10 +130,10 @@ export function GoogleCalendarButton({ initialConnected }: { initialConnected: b
       </Button>
       {open && (
         <div className="absolute right-0 z-20 mt-2 w-96 rounded-md border bg-popover p-3 text-sm shadow">
-          {state.status === "loading" && <p>Loading calendars…</p>}
+          {state.status === "loading" && <p>Učitavanje kalendara…</p>}
           {state.status === "ready" && (
             <>
-              <p className="mb-2 font-medium">Show events from</p>
+              <p className="mb-2 font-medium">Prikaži događaje iz kalendara</p>
               <div className="max-h-72 space-y-3 overflow-auto">
                 {grouped.map(([idx, group]) => (
                   <div key={idx}>
@@ -155,7 +152,7 @@ export function GoogleCalendarButton({ initialConnected }: { initialConnected: b
                               onChange={() => toggleId(cid)}
                             />
                             <label htmlFor={`gcal-${cid}`} className="truncate">
-                              {c.summary} {c.primary ? "(primary)" : ""}
+                              {c.summary} {c.primary ? "(glavni)" : ""}
                             </label>
                           </li>
                         );
@@ -169,10 +166,10 @@ export function GoogleCalendarButton({ initialConnected }: { initialConnected: b
               </div>
               <div className="mt-3 flex justify-end gap-2">
                 <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
-                  Cancel
+                  Otkaži
                 </Button>
                 <Button size="sm" onClick={save} disabled={pending}>
-                  Save
+                  Sačuvaj
                 </Button>
               </div>
             </>

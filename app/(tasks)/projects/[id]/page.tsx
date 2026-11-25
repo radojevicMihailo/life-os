@@ -55,7 +55,7 @@ export default async function ProjectDetailPage({
           priorities={priorities}
           contexts={contexts}
           defaultProjectId={id}
-          label="New task in project"
+          label="Novi zadatak u projektu"
         />
       </header>
 
@@ -68,9 +68,9 @@ export default async function ProjectDetailPage({
 
       <section className="space-y-2 rounded-2xl border border-border bg-card shadow-sm p-4">
         <div className="flex items-center justify-between text-sm">
-          <span className="font-medium">Progress</span>
+          <span className="font-medium">Napredak</span>
           <span className="text-muted-foreground">
-            {done} / {total} done · {pct}%
+            {done} / {total} završeno · {pct}%
           </span>
         </div>
         <Progress value={pct} />

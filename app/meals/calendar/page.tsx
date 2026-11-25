@@ -1,4 +1,5 @@
 import { addMonths, endOfMonth, format, parse, startOfMonth } from "date-fns";
+import { srLatn } from "date-fns/locale";
 import Link from "next/link";
 import { and, between, sql } from "drizzle-orm";
 import { db } from "@/db";
@@ -47,7 +48,7 @@ export default async function MealsCalendarPage({
             <Link href={`/meals/calendar?month=${prev}`}>‹</Link>
           </Button>
           <h1 className="text-xl font-semibold">
-            {format(month, "MMMM yyyy")}
+            {format(month, "MMMM yyyy.", { locale: srLatn })}
           </h1>
           <Button asChild variant="outline" size="sm">
             <Link href={`/meals/calendar?month=${next}`}>›</Link>

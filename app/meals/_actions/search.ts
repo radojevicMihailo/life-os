@@ -17,7 +17,7 @@ export async function searchOffFoods(
   try {
     return { ok: true, data: await searchOff(q, 10) };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Search failed" };
+    return { ok: false, error: e instanceof Error ? e.message : "Pretraga nije uspela." };
   }
 }
 
@@ -47,9 +47,9 @@ export async function importOffFood(
   try {
     product = await fetchOffProduct(offId);
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Fetch failed" };
+    return { ok: false, error: e instanceof Error ? e.message : "Preuzimanje podataka nije uspelo." };
   }
-  if (!product) return { ok: false, error: "Product not found on OpenFoodFacts" };
+  if (!product) return { ok: false, error: "Proizvod nije pronađen u bazi Open Food Facts." };
 
   const [row] = await db
     .insert(foodItem)

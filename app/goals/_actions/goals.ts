@@ -20,7 +20,7 @@ function fail(error: string): ActionResult<never> {
 
 export async function createGoal(input: CreateGoalInput): Promise<ActionResult<{ id: string }>> {
   const parsed = createGoalSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
 
   const [row] = await db
     .insert(goal)
@@ -39,7 +39,7 @@ export async function createGoal(input: CreateGoalInput): Promise<ActionResult<{
 
 export async function updateGoal(input: UpdateGoalInput): Promise<ActionResult> {
   const parsed = updateGoalSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { id, ...patch } = parsed.data;
 
   await db
@@ -53,7 +53,7 @@ export async function updateGoal(input: UpdateGoalInput): Promise<ActionResult> 
 
 export async function setGoalStatus(id: string, status: GoalStatus): Promise<ActionResult> {
   const parsed = goalStatusSchema.safeParse(status);
-  if (!parsed.success) return fail("Invalid status");
+  if (!parsed.success) return fail("Status nije ispravan.");
 
   await db
     .update(goal)

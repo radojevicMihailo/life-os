@@ -23,7 +23,7 @@ export async function createTravel(
   input: CreateTravelInput,
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = createTravelSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   if (parsed.data.startDate && parsed.data.endDate && parsed.data.endDate < parsed.data.startDate) {
     return fail("Datum završetka mora biti posle početka.");
   }
@@ -47,7 +47,7 @@ export async function createTravel(
 
 export async function updateTravel(input: UpdateTravelInput): Promise<ActionResult> {
   const parsed = updateTravelSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { id, ...patch } = parsed.data;
   if (patch.startDate && patch.endDate && patch.endDate < patch.startDate) {
     return fail("Datum završetka mora biti posle početka.");
@@ -67,7 +67,7 @@ export async function setTravelStatus(
   status: TravelStatus,
 ): Promise<ActionResult> {
   const parsed = travelStatusSchema.safeParse(status);
-  if (!parsed.success) return fail("Invalid status");
+  if (!parsed.success) return fail("Status nije ispravan.");
 
   await db
     .update(travel)
@@ -83,7 +83,7 @@ export async function setTravelRegion(
   region: TravelRegion,
 ): Promise<ActionResult> {
   const parsed = travelRegionSchema.safeParse(region);
-  if (!parsed.success) return fail("Invalid region");
+  if (!parsed.success) return fail("Oblast nije ispravna.");
 
   await db
     .update(travel)

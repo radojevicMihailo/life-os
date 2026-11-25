@@ -21,7 +21,7 @@ const addSchema = z.object({
 
 export async function addExercise(input: z.input<typeof addSchema>): Promise<ActionResult<{ id: string }>> {
   const parsed = addSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   try {
     const [row] = await db
       .insert(exercise)
@@ -46,7 +46,7 @@ const updateSchema = z.object({
 
 export async function updateExercise(input: z.input<typeof updateSchema>): Promise<ActionResult> {
   const parsed = updateSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { id, ...patch } = parsed.data;
   try {
     await db.update(exercise).set({ ...patch, updatedAt: sql`now()` }).where(eq(exercise.id, id));

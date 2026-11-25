@@ -21,7 +21,7 @@ export async function createFood(
   input: CreateFoodInput,
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = createFoodSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const v = parsed.data;
   const [row] = await db
     .insert(foodItem)
@@ -42,7 +42,7 @@ export async function createFood(
 
 export async function updateFood(input: UpdateFoodInput): Promise<ActionResult> {
   const parsed = updateFoodSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { id, ...patch } = parsed.data;
   await db
     .update(foodItem)

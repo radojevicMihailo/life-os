@@ -12,8 +12,9 @@ import { Label } from "@/components/ui/label";
 import type { RecurrenceRule } from "@/db/schema/tasks";
 import { nextOccurrence } from "@/lib/recurrence";
 import { format } from "date-fns";
+import { srLatn } from "date-fns/locale";
 
-const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const weekdays = ["Ned", "Pon", "Uto", "Sre", "Čet", "Pet", "Sub"];
 
 function previewOccurrences(rule: RecurrenceRule, from: Date, count: number): Date[] {
   const out: Date[] = [];
@@ -60,7 +61,7 @@ export function RecurrenceEditor({
   return (
     <div className="space-y-2 rounded-md border p-3">
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium">Recurrence</Label>
+        <Label className="text-sm font-medium">Ponavljanje</Label>
         <label className="flex items-center gap-2 text-xs">
           <input
             type="checkbox"
@@ -71,7 +72,7 @@ export function RecurrenceEditor({
                 : onChange(null)
             }
           />
-          Enabled
+          Uključeno
         </label>
       </div>
       {enabled && (
@@ -95,12 +96,12 @@ export function RecurrenceEditor({
               className="w-20"
             />
             <span className="self-center text-sm text-muted-foreground">
-              {freq === "daily" ? "day(s)" : freq === "weekly" ? "week(s)" : "month(s)"}
+              {new Intl.NumberFormat("sr-Latn", { style: "unit", unit: freq === "daily" ? "day" : freq === "weekly" ? "week" : "month", unitDisplay: "long" }).formatToParts(interval).find((part) => part.type === "unit")?.value}
             </span>
           </div>
           {value && (
             <div className="text-xs text-muted-foreground">
-              Next: {previewOccurrences(value, dueAt ?? new Date(), 3).map((d) => format(d, "MMM d")).join(" → ")}
+              Sledeći termini: {previewOccurrences(value, dueAt ?? new Date(), 3).map((d) => format(d, "d. MMM", { locale: srLatn })).join(" → ")}
             </div>
           )}
           {freq === "weekly" && (

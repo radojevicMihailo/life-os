@@ -37,13 +37,13 @@ export function ContextForm() {
       <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="New context name"
+        placeholder="Naziv novog konteksta"
         disabled={pending}
         className="max-w-xs"
       />
       <ColorPicker value={color} onChange={setColor} />
       <Button type="submit" disabled={pending || !name.trim()}>
-        Add context
+        Dodaj kontekst
       </Button>
     </form>
   );

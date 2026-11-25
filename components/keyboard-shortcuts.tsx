@@ -45,7 +45,7 @@ export function KeyboardShortcuts() {
       }
 
       if (e.key === "/") {
-        const input = document.querySelector<HTMLInputElement>('input[placeholder^="Add a task"]');
+        const input = document.querySelector<HTMLInputElement>('input[data-task-quick-add]');
         if (input) {
           e.preventDefault();
           input.focus();

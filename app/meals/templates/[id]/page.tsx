@@ -38,7 +38,7 @@ export default async function EditTemplatePage({
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-xl font-semibold mb-4">Edit template</h1>
+      <h1 className="text-xl font-semibold mb-4">Izmeni šablon</h1>
       <TemplateForm
         mode={{ kind: "edit", id: t.id }}
         initialName={t.name}

@@ -75,7 +75,7 @@ export function EditableTitle({ id, value, kind }: Props) {
         variant="ghost"
         onClick={() => setEditing(true)}
         className="opacity-0 transition group-hover:opacity-100"
-        aria-label="Rename"
+        aria-label="Preimenuj"
       >
         <Pencil className="h-4 w-4" />
       </Button>

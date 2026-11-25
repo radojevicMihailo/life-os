@@ -49,7 +49,8 @@ export function QuickAdd() {
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Add a task and press Enter"
+        data-task-quick-add=""
+        placeholder="Unesi zadatak i pritisni Enter"
         disabled={pending}
         autoFocus
       />
@@ -77,7 +78,7 @@ export function QuickAdd() {
                   setDueAt(null);
                   setDueWithTime(false);
                 }}
-                aria-label="Clear due date"
+                aria-label="Ukloni rok"
               >
                 <X className="h-4 w-4" />
               </Button>

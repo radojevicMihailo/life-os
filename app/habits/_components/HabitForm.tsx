@@ -53,7 +53,7 @@ export function HabitForm(props: Mode) {
   function submit() {
     const trimmed = title.trim();
     if (!trimmed) {
-      toast.error("Title required");
+      toast.error("Unesi naslov navike.");
       return;
     }
     const payload = {
@@ -78,7 +78,7 @@ export function HabitForm(props: Mode) {
         toast.error(r.error);
         return;
       }
-      toast.success(props.mode === "create" ? "Habit created" : "Saved");
+      toast.success(props.mode === "create" ? "Navika je kreirana" : "Sačuvano");
       router.push("/habits");
       router.refresh();
     });
@@ -93,31 +93,31 @@ export function HabitForm(props: Mode) {
       className="space-y-5"
     >
       <div className="space-y-1.5">
-        <Label htmlFor="h-title">Title</Label>
+        <Label htmlFor="h-title">Naslov</Label>
         <Input
           id="h-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Read 20 minutes"
+          placeholder="Npr. čitaj 20 minuta"
           autoFocus
           disabled={pending}
         />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="h-desc">Description</Label>
+        <Label htmlFor="h-desc">Opis</Label>
         <Textarea
           id="h-desc"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Optional"
+          placeholder="Opciono"
           disabled={pending}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label>Kind</Label>
+          <Label>Vrsta navike</Label>
           <Select value={kind} onValueChange={(v) => setKind(v as HabitKind)}>
             <SelectTrigger>
               <SelectValue />
@@ -135,7 +135,7 @@ export function HabitForm(props: Mode) {
         {kind === "count" && (
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1.5">
-              <Label htmlFor="h-target">Daily target</Label>
+              <Label htmlFor="h-target">Dnevni cilj</Label>
               <Input
                 id="h-target"
                 type="number"
@@ -146,12 +146,12 @@ export function HabitForm(props: Mode) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="h-unit">Unit</Label>
+              <Label htmlFor="h-unit">Jedinica mere</Label>
               <Input
                 id="h-unit"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                placeholder="reps, glasses..."
+                placeholder="ponavljanja, čaše…"
                 disabled={pending}
               />
             </div>
@@ -160,7 +160,7 @@ export function HabitForm(props: Mode) {
       </div>
 
       <div className="space-y-1.5">
-        <Label>Cadence</Label>
+        <Label>Učestalost</Label>
         <Select value={cadence} onValueChange={(v) => setCadence(v as HabitCadence)}>
           <SelectTrigger>
             <SelectValue />
@@ -177,7 +177,7 @@ export function HabitForm(props: Mode) {
 
       {cadence === "weekly_target" && (
         <div className="space-y-1.5">
-          <Label htmlFor="h-weekly">Days per week</Label>
+          <Label htmlFor="h-weekly">Dana nedeljno</Label>
           <Input
             id="h-weekly"
             type="number"
@@ -194,7 +194,7 @@ export function HabitForm(props: Mode) {
 
       {cadence === "weekdays" && (
         <div className="space-y-1.5">
-          <Label>Weekdays</Label>
+          <Label>Dani u nedelji</Label>
           <div className="flex flex-wrap gap-2">
             {WEEKDAY_LABELS.map((label, i) => {
               const checked = (weekdays & (1 << i)) !== 0;
@@ -219,7 +219,7 @@ export function HabitForm(props: Mode) {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="h-start">Start date</Label>
+          <Label htmlFor="h-start">Datum početka</Label>
           <Input
             id="h-start"
             type="date"
@@ -229,7 +229,7 @@ export function HabitForm(props: Mode) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="h-end">End date (optional)</Label>
+          <Label htmlFor="h-end">Datum završetka (opciono)</Label>
           <Input
             id="h-end"
             type="date"
@@ -247,10 +247,10 @@ export function HabitForm(props: Mode) {
           onClick={() => router.back()}
           disabled={pending}
         >
-          Cancel
+          Otkaži
         </Button>
         <Button type="submit" disabled={pending || !title.trim()}>
-          {props.mode === "create" ? "Create habit" : "Save"}
+          {props.mode === "create" ? "Kreiraj naviku" : "Sačuvaj"}
         </Button>
       </div>
     </form>

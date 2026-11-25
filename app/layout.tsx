@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Life OS",
-  description: "Personal life tracker",
+  description: "Lični planer za svakodnevne obaveze",
   appleWebApp: { capable: true, title: "Life OS", statusBarStyle: "default" },
   applicationName: "Life OS",
   icons: {

@@ -30,7 +30,7 @@ export function MilestoneAdd({ goalId }: { goalId: string }) {
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Add milestone and press Enter"
+        placeholder="Unesi međukorak i pritisni Enter"
         disabled={pending}
       />
     </form>

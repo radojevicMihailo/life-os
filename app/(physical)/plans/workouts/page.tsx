@@ -19,7 +19,7 @@ export default async function WorkoutPlansPage() {
           <p className="text-sm text-muted-foreground">Gym templates: exercises and set counts.</p>
         </div>
         <Link href="/plans/workouts/new">
-          <Button size="sm"><Plus className="mr-2 h-4 w-4" /> New plan</Button>
+          <Button size="sm"><Plus className="mr-2 h-4 w-4" /> Novi plan</Button>
         </Link>
       </div>
       <WorkoutPlanList rows={rows} />

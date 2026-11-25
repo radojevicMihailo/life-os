@@ -16,10 +16,10 @@ export default async function SplitsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Splits</h1>
-          <p className="text-sm text-muted-foreground">Ordered day rotations of tagged sessions.</p>
+          <p className="text-sm text-muted-foreground">Ciklusi treninga po danima i oznakama.</p>
         </div>
         <Link href="/plans/splits/new">
-          <Button size="sm"><Plus className="mr-2 h-4 w-4" /> New split</Button>
+          <Button size="sm"><Plus className="mr-2 h-4 w-4" /> Novi ciklus treninga</Button>
         </Link>
       </div>
       <SplitList rows={rows} />

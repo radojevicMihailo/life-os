@@ -25,7 +25,7 @@ export function HabitManageRow({ habit }: { habit: Habit }) {
   }
 
   function remove() {
-    if (!confirm(`Delete habit "${habit.title}"? All logs will be lost.`)) return;
+    if (!confirm(`Obriši naviku "${habit.title}"? Sve evidencije za ovu naviku biće obrisane.`)) return;
     startTransition(async () => {
       const r = await deleteHabit(habit.id);
       if (!r.ok) toast.error(r.error);
@@ -42,13 +42,13 @@ export function HabitManageRow({ habit }: { habit: Habit }) {
           <Badge variant="outline" className="text-xs">{habitKindLabel[habit.kind]}</Badge>
           <Badge variant="outline" className="text-xs">{habitCadenceLabel[habit.cadence]}</Badge>
           {habit.kind === "count" ? (
-            <span>target {habit.targetCount}{habit.unit ? ` ${habit.unit}` : ""}/day</span>
+            <span>cilj {habit.targetCount}{habit.unit ? ` ${habit.unit}` : ""}/dan</span>
           ) : null}
-          {habit.cadence === "weekly_target" ? <span>{habit.weeklyTarget}×/week</span> : null}
+          {habit.cadence === "weekly_target" ? <span>{habit.weeklyTarget}× nedeljno</span> : null}
         </div>
       </div>
       <Button asChild size="icon" variant="ghost" className="h-8 w-8">
-        <Link href={`/habits/${habit.id}/edit`} aria-label="Edit">
+        <Link href={`/habits/${habit.id}/edit`} aria-label="Izmeni naviku">
           <Pencil className="h-4 w-4" />
         </Link>
       </Button>
@@ -58,7 +58,7 @@ export function HabitManageRow({ habit }: { habit: Habit }) {
         className="h-8 w-8"
         onClick={toggleArchive}
         disabled={pending}
-        aria-label={archived ? "Unarchive" : "Archive"}
+        aria-label={archived ? "Vrati naviku" : "Arhiviraj naviku"}
       >
         {archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
       </Button>
@@ -68,7 +68,7 @@ export function HabitManageRow({ habit }: { habit: Habit }) {
         className="h-8 w-8 text-destructive"
         onClick={remove}
         disabled={pending}
-        aria-label="Delete"
+        aria-label="Obriši naviku"
       >
         <Trash2 className="h-4 w-4" />
       </Button>

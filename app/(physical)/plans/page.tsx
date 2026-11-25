@@ -29,7 +29,7 @@ export default function PlansPage() {
               <CalendarDays className="h-6 w-6" />
               <div>
                 <div className="text-base font-medium">Splits</div>
-                <p className="text-xs text-muted-foreground">Ordered day rotations of tagged sessions.</p>
+                <p className="text-xs text-muted-foreground">Ciklusi treninga po danima i oznakama.</p>
               </div>
             </div>
           </Card>

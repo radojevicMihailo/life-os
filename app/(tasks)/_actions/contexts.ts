@@ -23,7 +23,7 @@ export async function createContext(
   input: CreateContextInput,
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = createContextSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
 
   try {
     const [row] = await db
@@ -34,7 +34,7 @@ export async function createContext(
     return { ok: true, data: { id: row.id } };
   } catch (e) {
     if (e instanceof Error && e.message.includes("duplicate")) {
-      return fail("Context already exists");
+      return fail("Kontekst sa tim nazivom već postoji.");
     }
     throw e;
   }
@@ -42,7 +42,7 @@ export async function createContext(
 
 export async function updateContext(input: UpdateContextInput): Promise<ActionResult> {
   const parsed = updateContextSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { id, ...patch } = parsed.data;
   await db.update(context).set(patch).where(eq(context.id, id));
   revalidateTaskRoutes();

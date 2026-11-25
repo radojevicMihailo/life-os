@@ -18,7 +18,7 @@ export async function addExerciseGroup(
   input: z.input<typeof addSchema>,
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = addSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   try {
     const [row] = await db
       .insert(exerciseGroup)
@@ -39,7 +39,7 @@ const renameSchema = z.object({
 
 export async function renameExerciseGroup(input: z.input<typeof renameSchema>): Promise<ActionResult> {
   const parsed = renameSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   await db
     .update(exerciseGroup)
     .set({ name: parsed.data.name })

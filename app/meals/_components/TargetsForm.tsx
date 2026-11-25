@@ -60,7 +60,7 @@ export function TargetsForm({ initial }: { initial: Targets }) {
       className="max-w-3xl space-y-6 rounded-3xl border border-border bg-card p-5 sm:p-7"
     >
       <p className="text-sm text-muted-foreground">
-        Leave blank to disable a target.
+        Ostavi polje prazno ako ne želiš da postaviš cilj.
       </p>
       <div className="grid gap-5 sm:grid-cols-2">{FIELDS.map((f) => (
         <div key={f.key} className="space-y-1">

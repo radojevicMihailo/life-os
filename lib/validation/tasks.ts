@@ -16,7 +16,7 @@ export const taskStatusSchema = z.enum([
 ]);
 
 const taskFields = z.object({
-  title: z.string().trim().min(1, "Title required").max(500),
+  title: z.string().trim().min(1, "Unesi naslov.").max(500),
   notes: z.string().max(10_000).optional().nullable(),
   projectId: z.uuid().optional().nullable(),
   parentTaskId: z.uuid().optional().nullable(),

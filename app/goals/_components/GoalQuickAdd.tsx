@@ -57,7 +57,7 @@ export function GoalQuickAdd({ defaultHorizon = "yearly" }: { defaultHorizon?: G
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Add a goal and press Enter"
+        placeholder="Unesi cilj i pritisni Enter"
         disabled={pending}
         autoFocus
       />
@@ -96,7 +96,7 @@ export function GoalQuickAdd({ defaultHorizon = "yearly" }: { defaultHorizon?: G
                 variant="ghost"
                 size="icon"
                 onClick={() => setTargetDate(null)}
-                aria-label="Clear target date"
+                aria-label="Ukloni rok"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -106,7 +106,7 @@ export function GoalQuickAdd({ defaultHorizon = "yearly" }: { defaultHorizon?: G
       </Popover>
       <Button type="submit" size="sm" disabled={pending || !title.trim()} className="gap-1">
         <Plus className="h-4 w-4" />
-        Add
+        Dodaj
       </Button>
     </form>
   );

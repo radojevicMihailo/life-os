@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { srLatn } from "date-fns/locale";
 import type { Habit } from "@/db/schema/habits";
 import { upsertLog } from "../_actions/logs";
 import { isoDate } from "@/lib/habits/date";
@@ -45,7 +46,7 @@ export function HabitWeekGrid({
           const prog = dayProgress(habit, c);
           const isBinary = habit.kind === "binary";
           const clickable = isBinary && scheduled && !pending;
-          const title = `${format(d, "EEE LLL d")}${
+          const title = `${format(d, "EEE, d. MMM", { locale: srLatn })}${
             c != null
               ? ` — ${c}${habit.kind === "count" ? `/${habit.targetCount}` : ""}`
               : ""

@@ -33,7 +33,7 @@ export async function createTemplate(
   input: CreateTemplateInput,
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = createTemplateSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const v = parsed.data;
   const foodIds = Array.from(new Set(v.items.map((i) => i.foodId)));
   const foods = await loadFoods(foodIds);
@@ -73,7 +73,7 @@ export async function updateTemplate(
   input: UpdateTemplateInput,
 ): Promise<ActionResult> {
   const parsed = updateTemplateSchema.safeParse(input);
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid input");
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Unos nije ispravan.");
   const { id, ...v } = parsed.data;
   const foodIds = Array.from(new Set(v.items.map((i) => i.foodId)));
   const foods = await loadFoods(foodIds);
@@ -117,18 +117,18 @@ export async function applyTemplateToDay(
   templateId: string,
   date: string,
 ): Promise<ActionResult<{ mealId: string }>> {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail("Invalid date");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail("Datum nije ispravan.");
   const t = await db
     .select()
     .from(mealTemplate)
     .where(eq(mealTemplate.id, templateId))
     .limit(1);
-  if (!t[0]) return fail("Template not found");
+  if (!t[0]) return fail("Šablon nije pronađen.");
   const items = await db
     .select()
     .from(mealTemplateItem)
     .where(eq(mealTemplateItem.templateId, templateId));
-  if (items.length === 0) return fail("Template has no items");
+  if (items.length === 0) return fail("Šablon je prazan.");
 
   const mealId = await db.transaction(async (tx) => {
     const [m] = await tx

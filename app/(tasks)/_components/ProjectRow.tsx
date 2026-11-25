@@ -33,7 +33,7 @@ export function ProjectRow({
   }
 
   function remove() {
-    if (totalCount > 0 && !confirm(`Delete project with ${totalCount} task(s)?`)) return;
+    if (totalCount > 0 && !confirm(`Broj zadataka u projektu: ${totalCount}. Obrisati projekat?`)) return;
     startTransition(async () => {
       const r = await deleteProject(id);
       if (!r.ok) toast.error(r.error);

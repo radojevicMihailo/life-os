@@ -88,7 +88,7 @@ export function GoalRow({ goal }: { goal: GoalWithProgress }) {
           <Badge
             variant="outline"
             className={`gap-1 text-xs ${overdue ? "border-red-500 text-red-600" : ""}`}
-            title="Target date"
+            title="Rok"
           >
             <Calendar className="h-3 w-3" />
             {formatTaskDate(target)}
