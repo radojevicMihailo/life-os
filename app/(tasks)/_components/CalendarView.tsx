@@ -41,18 +41,17 @@ function isGcal(it: CalendarItem) {
   return it.source === "google" || it.kind === "gcal";
 }
 
-const googleColors = ["#4f75f5", "#b26bef", "#ee8d4b", "#37b9a9", "#e66f9d"];
+const googleAccents = ["var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--muted-foreground)"];
 
 function eventStyle(it: CalendarItem): React.CSSProperties {
-  const chosen = isGcal(it)
-    ? googleColors[(it.accountIdx ?? 0) % googleColors.length]
-    : it.contextColor;
-  const color = chosen && /^#[0-9a-fA-F]{6}$/.test(chosen) ? chosen : "#5b83ed";
+  const accent = isGcal(it)
+    ? googleAccents[(it.accountIdx ?? 0) % googleAccents.length] ?? googleAccents[0]
+    : it.contextColor && /^#[0-9a-fA-F]{6}$/.test(it.contextColor) ? it.contextColor : "var(--action)";
   return {
-    borderColor: color,
-    borderLeftWidth: 4,
-    backgroundColor: `color-mix(in srgb, ${color} 25%, #0b1931)`,
-    color: "#ffffff",
+    borderColor: `color-mix(in srgb, ${accent} 55%, var(--border))`,
+    borderInlineStartColor: accent,
+    borderInlineStartWidth: 4,
+    backgroundColor: `color-mix(in srgb, ${accent} 14%, var(--card))`,
   };
 }
 
@@ -148,11 +147,11 @@ function serverViewport() {
 const weekStartsOn = 1;
 
 const statusDot: Record<TaskStatus, string> = {
-  backlog: "bg-slate-400",
-  in_progress: "bg-blue-500",
-  waiting_for: "bg-amber-500",
-  canceled: "bg-zinc-300",
-  done: "bg-green-500",
+  backlog: "bg-muted-foreground",
+  in_progress: "bg-primary",
+  waiting_for: "bg-chart-3",
+  canceled: "bg-muted-foreground/65",
+  done: "bg-chart-2",
 };
 
 export function CalendarView({
@@ -322,7 +321,7 @@ export function CalendarView({
                             style={eventStyle(it)}
                           >
                             {it.hasTime && (
-                              <span className="text-xs tabular-nums">
+                              <span className="text-xs tabular-nums text-muted-foreground">
                                 {format(new Date(it.dateISO), "HH:mm")}
                               </span>
                             )}
@@ -562,7 +561,7 @@ function Timeline({
                       className="absolute left-1 right-1 flex items-start gap-1 overflow-hidden rounded border px-1.5 py-1 text-sm leading-tight"
                       style={{ ...eventStyle(it), top, height: Math.max(44, height) }}
                     >
-                      <span className="shrink-0 text-xs tabular-nums opacity-70">
+                      <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                         {format(start, "HH:mm")}
                       </span>
                       <span className="truncate font-medium">{it.title}</span>

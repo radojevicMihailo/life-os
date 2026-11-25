@@ -49,4 +49,30 @@ describe("CalendarView Google events", () => {
     expect(html).toContain("Team meeting");
     expect(html).not.toContain("meet.google.com");
   });
+
+  it("tints event backgrounds from the active theme and preserves event accents", () => {
+    const event = googleItem();
+    const task: CalendarItem = {
+      ...event,
+      id: "task",
+      taskId: "task",
+      kind: "action",
+      source: "task",
+      status: "in_progress",
+    };
+    const html = renderToStaticMarkup(createElement(CalendarView, {
+      items: [
+        event,
+        { ...event, id: "second-account", accountIdx: 1 },
+        task,
+        { ...task, id: "custom-context", contextColor: "#795a3a" },
+        { ...task, id: "invalid-context", contextColor: "red" },
+      ],
+      contexts: [],
+    }));
+    for (const accent of ["var(--chart-2)", "var(--chart-3)", "#795a3a"]) {
+      expect(html).toContain(`background-color:color-mix(in srgb, ${accent} 14%, var(--card))`);
+    }
+    expect(html.match(/border-inline-start-color:var\(--action\)/g)).toHaveLength(2);
+  });
 });
