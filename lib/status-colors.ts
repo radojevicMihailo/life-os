@@ -28,15 +28,15 @@ export const goalStatusColors: Record<GoalStatus, string> = {
 };
 
 export const travelRegionColors: Record<TravelRegion, string> = {
-  srbija: "border-rose-400/65 bg-rose-500/15 text-rose-100",
-  okolne_drzave: "border-orange-400/65 bg-orange-500/15 text-orange-100",
-  evropa: "border-sky-400/65 bg-sky-500/15 text-sky-100",
-  svet: "border-violet-400/65 bg-violet-500/15 text-violet-100",
+  srbija: "border-rose-500/60 bg-rose-200 text-rose-900 dark:border-rose-400/65 dark:bg-rose-500/25 dark:text-rose-100",
+  okolne_drzave: "border-orange-500/60 bg-orange-200 text-orange-900 dark:border-orange-400/65 dark:bg-orange-500/25 dark:text-orange-100",
+  evropa: "border-sky-500/60 bg-sky-200 text-sky-900 dark:border-sky-400/65 dark:bg-sky-500/25 dark:text-sky-100",
+  svet: "border-violet-500/60 bg-violet-200 text-violet-900 dark:border-violet-400/65 dark:bg-violet-500/25 dark:text-violet-100",
 };
 
 export const travelStatusColors: Record<TravelStatus, string> = {
-  idea: "border-slate-400/65 bg-slate-500/15 text-slate-100",
-  planning: "border-amber-400/65 bg-amber-500/15 text-amber-100",
-  booked: "border-blue-400/65 bg-blue-500/15 text-blue-100",
-  done: "border-emerald-400/65 bg-emerald-500/15 text-emerald-100",
+  idea: "border-slate-500/60 bg-slate-200 text-slate-900 dark:border-slate-400/65 dark:bg-slate-500/25 dark:text-slate-100",
+  planning: "border-amber-500/60 bg-amber-200 text-amber-900 dark:border-amber-400/65 dark:bg-amber-500/25 dark:text-amber-100",
+  booked: "border-blue-500/60 bg-blue-200 text-blue-900 dark:border-blue-400/65 dark:bg-blue-500/25 dark:text-blue-100",
+  done: "border-emerald-500/60 bg-emerald-200 text-emerald-900 dark:border-emerald-400/65 dark:bg-emerald-500/25 dark:text-emerald-100",
 };

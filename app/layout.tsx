@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   applicationName: "Life OS",
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml", sizes: "any" }],
+    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
   },
 };
 
